@@ -48,6 +48,90 @@ body {
   min-height: 100vh;
 }
 
+.landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.landing-inner {
+  max-width: 720px;
+  width: 100%;
+  text-align: center;
+}
+
+.landing-eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.landing h1 {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 12px 0 10px;
+  text-wrap: balance;
+}
+
+.landing-lede {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 46ch;
+  margin: 0 auto 40px;
+}
+
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 640px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.choice-card {
+  display: block;
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 26px 24px;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.choice-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.choice-icon {
+  font-size: 28px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.choice-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.choice-desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
 .sidebar {
   width: 260px;
   flex-shrink: 0;
@@ -59,6 +143,18 @@ body {
 .sidebar h1 {
   font-size: 18px;
   margin: 4px 8px 18px;
+}
+
+.back-link {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  margin: 4px 8px 14px;
+}
+
+.back-link:hover {
+  color: var(--accent);
 }
 
 .level-list {

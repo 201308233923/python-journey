@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>编程能力测试</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a href="index.html" class="back-link">← 换一个入口</a>
+      <h1>⚡ 编程能力测试</h1>
+      <div id="level-list" class="level-list"></div>
+    </aside>
+
+    <main class="content">
+      <div id="loading" class="loading">
+        Python 运行环境加载中，第一次打开会花几秒钟...
+      </div>
+
+      <div id="level-view" class="level-view hidden">
+        <h2 id="level-title"></h2>
+        <div id="level-explain" class="explain"></div>
+
+        <div class="editor-row">
+          <div class="editor-col">
+            <div class="editor-label">你的代码</div>
+            <textarea id="code-editor" spellcheck="false"></textarea>
+            <div id="input-row" class="input-row hidden">
+              <label class="editor-label">模拟输入（每行一个，对应一次 input()）</label>
+              <textarea id="input-editor" rows="3" spellcheck="false"></textarea>
+            </div>
+            <div class="button-row">
+              <button id="run-btn">▶ 运行</button>
+              <button id="reset-btn" class="secondary">重置代码</button>
+              <button id="hint-btn" class="secondary">💡 提示</button>
+            </div>
+            <div id="hint-box" class="hint-box hidden"></div>
+          </div>
+
+          <div class="output-col">
+            <div class="editor-label">输出结果</div>
+            <pre id="output-box" class="output-box"></pre>
+            <div id="feedback-box" class="feedback-box"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <script>const TRACK = "assessment";</script>
+  <script src="assessment-levels.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
