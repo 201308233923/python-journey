@@ -5,6 +5,36 @@ const inputKey = (id) => `codecourse_input_${id}`;
 let pyodide = null;
 let currentLevelId = 1;
 
+function explainError(err) {
+  if (!err) return "";
+  if (err.includes("IndentationError")) {
+    return "缩进错了：Python靠每行前面的空格来判断代码属于哪一块。冒号(:)的下一行必须往右缩进（一般是4个空格），检查一下是不是漏了或者多了空格。";
+  }
+  if (err.includes("SyntaxError")) {
+    return "语法错误：检查是不是少写了引号 \" \"、括号 ( )，或者忘了在 if / else / while / for / def 结尾加冒号 : 。";
+  }
+  if (err.includes("NameError")) {
+    const match = err.match(/name '(.+?)' is not defined/);
+    const name = match ? match[1] : "";
+    return name
+      ? `用到了变量'${name}'，但它还没被创建。检查一下是不是拼写和你创建时不一致，或者忘了先给它赋值。`
+      : "用到了一个还没定义的名字，检查一下变量名有没有拼写错误，或者忘了先赋值。";
+  }
+  if (err.includes("TypeError")) {
+    return "类型不匹配：可能是把文字和数字直接混在一起运算了。文字转数字用 int(...)，数字转文字用 str(...)。";
+  }
+  if (err.includes("ValueError")) {
+    return "值不对：常见原因是 int() 想把不是数字的文字转换成数字，检查一下模拟输入框里是不是填了纯数字。";
+  }
+  if (err.includes("ZeroDivisionError")) {
+    return "除数不能是0，检查一下除法算式里的分母。";
+  }
+  if (err.includes("EOFError")) {
+    return "模拟输入不够用了：程序调用 input() 的次数比模拟输入框里的行数还多，检查一下逻辑，或者在模拟输入框里再加一行。";
+  }
+  return `程序运行出错了：${err}`;
+}
+
 function getUnlockedCount() {
   const raw = localStorage.getItem(STORAGE_PROGRESS);
   return raw ? parseInt(raw, 10) : 1;

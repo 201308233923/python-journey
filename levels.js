@@ -1,5 +1,6 @@
-// 每一关的内容：讲解、初始代码、提示、以及判断"过关"的检查函数。
+// 每一关的内容：讲解、初始代码（只给骨架，不给答案）、提示、以及判断"过关"的检查函数。
 // check(result) 返回 { pass: boolean, message: string }，result = { stdout, err }
+// explainError(err) 定义在 app.js 里，把Python的报错翻译成人话。
 
 const LEVELS = [
   {
@@ -7,16 +8,23 @@ const LEVELS = [
     title: "第1关：你好，世界",
     explain: `
       <p>写程序的第一件事，几乎所有人都是从让电脑"说话"开始的。</p>
-      <p>在 Python 里，<code>print()</code> 可以把括号里的内容显示在屏幕上。</p>
-      <pre>print("你好，世界！")</pre>
-      <p>试着把下面代码里的文字改成你自己的名字，然后点"运行"看看。</p>
+      <p>在 Python 里，<code>print()</code> 可以把括号里的内容显示在屏幕上，比如：</p>
+      <pre>print("我是编程新手")</pre>
+      <p>在下面的代码框里写一行代码，打印出："你好，世界！"（包括标点符号）。</p>
     `,
-    starter: `print("你好，世界！")`,
-    hint: `记得文字要用引号 "" 包起来，Python 才知道这是一段文字（叫"字符串"）。`,
+    starter: `# 在下面写一行代码
+# 用 print() 打印出：你好，世界！
+`,
+    hint: `记得文字要用引号 "" 包起来，Python 才知道这是一段文字（叫"字符串"）。格式是 print("你好，世界！")`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "代码报错了，看看下面的错误提示，检查有没有少写引号或括号。" };
-      if (r.stdout.trim().length > 0) return { pass: true, message: "太棒了！你写出了第一行能运行的代码。" };
-      return { pass: false, message: "好像还没有输出内容，试试用 print() 打印点什么。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.stdout.trim().length === 0) {
+        return { pass: false, message: "还没有看到任何输出，试试用 print(\"你好，世界！\") 打印点东西。" };
+      }
+      if (r.stdout.includes("你好") && r.stdout.includes("世界")) {
+        return { pass: true, message: "太棒了！你写出了第一行能运行的代码。" };
+      }
+      return { pass: false, message: "有输出了，但内容不太对，检查一下是不是打印的正好是'你好，世界！'。" };
     },
   },
   {
@@ -29,15 +37,18 @@ age = 13
 print(name)
 print(age)</pre>
       <p>等号 <code>=</code> 在这里不是"等于"，而是"把右边的值放进左边这个盒子里"。</p>
-      <p>试试创建一个叫 <code>my_name</code> 的变量，装上你的名字，再打印出来。</p>
+      <p>在下面创建一个叫 <code>my_name</code> 的变量，装上你的名字，再用 print() 打印出来。</p>
     `,
-    starter: `my_name = "你的名字"
-print(my_name)`,
-    hint: `变量名不能有空格，也不能用数字开头。字符串（文字）记得加引号，数字不用加。`,
+    starter: `# 创建一个变量 my_name，存放你的名字
+# 然后用 print(my_name) 打印出来
+`,
+    hint: `变量名不能有空格，也不能用数字开头。文字记得加引号，格式是 my_name = "你的名字"，然后另起一行 print(my_name)`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "代码报错了，检查一下变量名和引号有没有对齐。" };
-      if (r.stdout.trim().length > 0) return { pass: true, message: "很好，你已经学会用变量存东西了。" };
-      return { pass: false, message: "记得要 print() 出来才能看到结果哦。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.stdout.trim().length === 0) {
+        return { pass: false, message: "记得要创建变量并且 print() 出来才能看到结果哦。" };
+      }
+      return { pass: true, message: "很好，你已经学会用变量存东西了。" };
     },
   },
   {
@@ -48,20 +59,25 @@ print(my_name)`,
       <pre>a = 10
 b = 3
 print(a + b)
-print(a - b)
-print(a * b)
-print(a / b)</pre>
-      <p>试着算一下：如果你今年13岁，10年后你多少岁？用变量算出来，别直接写死答案。</p>
+print(a - b)</pre>
+      <p>试着算一下：如果你今年13岁，10年后你多少岁？创建两个变量（当前年龄、10年后要加的年数），
+      算出结果存进第三个变量，再打印出来——不要直接写死答案数字。</p>
     `,
-    starter: `age = 13
-years_later = 10
-future_age = age + years_later
-print(future_age)`,
-    hint: `除法 / 的结果会带小数点，比如 10/3 是 3.333...；如果只想要整数结果，可以用 // 。`,
+    starter: `# 创建变量 age，值是13
+# 创建变量 years_later，值是10
+# 算出 future_age = age + years_later
+# 打印 future_age
+`,
+    hint: `格式大概是：age = 13 / years_later = 10 / future_age = age + years_later / print(future_age)`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "运算符打错了吗？看看错误提示。" };
-      if (/\d/.test(r.stdout)) return { pass: true, message: "运算成功！Python 当计算器还挺好用的。" };
-      return { pass: false, message: "输出里好像没有数字，检查一下有没有 print() 结果。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!/\d/.test(r.stdout)) {
+        return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
+      }
+      if (r.stdout.includes("23")) {
+        return { pass: true, message: "运算成功！13岁10年后是23岁，算对了。" };
+      }
+      return { pass: false, message: "打印出数字了，但结果不是23，检查一下 age 和 years_later 的值，以及加法有没有写对。" };
     },
   },
   {
@@ -69,20 +85,24 @@ print(future_age)`,
     title: "第4关：拼接文字（f-string）",
     explain: `
       <p>想把变量和文字拼在一起显示，可以在字符串前加一个 <code>f</code>，然后用花括号 <code>{}</code> 把变量包起来：</p>
-      <pre>name = "小明"
-age = 13
-print(f"我叫{name}，今年{age}岁")</pre>
-      <p>试着用 f-string 介绍一下你自己。</p>
+      <pre>city = "北京"
+print(f"我住在{city}")</pre>
+      <p>创建 name（你的名字）和 age（你的年龄）两个变量，
+      用 f-string 打印出："我叫xxx，今年xx岁"（xxx换成变量的值）。</p>
     `,
-    starter: `name = "你的名字"
-age = 13
-print(f"我叫{name}，今年{age}岁")`,
-    hint: `别忘了字符串前面的 f，还有花括号里不要再加引号。`,
+    starter: `# 创建变量 name 和 age
+# 用 f-string 打印："我叫{name}，今年{age}岁"
+`,
+    hint: `别忘了字符串前面的 f，格式是 print(f"我叫{name}，今年{age}岁")，花括号里不要再加引号。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "f-string 的格式检查一下：f\"...{变量}...\"" };
-      if (r.stdout.includes("{") ) return { pass: false, message: "花括号好像没有被替换成变量的值，检查一下前面有没有加 f。" };
-      if (r.stdout.trim().length > 0) return { pass: true, message: "拼接成功！f-string 以后会经常用到。" };
-      return { pass: false, message: "还没看到输出，加上 print() 试试。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.stdout.includes("{")) {
+        return { pass: false, message: "花括号好像没有被替换成变量的值，检查一下字符串前面有没有加 f。" };
+      }
+      if (r.stdout.includes("我叫") && r.stdout.includes("岁")) {
+        return { pass: true, message: "拼接成功！f-string 以后会经常用到。" };
+      }
+      return { pass: false, message: "还没看到符合格式的输出，检查一下是不是打印了'我叫...，今年...岁'。" };
     },
   },
   {
@@ -90,20 +110,22 @@ print(f"我叫{name}，今年{age}岁")`,
     title: "第5关：获取用户输入",
     explain: `
       <p><code>input()</code> 可以让程序暂停，等着用户在屏幕上打字。</p>
-      <pre>name = input("你叫什么名字？")
-print(f"你好，{name}！")</pre>
+      <pre>answer = input("你今天开心吗？")
+print(answer)</pre>
       <p>这一关比较特殊：因为是在网页里模拟运行，右边多了一个"模拟输入"框，
       在里面按顺序写好你要输入的内容（一行代表一次 input()），再点运行。</p>
+      <p>用 input() 问用户"你叫什么名字？"，存到变量 name 里，再用 f-string 打印"你好，{name}！"。</p>
     `,
-    starter: `name = input("你叫什么名字？")
-print(f"你好，{name}！")`,
-    hint: `模拟输入框里写一行文字，比如"小明"，代表 input() 会拿到这一行作为回答。`,
+    starter: `# 用 input() 问："你叫什么名字？"，存到变量 name
+# 用 f-string 打印："你好，{name}！"
+`,
+    hint: `格式大概是：name = input("你叫什么名字？") 然后 print(f"你好，{name}！")`,
     needsInput: true,
     defaultInput: "小明",
     check: (r) => {
-      if (r.err) return { pass: false, message: "报错了？看看是不是模拟输入框里没填内容。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
       if (r.stdout.includes("你好")) return { pass: true, message: "完美，你已经学会怎么和程序'对话'了。" };
-      return { pass: false, message: "看看输出对不对，或许要调整一下代码。" };
+      return { pass: false, message: "还没看到'你好'开头的输出，检查一下有没有用 input() 接住变量，再打印出来。" };
     },
   },
   {
@@ -117,18 +139,16 @@ if age >= 18:
 else:
     print("你是未成年人")</pre>
       <p>注意冒号 <code>:</code> 和缩进（每行前面的空格），Python 靠缩进来分辨"哪些代码属于if里面"。</p>
-      <p>试着写一个判断：如果分数大于等于60，打印"及格"，否则打印"不及格"。</p>
+      <p>创建变量 score，写一个判断：如果分数大于等于60，打印"及格"，否则打印"不及格"。</p>
     `,
-    starter: `score = 75
-if score >= 60:
-    print("及格")
-else:
-    print("不及格")`,
-    hint: `冒号后面换行，下一行要缩进（一般是4个空格），这是Python的硬性规定。`,
+    starter: `# 创建变量 score，随便给个分数
+# 写 if / else：分数>=60 打印"及格"，否则打印"不及格"
+`,
+    hint: `冒号后面换行，下一行要缩进（一般是4个空格）。格式：if score >= 60: 换行缩进 print("及格") 另起一行 else: 换行缩进 print("不及格")`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "很可能是缩进或冒号的问题，仔细检查每个 if/else 后面。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
       if (r.stdout.includes("及格")) return { pass: true, message: "if判断学会了，这是编程里最常用的东西之一。" };
-      return { pass: false, message: "改一下条件或分数，让程序打印出'及格'或'不及格'试试。" };
+      return { pass: false, message: "还没看到'及格'或'不及格'，检查一下 if/else 的条件和 print() 有没有写对。" };
     },
   },
   {
@@ -139,16 +159,21 @@ else:
       <pre>for i in range(5):
     print(f"第{i}次")</pre>
       <p><code>range(5)</code> 会依次给出 0,1,2,3,4 这5个数字。</p>
-      <p>试着用 for 循环打印出1到10。</p>
+      <p>用 for 循环打印出1到10（每个数字一行）。</p>
     `,
-    starter: `for i in range(1, 11):
-    print(i)`,
-    hint: `range(1, 11) 会从1数到10（不包含11），这是个常见的小坑。`,
+    starter: `# 用 for 循环和 range()，打印1到10
+`,
+    hint: `range(1, 11) 会从1数到10（不包含11）。格式：for i in range(1, 11): 换行缩进 print(i)`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "看看range()的括号和冒号有没有写对。" };
-      const nums = r.stdout.trim().split(/\s+/);
-      if (nums.length >= 5) return { pass: true, message: "循环学会了！以后重复的事都能交给电脑做。" };
-      return { pass: false, message: "好像打印的次数不太够，检查一下 range() 里的数字。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
+      if (nums.length < 10) {
+        return { pass: false, message: `目前只打印了${nums.length}行，应该要有10行（1到10），检查一下 range() 里的数字。` };
+      }
+      if (nums[0] === "1" && nums[9] === "10") {
+        return { pass: true, message: "循环学会了！以后重复的事都能交给电脑做。" };
+      }
+      return { pass: false, message: "打印的行数够了，但数字好像不是从1到10，检查一下 range() 的起止值。" };
     },
   },
   {
@@ -161,18 +186,22 @@ while count < 5:
     print(count)
     count = count + 1</pre>
       <p>要小心：如果忘了让条件变化（比如忘了 count = count + 1），循环会一直停不下来！</p>
-      <p>试着用 while 循环，从10倒数到1。</p>
+      <p>用 while 循环，从10倒数到1（每个数字一行）。</p>
     `,
-    starter: `count = 10
-while count >= 1:
-    print(count)
-    count = count - 1`,
-    hint: `每次循环都要让count变化，不然会陷入"死循环"。`,
+    starter: `# 创建变量 count，值是10
+# 用 while 循环倒数到1，每次打印 count
+`,
+    hint: `每次循环都要让count变小，不然会陷入"死循环"。格式：count = 10 / while count >= 1: 换行缩进 print(count) 换行缩进 count = count - 1`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "检查一下循环条件和缩进。" };
-      const nums = r.stdout.trim().split(/\s+/);
-      if (nums.length >= 5) return { pass: true, message: "while循环也学会了，你现在会两种循环了。" };
-      return { pass: false, message: "看看输出的行数够不够，调整一下条件。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
+      if (nums.length < 10) {
+        return { pass: false, message: `目前只打印了${nums.length}行，应该要有10行（10倒数到1），检查一下循环条件。` };
+      }
+      if (nums[0] === "10" && nums[9] === "1") {
+        return { pass: true, message: "while循环也学会了，你现在会两种循环了。" };
+      }
+      return { pass: false, message: "打印的行数够了，但数字顺序不太对，检查一下是不是从10倒数到1。" };
     },
   },
   {
@@ -181,21 +210,19 @@ while count >= 1:
     explain: `
       <p>列表可以在一个变量里装很多个东西，用方括号 <code>[]</code>：</p>
       <pre>fruits = ["苹果", "香蕉", "橙子"]
-print(fruits[0])
-for fruit in fruits:
-    print(fruit)</pre>
+print(fruits[0])</pre>
       <p>注意：列表里的第一个东西下标是 <code>0</code>，不是1！</p>
-      <p>试着做一个装有你3个最喜欢的东西的列表，然后用for循环打印出来。</p>
+      <p>做一个装有你3个最喜欢的东西的列表，然后用for循环把它们都打印出来。</p>
     `,
-    starter: `favorites = ["篮球", "游戏", "音乐"]
-for item in favorites:
-    print(item)`,
-    hint: `列表用方括号[]，里面每一项用逗号分开。下标从0开始数。`,
+    starter: `# 创建一个列表 favorites，装3个你喜欢的东西
+# 用 for 循环打印出列表里的每一项
+`,
+    hint: `列表用方括号[]，每一项用逗号分开。格式：favorites = ["篮球", "游戏", "音乐"] / for item in favorites: 换行缩进 print(item)`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "检查一下方括号和逗号。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
       const lines = r.stdout.trim().split("\n").filter(Boolean);
-      if (lines.length >= 2) return { pass: true, message: "列表学会了，这是存一堆数据最常用的方式。" };
-      return { pass: false, message: "列表里放几个东西，然后循环打印出来试试。" };
+      if (lines.length >= 3) return { pass: true, message: "列表学会了，这是存一堆数据最常用的方式。" };
+      return { pass: false, message: `目前只打印了${lines.length}行，列表里至少放3个东西，然后循环打印出来。` };
     },
   },
   {
@@ -204,19 +231,19 @@ for item in favorites:
     explain: `
       <p>字典用"键值对"存数据，比列表更适合表示"一个东西的多个属性"：</p>
       <pre>person = {"name": "小明", "age": 13}
-print(person["name"])
-print(person["age"])</pre>
+print(person["name"])</pre>
       <p>之前3_rps_ai.py里统计出拳次数用的就是字典，比如 <code>{"石头": 5, "剪刀": 3}</code>。</p>
-      <p>试着做一个字典描述你自己（名字、年龄、爱好），然后打印出来。</p>
+      <p>做一个字典 me，包含 name、age、hobby 三个键，然后把这三个值分别打印出来。</p>
     `,
-    starter: `me = {"name": "你的名字", "age": 13, "hobby": "编程"}
-print(me["name"])
-print(me["hobby"])`,
-    hint: `字典用花括号{}，键和值中间用冒号:，取值时用方括号["键名"]。`,
+    starter: `# 创建字典 me，包含 name、age、hobby 三个键
+# 分别打印 me["name"]、me["age"]、me["hobby"]
+`,
+    hint: `字典用花括号{}，键和值中间用冒号:，取值时用方括号["键名"]。格式：me = {"name": "小明", "age": 13, "hobby": "篮球"}`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "检查一下花括号、冒号和引号。" };
-      if (r.stdout.trim().length > 0) return { pass: true, message: "字典也学会了！你现在能存更复杂的数据了。" };
-      return { pass: false, message: "打印字典里的某个值试试。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      const lines = r.stdout.trim().split("\n").filter(Boolean);
+      if (lines.length >= 3) return { pass: true, message: "字典也学会了！你现在能存更复杂的数据了。" };
+      return { pass: false, message: `目前只打印了${lines.length}行，字典里的 name、age、hobby 都要打印出来（3行）。` };
     },
   },
   {
@@ -227,21 +254,21 @@ print(me["hobby"])`,
       <pre>def greet(name):
     print(f"你好，{name}！")
 
-greet("小明")
-greet("小红")</pre>
-      <p>试着写一个函数，输入两个数字，打印出它们的和。</p>
+greet("小明")</pre>
+      <p>写一个函数 add(a, b)，打印出两个数字的和，然后调用它两次，传入不同的数字。</p>
     `,
-    starter: `def add(a, b):
-    result = a + b
-    print(f"{a} + {b} = {result}")
-
-add(3, 5)
-add(10, 20)`,
-    hint: `def 函数名(参数): 换行后缩进写函数内容，调用时函数名(实际的值)。`,
+    starter: `# 写一个函数 def add(a, b):，打印 a+b 的结果
+# 调用两次 add()，传入不同的数字
+`,
+    hint: `格式：def add(a, b): 换行缩进 result = a + b 换行缩进 print(result)，然后另起一行调用 add(3, 5)`,
     check: (r) => {
-      if (r.err) return { pass: false, message: "检查 def 后面的冒号和缩进。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      const lines = r.stdout.trim().split("\n").filter(Boolean);
+      if (lines.length < 2) {
+        return { pass: false, message: `目前只有${lines.length}行输出，函数至少要调用2次，每次都打印结果。` };
+      }
       if (/\d/.test(r.stdout)) return { pass: true, message: "函数学会了！这是让代码不重复的关键工具。" };
-      return { pass: false, message: "调用一下你写的函数，看看有没有打印结果。" };
+      return { pass: false, message: "调用了函数，但输出里没看到数字，检查一下函数里有没有 print() 计算结果。" };
     },
   },
   {
@@ -249,39 +276,32 @@ add(10, 20)`,
     title: "毕业关：做出你自己的猜数字游戏",
     explain: `
       <p>把前面学的都用上：变量、input、if、循环——写一个"猜数字"小游戏。</p>
-      <p>电脑心里想好一个数字（比如7），玩家不断猜，程序告诉他"太大"或"太小"，猜中为止。</p>
-      <p>下面是一个填了一半的框架，试着把它补充完整并运行成功：</p>
-      <pre>secret = 7
-guess = int(input("猜一个1-10的数字："))
-while guess != secret:
-    if guess &gt; secret:
-        print("太大了")
-    else:
-        print("太小了")
-    guess = int(input("再猜一次："))
-print("猜对了！")</pre>
-      <p><strong>恭喜通关！</strong>你现在已经具备读懂 <code>ai-games</code> 文件夹里4个AI小游戏代码的基础了。
-      打开终端运行：</p>
-      <pre>cd ~/Projects/learn-python/ai-games
-python3 1_guess_number_ai.py</pre>
-      <p>对照着代码，看看是不是能认出这一关学的变量、循环、if、input——那些"AI"其实都是你已经学会的东西拼出来的。</p>
+      <p>电脑心里想好一个数字 <code>secret = 7</code>，玩家不断猜，
+      程序告诉他"太大了"或"太小了"，猜中后打印"猜对了！"并结束。</p>
+      <p>思路提示：</p>
+      <ol>
+        <li>用 input() + int() 获取玩家第一次猜的数字</li>
+        <li>用 while 循环：只要猜的数字不等于secret就一直问</li>
+        <li>循环里用 if/else 判断猜大了还是猜小了</li>
+        <li>猜对了，打印"猜对了！"</li>
+      </ol>
     `,
     starter: `secret = 7
-guess = int(input("猜一个1-10的数字："))
-while guess != secret:
-    if guess > secret:
-        print("太大了")
-    else:
-        print("太小了")
-    guess = int(input("再猜一次："))
-print("猜对了！")`,
-    hint: `模拟输入框里每行写一个猜测数字，比如：5 / 8 / 7 ，让它们一步步逼近7。`,
+# 用 int(input(...)) 获取玩家猜的数字，存到 guess
+# 用 while 循环：只要 guess != secret 就一直问
+#   循环里：如果 guess > secret 打印"太大了"，否则打印"太小了"
+#   然后重新问一次，更新 guess
+# 循环结束后打印"猜对了！"
+`,
+    hint: `模拟输入框里每行写一个猜测数字，比如：5 / 8 / 7 ，让它们一步步逼近7。别忘了循环里要重新调用 input() 更新 guess，不然会死循环。`,
     needsInput: true,
     defaultInput: "5\n8\n7",
     check: (r) => {
-      if (r.err) return { pass: false, message: "看看报错信息，检查int(input(...))有没有写对。" };
-      if (r.stdout.includes("猜对了")) return { pass: true, message: "毕业啦！去 ai-games 文件夹解锁真正的AI小游戏吧。" };
-      return { pass: false, message: "模拟输入里的数字最终要等于secret（7），才能触发'猜对了'。" };
+      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.stdout.includes("猜对了")) {
+        return { pass: true, message: "毕业啦！去 ai-games 文件夹解锁真正的AI小游戏吧。" };
+      }
+      return { pass: false, message: "模拟输入里的数字最终要等于secret（7），并且要打印出'猜对了！'才算通关。" };
     },
   },
 ];
