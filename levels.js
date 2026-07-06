@@ -5,7 +5,7 @@
 const LEVELS = [
   {
     id: 1,
-    title: "第1关：你好，世界",
+    title: "第1关：打印 print()",
     explain: `
       <p>写程序的第一件事，几乎所有人都是从让电脑"说话"开始的。</p>
       <p>在 Python 里，<code>print()</code> 可以把括号里的内容显示在屏幕上，比如：</p>
