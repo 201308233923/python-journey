@@ -1,7 +1,8 @@
 const TRACK_ID = typeof TRACK !== "undefined" ? TRACK : "course";
-const STORAGE_PROGRESS = TRACK_ID === "course" ? "codecourse_unlocked" : `codecourse_${TRACK_ID}_unlocked`;
-const codeKey = (id) => (TRACK_ID === "course" ? `codecourse_code_${id}` : `codecourse_${TRACK_ID}_code_${id}`);
-const inputKey = (id) => (TRACK_ID === "course" ? `codecourse_input_${id}` : `codecourse_${TRACK_ID}_input_${id}`);
+// v2：关卡从"直接给答案"改成"只给骨架"，旧存档的代码/进度不再适用，换个key名让它们自动失效。
+const STORAGE_PROGRESS = `codecourse_${TRACK_ID}_v2_unlocked`;
+const codeKey = (id) => `codecourse_${TRACK_ID}_v2_code_${id}`;
+const inputKey = (id) => `codecourse_${TRACK_ID}_v2_input_${id}`;
 
 let pyodide = null;
 let currentLevelId = 1;
