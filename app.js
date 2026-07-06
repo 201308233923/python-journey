@@ -186,9 +186,9 @@ async function init() {
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");
 
-  const unlocked = getUnlockedCount();
-  const startId = LEVELS[Math.min(unlocked, LEVELS.length) - 1].id;
-  selectLevel(startId);
+  // 每次打开都固定从第1关开始，不自动跳到"上次做到的那关"，
+  // 已解锁的关卡仍然可以在左边侧栏直接点进去。
+  selectLevel(LEVELS[0].id);
 }
 
 init();
