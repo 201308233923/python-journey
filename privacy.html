@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>隐私政策 · 我的编程之旅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="我的编程之旅不收集任何个人数据，不需要账号，学习进度只保存在你自己的浏览器里。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="doc-page">
+    <a class="back-link" href="index.html" id="back-link">← 返回</a>
+    <h1>隐私政策</h1>
+    <p class="doc-updated">最后更新：2026年</p>
+
+    <p>"我的编程之旅"是一个免费的编程学习网站，不收集你的任何个人信息。具体来说：</p>
+
+    <h2>不需要账号</h2>
+    <p>打开网站就能直接用，不需要注册、不需要登录、不需要提供姓名、邮箱或任何个人信息。</p>
+
+    <h2>学习进度存在哪里</h2>
+    <p>你写的代码和通关进度，都只保存在你自己这台设备的浏览器里（专业说法叫 localStorage），
+    不会发送到任何服务器，我们也看不到。清除浏览器数据，或者点网站里的"重置进度"按钮，
+    这些记录就会被清空。换一台设备或者换一个浏览器打开，是看不到之前的进度的。</p>
+
+    <h2>不做任何跟踪</h2>
+    <p>没有埋点、没有用户行为分析工具、没有广告、没有第三方跟踪代码。</p>
+
+    <h2>用到的第三方资源</h2>
+    <p>网站运行 Python 代码用到一个叫 Pyodide 的开源工具，是从 jsdelivr 这个公共CDN加载的。
+    加载这个文件的过程中，jsdelivr 可能会像所有网站服务器一样记录一些基本的访问信息（比如IP地址），
+    这是所有从CDN加载文件的网站都会有的情况，"我的编程之旅"本身不会额外收集或使用这些信息。</p>
+
+    <h2>联系方式</h2>
+    <p>这是一个个人的学习类小项目，免费提供给大家使用，不销售任何商品或服务。</p>
+  </div>
+
+  <script>
+    document.getElementById("back-link").addEventListener("click", (e) => {
+      if (history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  </script>
+</body>
+</html>

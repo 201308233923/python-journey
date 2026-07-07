@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>关于 · 我的编程之旅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="我的编程之旅是一个免费的编程学习网站，从零基础学到能玩懂AI小游戏。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="doc-page">
+    <a class="back-link" href="index.html" id="back-link">← 返回</a>
+    <h1>关于"我的编程之旅"</h1>
+    <p class="doc-updated">一个免费的编程学习网站</p>
+
+    <p>这是一个从零开始学 Python 编程的网站，一路学到能看懂、能玩AI小游戏。
+    全部免费，不需要注册账号，打开就能用。</p>
+
+    <h2>里面有什么</h2>
+    <ul>
+      <li><strong>水平测试</strong>：几道选择题，推荐一个适合你的起点</li>
+      <li><strong>初级</strong>：12关，从 print() 学到自己写出一个猜数字小游戏</li>
+      <li><strong>进阶</strong>：6道综合测试题，检验基础掌握程度</li>
+      <li><strong>高级</strong>：递归、排序算法、类、二分查找这些更硬核的内容</li>
+      <li><strong>AI小游戏</strong>：4个能直接互动的AI小游戏，边玩边理解AI是怎么工作的</li>
+    </ul>
+
+    <h2>怎么运行代码的</h2>
+    <p>网站用了一个叫 Pyodide 的开源技术，能让 Python 代码直接在你的浏览器里运行，
+    不需要安装任何软件，也不需要联网上传代码到服务器。</p>
+
+    <h2>免责声明</h2>
+    <p>这是一个个人的学习类项目，按"现状"免费提供，不保证内容完全没有错误，
+    也不对使用过程中产生的任何问题负责。如果发现内容有问题，欢迎反馈。</p>
+  </div>
+
+  <script>
+    document.getElementById("back-link").addEventListener("click", (e) => {
+      if (history.length > 1) {
+        e.preventDefault();
+        history.back();
+      }
+    });
+  </script>
+</body>
+</html>
