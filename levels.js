@@ -285,6 +285,8 @@ greet("小明")</pre>
         <li>循环里用 if/else 判断猜大了还是猜小了</li>
         <li>猜对了，打印"猜对了！"</li>
       </ol>
+      <p><strong>恭喜通关！</strong>侧栏点"🎮 AI小游戏"，去玩4个真正的AI小游戏——
+      对照着代码，看看是不是能认出这一关学的变量、循环、if、input，那些"AI"其实都是你已经学会的东西拼出来的。</p>
     `,
     starter: `secret = 7
 # 用 int(input(...)) 获取玩家猜的数字，存到 guess
@@ -299,7 +301,7 @@ greet("小明")</pre>
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
       if (r.stdout.includes("猜对了")) {
-        return { pass: true, message: "毕业啦！去 ai-games 文件夹解锁真正的AI小游戏吧。" };
+        return { pass: true, message: "毕业啦！点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
       }
       return { pass: false, message: "模拟输入里的数字最终要等于secret（7），并且要打印出'猜对了！'才算通关。" };
     },

@@ -30,9 +30,49 @@ function shuffleQuestion(q) {
 }
 
 const QUESTIONS_PER_QUIZ = 10;
+const COURSE_LEVEL_COUNT = 12;
+const ASSESSMENT_LEVEL_COUNT = 6;
+
+// 只读一下有没有"真正解锁到第1关以后"的存档，不需要加载 course/assessment 的关卡数据。
+function getResumePoint(track, totalLevels) {
+  const raw = localStorage.getItem(`codecourse_${track}_v2_unlocked`);
+  const unlocked = raw ? parseInt(raw, 10) : 1;
+  if (!unlocked || unlocked <= 1) return null;
+  return Math.min(unlocked, totalLevels);
+}
 
 function renderIntro() {
+  const courseResume = getResumePoint("course", COURSE_LEVEL_COUNT);
+  const assessmentResume = getResumePoint("assessment", ASSESSMENT_LEVEL_COUNT);
+
+  let continueHtml = "";
+  if (courseResume || assessmentResume) {
+    const cards = [];
+    if (courseResume) {
+      cards.push(`
+        <a class="continue-card" href="course.html?resume=${courseResume}">
+          <span class="continue-label">🌱 新手课程</span>
+          <span class="continue-detail">继续第${courseResume}关 →</span>
+        </a>`);
+    }
+    if (assessmentResume) {
+      cards.push(`
+        <a class="continue-card" href="assessment.html?resume=${assessmentResume}">
+          <span class="continue-label">⚡ 进阶测试</span>
+          <span class="continue-detail">继续第${assessmentResume}题 →</span>
+        </a>`);
+    }
+    continueHtml = `
+      <div class="continue-banner">
+        <div class="landing-eyebrow">欢迎回来</div>
+        <div class="continue-row">${cards.join("")}</div>
+      </div>
+      <p class="quiz-divider">或者重新测一次水平：</p>
+    `;
+  }
+
   root.innerHTML = `
+    ${continueHtml}
     <div class="landing-eyebrow">水平测试</div>
     <h1>先做几道小题，看看你现在的水平</h1>
     <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>

@@ -38,6 +38,56 @@ function explainError(err) {
   return `程序运行出错了：${err}`;
 }
 
+// 通关时撒一把彩纸庆祝一下。尊重"减少动态效果"的系统设置，那种情况下就不放了。
+function celebrate() {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const canvas = document.createElement("canvas");
+  canvas.className = "confetti-canvas";
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+
+  const colors = ["#4f6df5", "#1a7f4b", "#f5b942", "#e0554f", "#7b93ff", "#6fdf9d"];
+  const particles = Array.from({ length: 90 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height * 0.4,
+    w: 5 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: -2.5 + Math.random() * 5,
+    vy: 2.5 + Math.random() * 2.5,
+    rotation: Math.random() * 360,
+    vr: -8 + Math.random() * 16,
+  }));
+
+  const start = performance.now();
+  const duration = 1600;
+
+  function frame(now) {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.rotation += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.w / 2, p.w, p.w * 0.6);
+      ctx.restore();
+    });
+    if (elapsed < duration) {
+      requestAnimationFrame(frame);
+    } else {
+      canvas.remove();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
 function getUnlockedCount() {
   const raw = localStorage.getItem(STORAGE_PROGRESS);
   return raw ? parseInt(raw, 10) : 1;
@@ -64,6 +114,8 @@ function renderSidebar() {
   const list = document.getElementById("level-list");
   list.innerHTML = "";
 
+  let passedCount = 0;
+
   LEVELS.forEach((level, idx) => {
     const isLocked = idx + 1 > unlocked;
     const isActive = level.id === currentLevelId;
@@ -75,7 +127,11 @@ function renderSidebar() {
     } else if (idx + 1 < unlocked) {
       const wasSkippedByTest = placementStart !== null && level.id < placementStart;
       badge = wasSkippedByTest ? "⏭️" : "✅";
-      if (wasSkippedByTest) item.title = "水平测试认为你已经掌握，不代表在这里真的写过代码";
+      if (wasSkippedByTest) {
+        item.title = "水平测试认为你已经掌握，不代表在这里真的写过代码";
+      } else {
+        passedCount++;
+      }
     }
     item.innerHTML = `<span class="badge">${badge}</span><span>${level.title}</span>`;
     if (!isLocked) {
@@ -83,6 +139,9 @@ function renderSidebar() {
     }
     list.appendChild(item);
   });
+
+  const summary = document.getElementById("progress-summary");
+  if (summary) summary.textContent = `已完成 ${passedCount} / ${LEVELS.length} 关`;
 }
 
 function selectLevel(id) {
@@ -118,7 +177,9 @@ function selectLevel(id) {
 const RUNNER_TEMPLATE = `
 import io, contextlib, json
 
-_input_lines = [l for l in _input_raw.split("\\n") if l != ""]
+_input_lines = _input_raw.split("\\n")
+if _input_lines and _input_lines[-1] == "":
+    _input_lines = _input_lines[:-1]
 _input_pos = {"i": 0}
 
 def _shimmed_input(prompt=""):
@@ -171,6 +232,7 @@ async function runCurrentLevel() {
 
     const nextLevelBtn = document.getElementById("next-level-btn");
     if (verdict.pass) {
+      celebrate();
       const idx = LEVELS.findIndex((l) => l.id === level.id);
       const unlocked = getUnlockedCount();
       if (idx + 2 > unlocked) {
@@ -260,9 +322,14 @@ async function init() {
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");
 
-  // 从水平测试跳转过来的话，带着 ?start=N，直接解锁到第N关并停在那里。
-  const startParam = parseInt(new URLSearchParams(location.search).get("start"), 10);
+  const params = new URLSearchParams(location.search);
+  // 从水平测试跳转过来的话，带着 ?start=N，直接解锁到第N关并停在那里（前面几关标记成"测试认为你已经会了"）。
+  const startParam = parseInt(params.get("start"), 10);
   const startLevel = LEVELS.find((l) => l.id === startParam);
+  // 从首页"继续上次的学习"按钮跳转过来的话，带着 ?resume=N，
+  // 这些关卡是真的解锁过的，只是单纯跳过去，不改动解锁状态和跳关标记。
+  const resumeParam = parseInt(params.get("resume"), 10);
+  const resumeLevel = LEVELS.find((l) => l.id === resumeParam);
 
   if (startLevel) {
     const idx = LEVELS.findIndex((l) => l.id === startParam);
@@ -270,6 +337,8 @@ async function init() {
     setPlacementStart(startParam);
     renderSidebar();
     selectLevel(startLevel.id);
+  } else if (resumeLevel) {
+    selectLevel(resumeLevel.id);
   } else {
     // 正常打开固定从第1关开始，不自动跳到"上次做到的那关"，
     // 已解锁的关卡仍然可以在左边侧栏直接点进去。

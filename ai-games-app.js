@@ -1,0 +1,307 @@
+let pyodide = null;
+let currentLevelId = null;
+let session = null; // { code, seed, inputList } while a game is in progress
+
+const codeKey = (id) => `aigames_v1_code_${id}`;
+
+function explainError(err) {
+  if (!err) return "";
+  if (err.includes("IndentationError")) {
+    return "缩进错了：Python靠每行前面的空格来判断代码属于哪一块。冒号(:)的下一行必须往右缩进（一般是4个空格），检查一下是不是漏了或者多了空格。";
+  }
+  if (err.includes("SyntaxError")) {
+    return "语法错误：检查是不是少写了引号 \" \"、括号 ( )，或者忘了在 if / else / while / for / def 结尾加冒号 : 。";
+  }
+  if (err.includes("NameError")) {
+    const match = err.match(/name '(.+?)' is not defined/);
+    const name = match ? match[1] : "";
+    return name
+      ? `用到了变量'${name}'，但它还没被创建。检查一下是不是拼写和你创建时不一致，或者忘了先给它赋值。`
+      : "用到了一个还没定义的名字，检查一下变量名有没有拼写错误，或者忘了先赋值。";
+  }
+  if (err.includes("TypeError")) {
+    return "类型不匹配：可能是把文字和数字直接混在一起运算了。文字转数字用 int(...)，数字转文字用 str(...)。";
+  }
+  if (err.includes("ValueError")) {
+    return "值不对：常见原因是 int() 想把不是数字的文字转换成数字，检查一下输入的是不是纯数字。";
+  }
+  if (err.includes("ZeroDivisionError")) {
+    return "除数不能是0，检查一下除法算式里的分母。";
+  }
+  return `程序运行出错了：${err}`;
+}
+
+function celebrate() {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const canvas = document.createElement("canvas");
+  canvas.className = "confetti-canvas";
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext("2d");
+
+  const colors = ["#4f6df5", "#1a7f4b", "#f5b942", "#e0554f", "#7b93ff", "#6fdf9d"];
+  const particles = Array.from({ length: 90 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height * 0.4,
+    w: 5 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    vx: -2.5 + Math.random() * 5,
+    vy: 2.5 + Math.random() * 2.5,
+    rotation: Math.random() * 360,
+    vr: -8 + Math.random() * 16,
+  }));
+
+  const start = performance.now();
+  const duration = 1600;
+
+  function frame(now) {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05;
+      p.rotation += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate((p.rotation * Math.PI) / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.w / 2, p.w, p.w * 0.6);
+      ctx.restore();
+    });
+    if (elapsed < duration) {
+      requestAnimationFrame(frame);
+    } else {
+      canvas.remove();
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function renderSidebar() {
+  const list = document.getElementById("level-list");
+  list.innerHTML = "";
+  LEVELS.forEach((level) => {
+    const isActive = level.id === currentLevelId;
+    const item = document.createElement("div");
+    item.className = "level-item" + (isActive ? " active" : "");
+    item.innerHTML = `<span class="badge">🎮</span><span>${level.title}</span>`;
+    item.addEventListener("click", () => selectLevel(level.id));
+    list.appendChild(item);
+  });
+}
+
+function setCodeSectionOpen(open) {
+  document.getElementById("code-section").classList.toggle("hidden", !open);
+  document.getElementById("code-toggle-btn").textContent = open ? "▼ 隐藏代码" : "▶ 查看代码";
+}
+
+function selectLevel(id) {
+  currentLevelId = id;
+  session = null;
+  const level = LEVELS.find((l) => l.id === id);
+
+  document.getElementById("level-title").textContent = level.title;
+  document.getElementById("level-explain").innerHTML = level.explain;
+
+  const codeEditor = document.getElementById("code-editor");
+  const savedCode = localStorage.getItem(codeKey(id));
+  codeEditor.value = savedCode !== null ? savedCode : level.code;
+  codeEditor.disabled = false;
+
+  setCodeSectionOpen(false);
+  document.getElementById("hint-box").classList.add("hidden");
+  document.getElementById("hint-box").textContent = level.hint || "";
+
+  document.getElementById("terminal-box").textContent = "";
+  document.getElementById("turn-input-row").classList.add("hidden");
+  document.getElementById("turn-input").value = "";
+  document.getElementById("start-game-btn").classList.remove("hidden");
+  document.getElementById("restart-game-btn").classList.add("hidden");
+  document.getElementById("clear-chat-btn").classList.add("hidden");
+  document.getElementById("game-feedback").className = "feedback-box";
+  document.getElementById("game-feedback").textContent = "";
+
+  renderSidebar();
+}
+
+const RUNNER_TEMPLATE = `
+import io, contextlib, json, random
+
+random.seed(_seed)
+
+_input_lines = json.loads(_input_json)
+_input_pos = {"i": 0}
+
+def _shimmed_input(prompt=""):
+    print(str(prompt), end="")
+    if _input_pos["i"] >= len(_input_lines):
+        raise EOFError("__WAITING_FOR_INPUT__")
+    val = _input_lines[_input_pos["i"]]
+    _input_pos["i"] += 1
+    print(val)
+    return val
+
+_buf = io.StringIO()
+_err = None
+try:
+    with contextlib.redirect_stdout(_buf):
+        exec(compile(_user_code, "<code>", "exec"), {"input": _shimmed_input, "__name__": "__main__"})
+except Exception as e:
+    _err = f"{type(e).__name__}: {e}"
+
+json.dumps([_buf.getvalue(), _err])
+`;
+
+async function runTurn() {
+  const terminalBox = document.getElementById("terminal-box");
+  const inputRow = document.getElementById("turn-input-row");
+  const startBtn = document.getElementById("start-game-btn");
+  const restartBtn = document.getElementById("restart-game-btn");
+  const feedback = document.getElementById("game-feedback");
+
+  pyodide.globals.set("_user_code", session.code);
+  pyodide.globals.set("_seed", session.seed);
+  pyodide.globals.set("_input_json", JSON.stringify(session.inputList));
+
+  let stdout = "";
+  let err = null;
+  try {
+    const resultJson = await pyodide.runPythonAsync(RUNNER_TEMPLATE);
+    [stdout, err] = JSON.parse(resultJson);
+  } catch (e) {
+    terminalBox.textContent = `运行环境出错：${e}`;
+    return;
+  }
+
+  // 每一轮都是把完整代码从头重跑一遍（靠固定的随机种子保证前面的内容不会变），
+  // session.clearedAt 记录"清空对话"时的字符位置，之后只显示这个位置之后的新内容。
+  session.lastFullStdout = stdout;
+  const visible = stdout.slice(session.clearedAt);
+
+  if (err && err.includes("__WAITING_FOR_INPUT__")) {
+    terminalBox.textContent = visible;
+    inputRow.classList.remove("hidden");
+    startBtn.classList.add("hidden");
+    restartBtn.classList.add("hidden");
+    document.getElementById("turn-input").focus();
+  } else if (err) {
+    terminalBox.textContent = `${visible}\n--- 错误 ---\n${err}`;
+    inputRow.classList.add("hidden");
+    startBtn.classList.add("hidden");
+    restartBtn.classList.remove("hidden");
+    document.getElementById("code-editor").disabled = false;
+    feedback.classList.add("fail");
+    feedback.textContent = explainError(err);
+  } else {
+    terminalBox.textContent = visible;
+    inputRow.classList.add("hidden");
+    startBtn.classList.add("hidden");
+    restartBtn.classList.remove("hidden");
+    feedback.classList.add("success");
+    feedback.textContent = "玩完了！点'重新开始'可以再来一局。";
+    celebrate();
+  }
+}
+
+function startGame() {
+  const codeEditor = document.getElementById("code-editor");
+  localStorage.setItem(codeKey(currentLevelId), codeEditor.value);
+  codeEditor.disabled = true;
+  setCodeSectionOpen(false);
+
+  session = {
+    code: codeEditor.value,
+    seed: Math.floor(Math.random() * 2 ** 31),
+    inputList: [],
+    clearedAt: 0,
+    lastFullStdout: "",
+  };
+  document.getElementById("game-feedback").className = "feedback-box";
+  document.getElementById("game-feedback").textContent = "";
+  document.getElementById("clear-chat-btn").classList.remove("hidden");
+  runTurn();
+}
+
+function clearChat() {
+  if (!session) return;
+  session.clearedAt = session.lastFullStdout.length;
+  document.getElementById("terminal-box").textContent = "";
+}
+
+function submitTurn() {
+  const input = document.getElementById("turn-input");
+  if (!session) return;
+  session.inputList.push(input.value);
+  input.value = "";
+  runTurn();
+}
+
+function setupButtons() {
+  document.getElementById("code-toggle-btn").addEventListener("click", () => {
+    const open = document.getElementById("code-section").classList.contains("hidden");
+    setCodeSectionOpen(open);
+  });
+
+  document.getElementById("hint-btn").addEventListener("click", () => {
+    document.getElementById("hint-box").classList.toggle("hidden");
+  });
+
+  document.getElementById("reset-code-btn").addEventListener("click", () => {
+    const level = LEVELS.find((l) => l.id === currentLevelId);
+    document.getElementById("code-editor").value = level.code;
+  });
+
+  document.getElementById("start-game-btn").addEventListener("click", startGame);
+  document.getElementById("restart-game-btn").addEventListener("click", () => selectLevel(currentLevelId));
+  document.getElementById("clear-chat-btn").addEventListener("click", clearChat);
+
+  document.getElementById("turn-send-btn").addEventListener("click", submitTurn);
+  document.getElementById("turn-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submitTurn();
+  });
+}
+
+const PYODIDE_TIMEOUT_MS = 30000;
+
+async function loadPyodideWithFallback() {
+  const loadingText = document.getElementById("loading-text");
+  const retryBtn = document.getElementById("loading-retry-btn");
+
+  const showError = (message) => {
+    loadingText.textContent = message;
+    retryBtn.classList.remove("hidden");
+    retryBtn.onclick = () => location.reload();
+  };
+
+  if (typeof loadPyodide === "undefined") {
+    showError("Python 运行环境加载失败：网页无法连接到运行环境所在的地址，可能是网络问题或者被拦截了。检查一下网络连接，然后重试。");
+    return null;
+  }
+
+  try {
+    return await Promise.race([
+      loadPyodide(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), PYODIDE_TIMEOUT_MS)),
+    ]);
+  } catch (e) {
+    showError("加载失败或者超时了，可能是网络不稳定。点击下面的按钮重试一次。");
+    return null;
+  }
+}
+
+async function init() {
+  setupButtons();
+
+  pyodide = await loadPyodideWithFallback();
+  if (!pyodide) return;
+
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("level-view").classList.remove("hidden");
+
+  selectLevel(LEVELS[0].id);
+}
+
+init();
