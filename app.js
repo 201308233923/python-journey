@@ -1,6 +1,7 @@
 const TRACK_ID = typeof TRACK !== "undefined" ? TRACK : "course";
 // v2：关卡从"直接给答案"改成"只给骨架"，旧存档的代码/进度不再适用，换个key名让它们自动失效。
 const STORAGE_PROGRESS = `codecourse_${TRACK_ID}_v2_unlocked`;
+const STORAGE_PLACEMENT = `codecourse_${TRACK_ID}_v2_placement`;
 const codeKey = (id) => `codecourse_${TRACK_ID}_v2_code_${id}`;
 const inputKey = (id) => `codecourse_${TRACK_ID}_v2_input_${id}`;
 
@@ -46,8 +47,20 @@ function setUnlockedCount(n) {
   localStorage.setItem(STORAGE_PROGRESS, String(n));
 }
 
+// 水平测试推荐直接跳到第N关时，前面几关不是"真的写代码通过的"，
+// 只是测试认为你已经会了。记下这个分界线，侧栏用不同的图标区分"跳过"和"真正通关"。
+function getPlacementStart() {
+  const raw = localStorage.getItem(STORAGE_PLACEMENT);
+  return raw ? parseInt(raw, 10) : null;
+}
+
+function setPlacementStart(n) {
+  localStorage.setItem(STORAGE_PLACEMENT, String(n));
+}
+
 function renderSidebar() {
   const unlocked = getUnlockedCount();
+  const placementStart = getPlacementStart();
   const list = document.getElementById("level-list");
   list.innerHTML = "";
 
@@ -56,7 +69,14 @@ function renderSidebar() {
     const isActive = level.id === currentLevelId;
     const item = document.createElement("div");
     item.className = "level-item" + (isLocked ? " locked" : "") + (isActive ? " active" : "");
-    const badge = isLocked ? "🔒" : (idx + 1 < unlocked ? "✅" : "▶");
+    let badge = "▶";
+    if (isLocked) {
+      badge = "🔒";
+    } else if (idx + 1 < unlocked) {
+      const wasSkippedByTest = placementStart !== null && level.id < placementStart;
+      badge = wasSkippedByTest ? "⏭️" : "✅";
+      if (wasSkippedByTest) item.title = "水平测试认为你已经掌握，不代表在这里真的写过代码";
+    }
     item.innerHTML = `<span class="badge">${badge}</span><span>${level.title}</span>`;
     if (!isLocked) {
       item.addEventListener("click", () => selectLevel(level.id));
@@ -175,6 +195,20 @@ function setupButtons() {
   document.getElementById("hint-btn").addEventListener("click", () => {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
+
+  const resetProgressBtn = document.getElementById("reset-progress-btn");
+  if (resetProgressBtn) {
+    resetProgressBtn.addEventListener("click", () => {
+      const ok = confirm("确定要清空所有关卡的进度和代码，从第1关重新开始吗？");
+      if (!ok) return;
+      const prefix = `codecourse_${TRACK_ID}_v2_`;
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith(prefix))
+        .forEach((k) => localStorage.removeItem(k));
+      renderSidebar();
+      selectLevel(LEVELS[0].id);
+    });
+  }
 }
 
 async function init() {
@@ -186,9 +220,21 @@ async function init() {
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");
 
-  // 每次打开都固定从第1关开始，不自动跳到"上次做到的那关"，
-  // 已解锁的关卡仍然可以在左边侧栏直接点进去。
-  selectLevel(LEVELS[0].id);
+  // 从水平测试跳转过来的话，带着 ?start=N，直接解锁到第N关并停在那里。
+  const startParam = parseInt(new URLSearchParams(location.search).get("start"), 10);
+  const startLevel = LEVELS.find((l) => l.id === startParam);
+
+  if (startLevel) {
+    const idx = LEVELS.findIndex((l) => l.id === startParam);
+    if (idx + 1 > getUnlockedCount()) setUnlockedCount(idx + 1);
+    setPlacementStart(startParam);
+    renderSidebar();
+    selectLevel(startLevel.id);
+  } else {
+    // 正常打开固定从第1关开始，不自动跳到"上次做到的那关"，
+    // 已解锁的关卡仍然可以在左边侧栏直接点进去。
+    selectLevel(LEVELS[0].id);
+  }
 }
 
 init();
