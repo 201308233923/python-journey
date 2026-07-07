@@ -20,15 +20,15 @@ const LEVELS = [
 `,
     hint: `判断"能不能被3整除"用 n % 3 == 0。记得先判断"同时被3和5整除"这个条件，不然会漏掉FizzBuzz。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 6 };
       const lines = r.stdout.trim().split("\n").filter(Boolean);
       if (lines.length < 20) {
-        return { pass: false, message: `目前只打印了${lines.length}行，应该有20行（1到20每个数字一行）。` };
+        return { pass: false, message: `目前只打印了${lines.length}行，应该有20行（1到20每个数字一行）。`, reviewLevel: 7 };
       }
-      if (lines[2] !== "Fizz") return { pass: false, message: "第3行应该是 Fizz（3能被3整除），检查一下判断条件。" };
-      if (lines[4] !== "Buzz") return { pass: false, message: "第5行应该是 Buzz（5能被5整除），检查一下判断条件。" };
-      if (lines[14] !== "FizzBuzz") return { pass: false, message: "第15行应该是 FizzBuzz（15能同时被3和5整除），检查一下条件的判断顺序。" };
-      if (lines[0] !== "1") return { pass: false, message: "第1行应该是数字1本身（1不能被3或5整除）。" };
+      if (lines[2] !== "Fizz") return { pass: false, message: "第3行应该是 Fizz（3能被3整除），检查一下判断条件。", reviewLevel: 6 };
+      if (lines[4] !== "Buzz") return { pass: false, message: "第5行应该是 Buzz（5能被5整除），检查一下判断条件。", reviewLevel: 6 };
+      if (lines[14] !== "FizzBuzz") return { pass: false, message: "第15行应该是 FizzBuzz（15能同时被3和5整除），检查一下条件的判断顺序。", reviewLevel: 6 };
+      if (lines[0] !== "1") return { pass: false, message: "第1行应该是数字1本身（1不能被3或5整除）。", reviewLevel: 6 };
       return { pass: true, message: "FizzBuzz 完全正确，基础的循环和条件判断没问题。" };
     },
   },
@@ -46,12 +46,12 @@ const LEVELS = [
 `,
     hint: `sum(nums) 直接算总和，max(nums) 直接算最大值。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 9 };
       if (!r.stdout.includes("108")) {
-        return { pass: false, message: "总和不对：这组数字加起来应该是108，检查一下有没有漏加或算错。" };
+        return { pass: false, message: "总和不对：这组数字加起来应该是108，检查一下有没有漏加或算错。", reviewLevel: 9 };
       }
       if (!r.stdout.includes("42")) {
-        return { pass: false, message: "最大值不对：应该是42，检查一下 max() 或者比较逻辑。" };
+        return { pass: false, message: "最大值不对：应该是42，检查一下 max() 或者比较逻辑。", reviewLevel: 9 };
       }
       return { pass: true, message: "统计正确，sum/max 用得很熟练。" };
     },
@@ -69,11 +69,11 @@ const LEVELS = [
 `,
     hint: `可以用 text.count("m")，也可以自己写循环逐个字符判断。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 4 };
       if (r.stdout.includes("2")) {
         return { pass: true, message: "统计正确！'programming'里正好有2个m。" };
       }
-      return { pass: false, message: "答案不对：正确次数是2，检查一下统计逻辑（大小写、有没有漏判字符）。" };
+      return { pass: false, message: "答案不对：正确次数是2，检查一下统计逻辑（大小写、有没有漏判字符）。", reviewLevel: 4 };
     },
   },
   {
@@ -91,14 +91,14 @@ print(is_prime(17))
 print(is_prime(15))`,
     hint: `可以用 for 循环从2试到 n-1，看有没有能整除n的数；一个都没有就是质数。别忘了 n<=1 的情况直接返回 False。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 11 };
       const hasTrue = r.stdout.includes("True");
       const hasFalse = r.stdout.includes("False");
       if (hasTrue && hasFalse) {
         return { pass: true, message: "质数判断函数写对了，17是质数，15不是。" };
       }
-      if (!hasTrue) return { pass: false, message: "is_prime(17) 应该是 True（17是质数），检查一下函数逻辑。" };
-      return { pass: false, message: "is_prime(15) 应该是 False（15 = 3×5，不是质数），检查一下函数逻辑。" };
+      if (!hasTrue) return { pass: false, message: "is_prime(17) 应该是 True（17是质数），检查一下函数逻辑。", reviewLevel: 11 };
+      return { pass: false, message: "is_prime(15) 应该是 False（15 = 3×5，不是质数），检查一下函数逻辑。", reviewLevel: 11 };
     },
   },
   {
@@ -115,13 +115,13 @@ print(is_prime(15))`,
 `,
     hint: `可以先创建一个空字典 counts = {}，然后遍历 words，用 counts[word] = counts.get(word, 0) + 1 累加次数。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
       const okApple = r.stdout.includes("苹果") && r.stdout.includes("3");
       const okBanana = r.stdout.includes("香蕉") && r.stdout.includes("2");
       if (okApple && okBanana) {
         return { pass: true, message: "词频统计正确：苹果3次，香蕉2次，橙子1次。" };
       }
-      return { pass: false, message: "统计结果不太对：苹果应该出现3次，香蕉2次，橙子1次，检查一下计数逻辑。" };
+      return { pass: false, message: "统计结果不太对：苹果应该出现3次，香蕉2次，橙子1次，检查一下计数逻辑。", reviewLevel: 10 };
     },
   },
   {
@@ -138,11 +138,11 @@ print(is_prime(15))`,
 `,
     hint: `可以用字典统计每个选择出现的次数，再用 max(counts, key=counts.get) 找出次数最多的那个键。`,
     check: (r) => {
-      if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
       if (r.stdout.includes("石头")) {
-        return { pass: true, message: "全部测试通过！这正是 ai-games 里AI'学习'你出拳习惯的核心逻辑，你已经完全掌握了。去 ai-games 文件夹试试真正的AI小游戏吧。" };
+        return { pass: true, message: "全部测试通过！这正是 ai-games 里AI'学习'你出拳习惯的核心逻辑，你已经完全掌握了。去侧栏点'🎮 AI小游戏'试试真正的AI小游戏吧。" };
       }
-      return { pass: false, message: "答案不对：'石头'出现了4次，是历史记录里次数最多的，检查一下统计逻辑。" };
+      return { pass: false, message: "答案不对：'石头'出现了4次，是历史记录里次数最多的，检查一下统计逻辑。", reviewLevel: 10 };
     },
   },
 ];

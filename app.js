@@ -228,7 +228,19 @@ async function runCurrentLevel() {
 
     const verdict = level.check({ stdout, err });
     feedbackBox.classList.add(verdict.pass ? "success" : "fail");
-    feedbackBox.textContent = verdict.message;
+    if (!verdict.pass && verdict.reviewLevel) {
+      const messageSpan = document.createElement("span");
+      messageSpan.textContent = verdict.message + " ";
+      const link = document.createElement("a");
+      link.href = `course.html?start=${verdict.reviewLevel}`;
+      link.className = "review-link";
+      link.textContent = "去新手课程复习这个知识点 →";
+      feedbackBox.innerHTML = "";
+      feedbackBox.appendChild(messageSpan);
+      feedbackBox.appendChild(link);
+    } else {
+      feedbackBox.textContent = verdict.message;
+    }
 
     const nextLevelBtn = document.getElementById("next-level-btn");
     if (verdict.pass) {

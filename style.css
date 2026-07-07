@@ -557,6 +557,13 @@ button:disabled {
   color: var(--fail-text);
 }
 
+.review-link {
+  color: inherit;
+  text-decoration: underline;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 @media (max-width: 640px) {
   .app {
     flex-direction: column;
