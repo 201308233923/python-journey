@@ -234,7 +234,7 @@ async function runCurrentLevel() {
       const link = document.createElement("a");
       link.href = `course.html?start=${verdict.reviewLevel}`;
       link.className = "review-link";
-      link.textContent = "去新手课程复习这个知识点 →";
+      link.textContent = "去初级复习这个知识点 →";
       feedbackBox.innerHTML = "";
       feedbackBox.appendChild(messageSpan);
       feedbackBox.appendChild(link);

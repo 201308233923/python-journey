@@ -32,8 +32,9 @@ function shuffleQuestion(q) {
 const QUESTIONS_PER_QUIZ = 10;
 const COURSE_LEVEL_COUNT = 12;
 const ASSESSMENT_LEVEL_COUNT = 6;
+const ADVANCED_LEVEL_COUNT = 6;
 
-// 只读一下有没有"真正解锁到第1关以后"的存档，不需要加载 course/assessment 的关卡数据。
+// 只读一下有没有"真正解锁到第1关以后"的存档，不需要加载 course/assessment/advanced 的关卡数据。
 function getResumePoint(track, totalLevels) {
   const raw = localStorage.getItem(`codecourse_${track}_v2_unlocked`);
   const unlocked = raw ? parseInt(raw, 10) : 1;
@@ -44,22 +45,30 @@ function getResumePoint(track, totalLevels) {
 function renderIntro() {
   const courseResume = getResumePoint("course", COURSE_LEVEL_COUNT);
   const assessmentResume = getResumePoint("assessment", ASSESSMENT_LEVEL_COUNT);
+  const advancedResume = getResumePoint("advanced", ADVANCED_LEVEL_COUNT);
 
   let continueHtml = "";
-  if (courseResume || assessmentResume) {
+  if (courseResume || assessmentResume || advancedResume) {
     const cards = [];
     if (courseResume) {
       cards.push(`
         <a class="continue-card" href="course.html?resume=${courseResume}">
-          <span class="continue-label">🌱 新手课程</span>
+          <span class="continue-label">🌱 初级</span>
           <span class="continue-detail">继续第${courseResume}关 →</span>
         </a>`);
     }
     if (assessmentResume) {
       cards.push(`
         <a class="continue-card" href="assessment.html?resume=${assessmentResume}">
-          <span class="continue-label">⚡ 进阶测试</span>
+          <span class="continue-label">⚡ 进阶</span>
           <span class="continue-detail">继续第${assessmentResume}题 →</span>
+        </a>`);
+    }
+    if (advancedResume) {
+      cards.push(`
+        <a class="continue-card" href="advanced.html?resume=${advancedResume}">
+          <span class="continue-label">🚀 高级</span>
+          <span class="continue-detail">继续第${advancedResume}关 →</span>
         </a>`);
     }
     continueHtml = `
@@ -77,7 +86,7 @@ function renderIntro() {
     <h1>先做几道小题，看看你现在的水平</h1>
     <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>
     <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
-    <p class="quiz-skip">不想测？<a href="course.html">直接当新手学</a> · <a href="assessment.html">直接做进阶测试</a></p>
+    <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a></p>
   `;
   document.getElementById("start-quiz-btn").addEventListener("click", () => {
     sessionQuiz = shuffle(QUIZ).slice(0, QUESTIONS_PER_QUIZ).map(shuffleQuestion);
@@ -125,8 +134,8 @@ function renderResult() {
     root.innerHTML = `
       <div class="landing-eyebrow">测试结果</div>
       <h1>你的基础已经很扎实了</h1>
-      <p class="landing-lede">全部答对！建议跳过新手课程，直接挑战进阶测试题。</p>
-      <a class="quiz-btn-primary" href="assessment.html">去做进阶测试 →</a>
+      <p class="landing-lede">全部答对！建议跳过初级，直接挑战进阶题目。</p>
+      <a class="quiz-btn-primary" href="assessment.html">去做进阶 →</a>
     `;
   } else {
     // 取所有答错题目里，对应关卡最靠前的一个——不管题目出现的顺序是什么，

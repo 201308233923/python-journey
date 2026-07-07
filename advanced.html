@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>编程能力测试</title>
+  <title>高级关卡</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -11,12 +11,12 @@
     <aside class="sidebar">
       <div class="entry-switch">
         <a href="course.html">🌱 初级</a>
-        <span class="entry-switch-current">⚡ 进阶</span>
-        <a href="advanced.html">🚀 高级</a>
+        <a href="assessment.html">⚡ 进阶</a>
+        <span class="entry-switch-current">🚀 高级</span>
         <a href="ai-games.html">🎮 AI小游戏</a>
         <a href="index.html">🔄 重新测试</a>
       </div>
-      <h1>⚡ 编程能力测试</h1>
+      <h1>🚀 高级关卡</h1>
       <div id="progress-summary" class="progress-summary"></div>
       <div id="level-list" class="level-list"></div>
       <button id="reset-progress-btn" class="reset-progress-btn">重置进度</button>
@@ -60,8 +60,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-  <script>const TRACK = "assessment";</script>
-  <script src="assessment-levels.js"></script>
+  <script>const TRACK = "advanced";</script>
+  <script src="advanced-levels.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
