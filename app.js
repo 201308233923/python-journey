@@ -110,6 +110,7 @@ function selectLevel(id) {
   document.getElementById("feedback-box").textContent = "";
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("hint-box").textContent = level.hint || "";
+  document.getElementById("next-level-btn").classList.add("hidden");
 
   renderSidebar();
 }
@@ -168,6 +169,7 @@ async function runCurrentLevel() {
     feedbackBox.classList.add(verdict.pass ? "success" : "fail");
     feedbackBox.textContent = verdict.message;
 
+    const nextLevelBtn = document.getElementById("next-level-btn");
     if (verdict.pass) {
       const idx = LEVELS.findIndex((l) => l.id === level.id);
       const unlocked = getUnlockedCount();
@@ -175,6 +177,15 @@ async function runCurrentLevel() {
         setUnlockedCount(idx + 2);
         renderSidebar();
       }
+      const next = LEVELS[idx + 1];
+      if (next) {
+        nextLevelBtn.classList.remove("hidden");
+        nextLevelBtn.onclick = () => selectLevel(next.id);
+      } else {
+        nextLevelBtn.classList.add("hidden");
+      }
+    } else {
+      nextLevelBtn.classList.add("hidden");
     }
   } catch (e) {
     outputBox.textContent = `运行环境出错：${e}`;
@@ -211,11 +222,40 @@ function setupButtons() {
   }
 }
 
+const PYODIDE_TIMEOUT_MS = 30000;
+
+async function loadPyodideWithFallback() {
+  const loadingText = document.getElementById("loading-text");
+  const retryBtn = document.getElementById("loading-retry-btn");
+
+  const showError = (message) => {
+    loadingText.textContent = message;
+    retryBtn.classList.remove("hidden");
+    retryBtn.onclick = () => location.reload();
+  };
+
+  if (typeof loadPyodide === "undefined") {
+    showError("Python 运行环境加载失败：网页无法连接到运行环境所在的地址，可能是网络问题或者被拦截了。检查一下网络连接，然后重试。");
+    return null;
+  }
+
+  try {
+    return await Promise.race([
+      loadPyodide(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), PYODIDE_TIMEOUT_MS)),
+    ]);
+  } catch (e) {
+    showError("加载失败或者超时了，可能是网络不稳定。点击下面的按钮重试一次。");
+    return null;
+  }
+}
+
 async function init() {
   setupButtons();
   renderSidebar();
 
-  pyodide = await loadPyodide();
+  pyodide = await loadPyodideWithFallback();
+  if (!pyodide) return;
 
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");

@@ -273,6 +273,30 @@ body {
   padding: 40px 0;
 }
 
+.loading-retry-btn {
+  margin-top: 14px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.next-level-btn {
+  margin-top: 12px;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .hidden { display: none !important; }
 
 .level-view h2 {
