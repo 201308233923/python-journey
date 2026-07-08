@@ -42,57 +42,78 @@ function getResumePoint(track, totalLevels) {
   return Math.min(unlocked, totalLevels);
 }
 
-function renderIntro() {
+function goToResumePoint() {
   const courseResume = getResumePoint("course", COURSE_LEVEL_COUNT);
   const assessmentResume = getResumePoint("assessment", ASSESSMENT_LEVEL_COUNT);
   const advancedResume = getResumePoint("advanced", ADVANCED_LEVEL_COUNT);
-
-  let continueHtml = "";
-  if (courseResume || assessmentResume || advancedResume) {
-    const cards = [];
-    if (courseResume) {
-      cards.push(`
-        <a class="continue-card" href="course.html?resume=${courseResume}">
-          <span class="continue-label">🌱 初级</span>
-          <span class="continue-detail">继续第${courseResume}关 →</span>
-        </a>`);
-    }
-    if (assessmentResume) {
-      cards.push(`
-        <a class="continue-card" href="assessment.html?resume=${assessmentResume}">
-          <span class="continue-label">⚡ 进阶</span>
-          <span class="continue-detail">继续第${assessmentResume}题 →</span>
-        </a>`);
-    }
-    if (advancedResume) {
-      cards.push(`
-        <a class="continue-card" href="advanced.html?resume=${advancedResume}">
-          <span class="continue-label">🚀 高级</span>
-          <span class="continue-detail">继续第${advancedResume}关 →</span>
-        </a>`);
-    }
-    continueHtml = `
-      <div class="continue-banner">
-        <div class="landing-eyebrow">欢迎回来</div>
-        <div class="continue-row">${cards.join("")}</div>
-      </div>
-      <p class="quiz-divider">或者重新测一次水平：</p>
-    `;
+  if (courseResume) {
+    location.href = `course.html?resume=${courseResume}`;
+  } else if (assessmentResume) {
+    location.href = `assessment.html?resume=${assessmentResume}`;
+  } else if (advancedResume) {
+    location.href = `advanced.html?resume=${advancedResume}`;
+  } else {
+    location.reload();
   }
+}
 
+function renderIntro() {
   root.innerHTML = `
-    ${continueHtml}
     <div class="landing-eyebrow">水平测试</div>
     <h1>先做几道小题，看看你现在的水平</h1>
     <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>
     <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
     <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a></p>
+    <p class="quiz-skip">已经注册过账号？<a href="#" id="intro-login-toggle">登录恢复进度</a></p>
+    <div id="intro-login-box" class="account-gate hidden">
+      <input id="intro-username" type="text" placeholder="用户名" autocomplete="off" />
+      <input id="intro-password" type="password" placeholder="密码" autocomplete="off" />
+      <div class="account-btn-row">
+        <button id="intro-login-btn" class="quiz-btn-primary">登录</button>
+      </div>
+      <p class="account-gate-message" id="intro-login-message"></p>
+    </div>
   `;
   document.getElementById("start-quiz-btn").addEventListener("click", () => {
     sessionQuiz = shuffle(QUIZ).slice(0, QUESTIONS_PER_QUIZ).map(shuffleQuestion);
     currentQ = 0;
     wrongTargets = [];
     renderQuestion();
+  });
+
+  document.getElementById("intro-login-toggle").addEventListener("click", (e) => {
+    e.preventDefault();
+    document.getElementById("intro-login-box").classList.toggle("hidden");
+  });
+
+  document.getElementById("intro-login-btn").addEventListener("click", async () => {
+    const username = document.getElementById("intro-username").value.trim();
+    const password = document.getElementById("intro-password").value;
+    const msgBox = document.getElementById("intro-login-message");
+    const setMsg = (text, isError) => {
+      msgBox.textContent = text;
+      msgBox.className = "account-gate-message" + (isError ? " error" : "");
+    };
+
+    if (!username || !password) {
+      setMsg("请输入用户名和密码。", true);
+      return;
+    }
+    if (!supabaseClient) {
+      setMsg("账号功能暂时加载不出来，刷新页面再试试。", true);
+      return;
+    }
+    setMsg("登录中...");
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: usernameToEmail(username),
+      password,
+    });
+    if (error) {
+      setMsg("登录失败：用户名或密码不对。", true);
+      return;
+    }
+    await pullProgressFromCloud(data.user.id);
+    goToResumePoint();
   });
 }
 
