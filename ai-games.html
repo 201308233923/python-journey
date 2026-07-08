@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>AI小游戏 · 我的编程之旅</title>
+  <title>AI小游戏 · 码芽</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="跟4个用Python写的AI小游戏互动：AI猜数字、聊天机器人、会学习的石头剪刀布、迷你神经元，边玩边理解AI是怎么工作的。" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
@@ -20,6 +20,10 @@
       </div>
       <h1>🎮 AI 小游戏</h1>
       <div id="level-list" class="level-list"></div>
+      <div class="sync-row">
+        <button id="export-progress-btn" class="sync-btn">📤 导出进度码</button>
+        <button id="import-progress-btn" class="sync-btn">📥 导入进度码</button>
+      </div>
       <div class="sidebar-footer"><a href="about.html">关于</a><span>·</span><a href="privacy.html">隐私政策</a></div>
     </aside>
 
@@ -64,5 +68,6 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
   <script src="ai-games-levels.js"></script>
   <script src="ai-games-app.js"></script>
+  <script src="progress-sync.js"></script>
 </body>
 </html>

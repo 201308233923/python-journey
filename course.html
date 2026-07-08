@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>初级 · 我的编程之旅</title>
+  <title>初级 · 码芽</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="12关新手课程，从print()学到自己写出一个猜数字小游戏，每一关都有实时反馈。" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
@@ -18,10 +18,14 @@
         <a href="ai-games.html">🎮 AI小游戏</a>
         <a href="index.html">🔄 重新测试</a>
       </div>
-      <h1>🌱 我的编程之旅</h1>
+      <h1>🌱 码芽</h1>
       <div id="progress-summary" class="progress-summary"></div>
       <div id="level-list" class="level-list"></div>
       <button id="reset-progress-btn" class="reset-progress-btn">重置进度</button>
+      <div class="sync-row">
+        <button id="export-progress-btn" class="sync-btn">📤 导出进度码</button>
+        <button id="import-progress-btn" class="sync-btn">📥 导入进度码</button>
+      </div>
       <div class="sidebar-footer"><a href="about.html">关于</a><span>·</span><a href="privacy.html">隐私政策</a></div>
     </aside>
 
@@ -66,5 +70,6 @@
   <script>const TRACK = "course";</script>
   <script src="levels.js"></script>
   <script src="app.js"></script>
+  <script src="progress-sync.js"></script>
 </body>
 </html>

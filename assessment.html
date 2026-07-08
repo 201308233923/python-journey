@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>进阶 · 我的编程之旅</title>
+  <title>进阶 · 码芽</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="6道综合测试题，检验你的Python基础掌握程度，答错会链接回对应的初级关卡复习。" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
@@ -22,6 +22,10 @@
       <div id="progress-summary" class="progress-summary"></div>
       <div id="level-list" class="level-list"></div>
       <button id="reset-progress-btn" class="reset-progress-btn">重置进度</button>
+      <div class="sync-row">
+        <button id="export-progress-btn" class="sync-btn">📤 导出进度码</button>
+        <button id="import-progress-btn" class="sync-btn">📥 导入进度码</button>
+      </div>
       <div class="sidebar-footer"><a href="about.html">关于</a><span>·</span><a href="privacy.html">隐私政策</a></div>
     </aside>
 
@@ -66,5 +70,6 @@
   <script>const TRACK = "assessment";</script>
   <script src="assessment-levels.js"></script>
   <script src="app.js"></script>
+  <script src="progress-sync.js"></script>
 </body>
 </html>
