@@ -129,25 +129,101 @@ function renderQuestion() {
   });
 }
 
+function renderAccountGate(destinationUrl) {
+  return `
+    <div class="account-gate">
+      <p class="account-gate-label">注册一个账号，换设备/换浏览器也能接着学（用户名密码随便起，可以跳过）</p>
+      <input id="gate-username" type="text" placeholder="用户名（随便起）" autocomplete="off" />
+      <input id="gate-password" type="password" placeholder="密码（至少6位）" autocomplete="off" />
+      <div class="account-btn-row">
+        <button id="gate-signup-btn" class="quiz-btn-primary">注册并开始 →</button>
+        <button id="gate-login-btn" class="secondary">已有账号，登录</button>
+      </div>
+      <p class="account-gate-message" id="gate-message"></p>
+      <p class="quiz-skip"><a href="${destinationUrl}" id="gate-skip-link">暂不登录，直接开始 →</a></p>
+    </div>
+  `;
+}
+
+function wireAccountGate(destinationUrl) {
+  const usernameInput = document.getElementById("gate-username");
+  const passwordInput = document.getElementById("gate-password");
+  const messageBox = document.getElementById("gate-message");
+
+  function setGateMessage(text, isError) {
+    messageBox.textContent = text;
+    messageBox.className = "account-gate-message" + (isError ? " error" : "");
+  }
+
+  if (!supabaseClient) {
+    setGateMessage("账号功能暂时加载不出来，先用下面的链接直接开始学习吧。", true);
+    return;
+  }
+
+  document.getElementById("gate-signup-btn").addEventListener("click", async () => {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    if (!username || password.length < 6) {
+      setGateMessage("用户名不能为空，密码至少6位。", true);
+      return;
+    }
+    setGateMessage("注册中...");
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: usernameToEmail(username),
+      password,
+    });
+    if (error) {
+      setGateMessage("注册失败：" + (error.message.includes("already") ? "这个用户名已经被用过了，换一个或者点'已有账号，登录'。" : error.message), true);
+      return;
+    }
+    await pushProgressToCloud(data.user.id);
+    location.href = destinationUrl;
+  });
+
+  document.getElementById("gate-login-btn").addEventListener("click", async () => {
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    if (!username || !password) {
+      setGateMessage("请输入用户名和密码。", true);
+      return;
+    }
+    setGateMessage("登录中...");
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: usernameToEmail(username),
+      password,
+    });
+    if (error) {
+      setGateMessage("登录失败：用户名或密码不对。", true);
+      return;
+    }
+    await pullProgressFromCloud(data.user.id);
+    location.href = destinationUrl;
+  });
+}
+
 function renderResult() {
+  let destinationUrl;
   if (wrongTargets.length === 0) {
+    destinationUrl = "assessment.html";
     root.innerHTML = `
       <div class="landing-eyebrow">测试结果</div>
       <h1>你的基础已经很扎实了</h1>
       <p class="landing-lede">全部答对！建议跳过初级，直接挑战进阶题目。</p>
-      <a class="quiz-btn-primary" href="assessment.html">去做进阶 →</a>
+      ${renderAccountGate(destinationUrl)}
     `;
   } else {
     // 取所有答错题目里，对应关卡最靠前的一个——不管题目出现的顺序是什么，
     // 都能定位到"最早不会的概念"。
     const level = Math.min(...wrongTargets);
+    destinationUrl = `course.html?start=${level}`;
     root.innerHTML = `
       <div class="landing-eyebrow">测试结果</div>
       <h1>建议你从第${level}关开始</h1>
       <p class="landing-lede">前面的内容你已经掌握了，从这一关开始正好是你需要巩固的地方。左边的关卡列表里，之前的关卡也会帮你标记好。</p>
-      <a class="quiz-btn-primary" href="course.html?start=${level}">开始学习 →</a>
+      ${renderAccountGate(destinationUrl)}
     `;
   }
+  wireAccountGate(destinationUrl);
 }
 
 renderIntro();

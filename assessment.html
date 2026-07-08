@@ -26,6 +26,27 @@
         <button id="export-progress-btn" class="sync-btn">📤 导出进度码</button>
         <button id="import-progress-btn" class="sync-btn">📥 导入进度码</button>
       </div>
+      <div class="account-box">
+        <button id="account-toggle-btn" class="sync-btn account-toggle-btn">🔐 账号同步</button>
+        <div id="account-panel" class="account-panel hidden">
+          <div id="account-logged-out">
+            <input id="account-username" type="text" placeholder="用户名（随便起）" autocomplete="off" />
+            <input id="account-password" type="password" placeholder="密码（至少6位）" autocomplete="off" />
+            <div class="account-btn-row">
+              <button id="account-signup-btn">注册</button>
+              <button id="account-login-btn" class="secondary">登录</button>
+            </div>
+          </div>
+          <div id="account-logged-in" class="hidden">
+            <p id="account-status" class="account-status"></p>
+            <div class="account-btn-row">
+              <button id="account-sync-btn">☁️ 立即同步</button>
+              <button id="account-logout-btn" class="secondary">退出登录</button>
+            </div>
+          </div>
+          <div id="account-message" class="account-message"></div>
+        </div>
+      </div>
       <div class="sidebar-footer"><a href="about.html">关于</a><span>·</span><a href="privacy.html">隐私政策</a></div>
     </aside>
 
@@ -70,6 +91,7 @@
   <script>const TRACK = "assessment";</script>
   <script src="assessment-levels.js"></script>
   <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="progress-sync.js"></script>
 </body>
 </html>
