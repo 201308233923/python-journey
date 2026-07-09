@@ -291,16 +291,17 @@ function renderDailyReview() {
 
   root.innerHTML = `
     <div class="landing-eyebrow">今日复习</div>
-    <h1>先复习${dailyReviewQuiz.length}道题，巩固一下学过的内容</h1>
-    <p class="landing-lede">每天第一次打开会有几道从你已经学过的内容里抽的小题，帮你记得更牢。</p>
-    <button class="quiz-btn-primary" id="start-daily-review-btn">开始复习</button>
-    <p class="quiz-skip"><a href="#" id="skip-daily-review-link">今天先不复习了 →</a></p>
+    <h1>要不要先复习${dailyReviewQuiz.length}道题？</h1>
+    <p class="landing-lede">从你已经学过的内容里抽的小题，帮你记得更牢，大概1分钟。</p>
+    <div class="quiz-choice-row">
+      <button class="quiz-btn-primary" id="start-daily-review-btn">📝 复习</button>
+      <button class="quiz-btn-primary secondary" id="continue-learning-btn">📚 继续学</button>
+    </div>
   `;
   document.getElementById("start-daily-review-btn").addEventListener("click", renderDailyReviewQuestion);
-  document.getElementById("skip-daily-review-link").addEventListener("click", (e) => {
-    e.preventDefault();
+  document.getElementById("continue-learning-btn").addEventListener("click", () => {
     markDailyReviewDone();
-    renderIntro();
+    goToResumePoint();
   });
 }
 

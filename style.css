@@ -111,6 +111,17 @@ body {
   cursor: pointer;
 }
 
+.quiz-choice-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quiz-choice-row .quiz-btn-primary {
+  margin: 0;
+}
+
 .quiz-skip {
   margin-top: 22px;
   font-size: 13px;
