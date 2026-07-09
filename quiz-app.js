@@ -33,6 +33,7 @@ const QUESTIONS_PER_QUIZ = 10;
 const COURSE_LEVEL_COUNT = 12;
 const ASSESSMENT_LEVEL_COUNT = 6;
 const ADVANCED_LEVEL_COUNT = 6;
+const DEBUG_LEVEL_COUNT = 8;
 
 // 只读一下有没有"真正解锁到第1关以后"的存档，不需要加载 course/assessment/advanced 的关卡数据。
 function getResumePoint(track, totalLevels) {
@@ -46,12 +47,15 @@ function goToResumePoint() {
   const courseResume = getResumePoint("course", COURSE_LEVEL_COUNT);
   const assessmentResume = getResumePoint("assessment", ASSESSMENT_LEVEL_COUNT);
   const advancedResume = getResumePoint("advanced", ADVANCED_LEVEL_COUNT);
+  const debugResume = getResumePoint("debug", DEBUG_LEVEL_COUNT);
   if (courseResume) {
     location.href = `course.html?resume=${courseResume}`;
   } else if (assessmentResume) {
     location.href = `assessment.html?resume=${assessmentResume}`;
   } else if (advancedResume) {
     location.href = `advanced.html?resume=${advancedResume}`;
+  } else if (debugResume) {
+    location.href = `debug.html?resume=${debugResume}`;
   } else {
     location.reload();
   }
@@ -63,7 +67,7 @@ function renderIntro() {
     <h1>先做几道小题，看看你现在的水平</h1>
     <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>
     <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
-    <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a></p>
+    <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a> · <a href="debug.html">直接做调试挑战</a></p>
     <p class="quiz-skip">已经注册过账号？<a href="#" id="intro-login-toggle">登录恢复进度</a></p>
     <div id="intro-login-box" class="account-gate hidden">
       <input id="intro-username" type="text" placeholder="用户名" autocomplete="off" />
@@ -222,12 +226,140 @@ function wireAccountGate(destinationUrl) {
   });
 }
 
+// ---------- 每日复习：从已经学过的关卡对应的题目里随机抽几道，帮你巩固记忆 ----------
+// 题源横跨三个难度题库（初级QUIZ / 中级QUIZ_INTERMEDIATE / 高级QUIZ_ADVANCED），
+// 只有对应赛道的进度真的到了那一关，那一关的题目才会进入候选池——
+// 这样"今天抽到的10题"既是随机的，又始终贴合当前的真实水平，不会抽到还没学过的内容。
+
+const DAILY_REVIEW_KEY = "daily_review_date";
+const DAILY_REVIEW_COUNT = 10;
+let dailyReviewQuiz = [];
+let dailyReviewIndex = 0;
+let dailyReviewCorrect = 0;
+
+function getTodayString() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function getCourseUnlocked() {
+  const raw = localStorage.getItem("codecourse_course_v2_unlocked");
+  return raw ? parseInt(raw, 10) : 1;
+}
+
+function getAssessmentUnlocked() {
+  const raw = localStorage.getItem("codecourse_assessment_v2_unlocked");
+  return raw ? parseInt(raw, 10) : 1;
+}
+
+function getAdvancedUnlocked() {
+  const raw = localStorage.getItem("codecourse_advanced_v2_unlocked");
+  return raw ? parseInt(raw, 10) : 1;
+}
+
+function getEligibleReviewPool() {
+  const courseUnlocked = getCourseUnlocked();
+  const assessmentUnlocked = getAssessmentUnlocked();
+  const advancedUnlocked = getAdvancedUnlocked();
+  let pool = [];
+  if (courseUnlocked > 1) {
+    pool = pool.concat(QUIZ.filter((q) => q.targetLevel < courseUnlocked));
+  }
+  if (assessmentUnlocked > 1 && typeof QUIZ_INTERMEDIATE !== "undefined") {
+    pool = pool.concat(QUIZ_INTERMEDIATE.filter((q) => q.targetLevel < assessmentUnlocked));
+  }
+  if (advancedUnlocked > 1 && typeof QUIZ_ADVANCED !== "undefined") {
+    pool = pool.concat(QUIZ_ADVANCED.filter((q) => q.targetLevel < advancedUnlocked));
+  }
+  return pool;
+}
+
+function shouldShowDailyReview() {
+  if (getEligibleReviewPool().length === 0) return false; // 还没通过任何一关，没什么可复习的
+  return localStorage.getItem(DAILY_REVIEW_KEY) !== getTodayString();
+}
+
+function markDailyReviewDone() {
+  localStorage.setItem(DAILY_REVIEW_KEY, getTodayString());
+}
+
+function renderDailyReview() {
+  const eligible = getEligibleReviewPool();
+  dailyReviewQuiz = shuffle(eligible).slice(0, Math.min(DAILY_REVIEW_COUNT, eligible.length)).map(shuffleQuestion);
+  dailyReviewIndex = 0;
+  dailyReviewCorrect = 0;
+
+  root.innerHTML = `
+    <div class="landing-eyebrow">今日复习</div>
+    <h1>先复习${dailyReviewQuiz.length}道题，巩固一下学过的内容</h1>
+    <p class="landing-lede">每天第一次打开会有几道从你已经学过的内容里抽的小题，帮你记得更牢。</p>
+    <button class="quiz-btn-primary" id="start-daily-review-btn">开始复习</button>
+    <p class="quiz-skip"><a href="#" id="skip-daily-review-link">今天先不复习了 →</a></p>
+  `;
+  document.getElementById("start-daily-review-btn").addEventListener("click", renderDailyReviewQuestion);
+  document.getElementById("skip-daily-review-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    markDailyReviewDone();
+    renderIntro();
+  });
+}
+
+function renderDailyReviewQuestion() {
+  const item = dailyReviewQuiz[dailyReviewIndex];
+  root.innerHTML = `
+    <div class="quiz-progress">今日复习 · 第 ${dailyReviewIndex + 1} / ${dailyReviewQuiz.length} 题</div>
+    <h2 class="quiz-question">${escapeHtml(item.q).replace(/\n/g, "<br>")}</h2>
+    <div class="quiz-options">
+      ${item.options
+        .map((opt, i) => `<button class="quiz-option" data-i="${i}">${escapeHtml(opt)}</button>`)
+        .join("")}
+    </div>
+  `;
+  root.querySelectorAll(".quiz-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.i, 10);
+      const correct = i === item.answer;
+      if (correct) {
+        dailyReviewCorrect += 1;
+        btn.classList.add("correct");
+      } else {
+        btn.classList.add("wrong");
+        const correctBtn = root.querySelector(`.quiz-option[data-i="${item.answer}"]`);
+        if (correctBtn) correctBtn.classList.add("correct");
+      }
+      root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
+      setTimeout(() => {
+        dailyReviewIndex += 1;
+        if (dailyReviewIndex < dailyReviewQuiz.length) renderDailyReviewQuestion();
+        else renderDailyReviewResult();
+      }, 700);
+    });
+  });
+}
+
+function renderDailyReviewResult() {
+  markDailyReviewDone();
+  root.innerHTML = `
+    <div class="landing-eyebrow">今日复习</div>
+    <p class="quiz-score">答对 ${dailyReviewCorrect} / ${dailyReviewQuiz.length} 题</p>
+    <h1>复习完成！</h1>
+    <p class="landing-lede">明天再来看看能不能保持连续复习。</p>
+    <button class="quiz-btn-primary" id="continue-after-review-btn">继续 →</button>
+  `;
+  document.getElementById("continue-after-review-btn").addEventListener("click", renderIntro);
+}
+
 function renderResult() {
+  const total = sessionQuiz.length;
+  const correctCount = total - wrongTargets.length;
+  const scoreHtml = `<p class="quiz-score">答对 ${correctCount} / ${total} 题</p>`;
+
   let destinationUrl;
   if (wrongTargets.length === 0) {
     destinationUrl = "assessment.html";
     root.innerHTML = `
       <div class="landing-eyebrow">测试结果</div>
+      ${scoreHtml}
       <h1>你的基础已经很扎实了</h1>
       <p class="landing-lede">全部答对！建议跳过初级，直接挑战进阶题目。</p>
       ${renderAccountGate(destinationUrl)}
@@ -239,6 +371,7 @@ function renderResult() {
     destinationUrl = `course.html?start=${level}`;
     root.innerHTML = `
       <div class="landing-eyebrow">测试结果</div>
+      ${scoreHtml}
       <h1>建议你从第${level}关开始</h1>
       <p class="landing-lede">前面的内容你已经掌握了，从这一关开始正好是你需要巩固的地方。左边的关卡列表里，之前的关卡也会帮你标记好。</p>
       ${renderAccountGate(destinationUrl)}
@@ -247,4 +380,25 @@ function renderResult() {
   wireAccountGate(destinationUrl);
 }
 
-renderIntro();
+async function initQuizPage() {
+  // 如果之前登录过账号（Supabase会记住登录状态），先把云端的真实进度拉下来，
+  // 这样"今日复习"看的是账号里的进度，而不是这台设备本地可能是空的/过时的缓存。
+  if (supabaseClient) {
+    try {
+      const { data } = await supabaseClient.auth.getUser();
+      if (data && data.user) {
+        await pullProgressFromCloud(data.user.id);
+      }
+    } catch (e) {
+      // 拉取失败就退回本地缓存，不阻塞页面
+    }
+  }
+
+  if (shouldShowDailyReview()) {
+    renderDailyReview();
+  } else {
+    renderIntro();
+  }
+}
+
+initQuizPage();

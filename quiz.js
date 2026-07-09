@@ -1,7 +1,8 @@
 // 入口水平测试的题库：每题标了一个 targetLevel —— 在本次抽到的10题里，
 // 如果这题答错了，就把它的 targetLevel 计入候选；最终推荐"候选里最靠前的关卡"作为起点。
 // 全部答对 -> 建议直接去 assessment.html 做进阶题目。
-// 题库有40+题，每次测试从里面随机抽10题，题目和选项顺序也会打乱（在 quiz-app.js 里处理）。
+// 题库有110+题，每次测试从里面随机抽10题，题目和选项顺序也会打乱（在 quiz-app.js 里处理）。
+// 这份题库同时也是"每日复习"里初级部分的题源。
 
 const QUIZ = [
   // ---- print（对应 course 第1关）----
@@ -26,6 +27,42 @@ const QUIZ = [
   {
     q: "print(1, 2, 3) 会输出什么？",
     options: ["1 2 3", "1,2,3", "[1, 2, 3]", "会报错"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "print() 后面括号里的内容，多个用逗号隔开，中间默认会自动加什么？",
+    options: ["空格", "换行", "什么都不加", "逗号"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "想要 print() 不自动换行，应该怎么写？",
+    options: ["print(x, end=\"\")", "print(x, newline=False)", "noNewline(print(x))", "print.no_newline(x)"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "下面哪一行会报错？",
+    options: ["print(5+\"5\")", "print(5+5)", "print(\"5\"+\"5\")", "print(\"5\", 5)"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "print(\"a\", \"b\", sep=\"-\") 会输出什么？",
+    options: ["a-b", "a,b", "ab", "a b"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "下面哪个不是 print() 的作用？",
+    options: ["从用户那里获取输入", "在屏幕上显示内容", "显示多个值", "显示计算结果"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "print() 属于 Python 的什么？",
+    options: ["内置函数", "关键字", "变量", "数据类型"],
     answer: 0,
     targetLevel: 1,
   },
@@ -60,6 +97,47 @@ const QUIZ = [
     answer: 0,
     targetLevel: 2,
   },
+  {
+    q: "下面哪个变量名是不合法的？",
+    options: ["2age", "my_age", "age2", "_age"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "x = 5; y = x; x = 10，此时 y 是多少？",
+    options: ["5", "10", "报错", "15"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "Python 的变量在使用前需要先声明类型吗？",
+    options: [
+      "不需要，赋值时自动确定类型",
+      "需要用 int/str 等关键字声明",
+      "需要写在文件开头",
+      "只有数字类型需要声明",
+    ],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "a, b = 1, 2 这行代码是在做什么？",
+    options: ["同时给a和b赋值", "报错，一行只能赋一个值", "创建一个元组叫a,b", "比较a和b"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "下面哪个是给变量重新赋值？",
+    options: ["x = 10 后面又写 x = 20", "x == 20", "del x", "print(x)"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "变量名区分大小写吗（Name 和 name 算不算同一个变量）？",
+    options: ["区分，是两个不同的变量", "不区分，是同一个", "只有首字母区分", "取决于操作系统"],
+    answer: 0,
+    targetLevel: 2,
+  },
 
   // ---- 数字运算（对应第3关）----
   {
@@ -83,6 +161,47 @@ const QUIZ = [
   {
     q: "a = 6，b = 3，a - b 的结果是？",
     options: ["3", "9", "2", "18"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "2 + 3 * 4 的结果是？",
+    options: ["14", "20", "24", "9"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "(2 + 3) * 4 的结果是？",
+    options: ["20", "14", "9", "24"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "5 - 2 - 1 的结果是？",
+    options: ["2", "4", "-2", "6"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "3 * 3 * 3 的结果是？",
+    options: ["27", "9", "18", "6"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "8 / 2 的结果类型是？",
+    options: ["浮点数（4.0）", "整数（4）", "字符串", "报错"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "下面哪个说法是对的？",
+    options: [
+      "* 和 / 的优先级比 + 和 - 高，会先算",
+      "四则运算永远从左往右算，不看符号优先级",
+      "括号在Python里不能改变运算顺序",
+      "+ 的优先级比 * 高",
+    ],
     answer: 0,
     targetLevel: 3,
   },
@@ -117,6 +236,47 @@ const QUIZ = [
     answer: 0,
     targetLevel: 4,
   },
+  {
+    q: "x = 5; print(f\"结果是{x*2}\") 会输出什么？",
+    options: ["结果是10", "结果是{x*2}", "结果是x*2", "报错"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "f-string 里的花括号 {} 可以放什么？",
+    options: ["变量或表达式", "只能放变量", "只能放数字", "什么都不能放"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "下面哪个是正确的 f-string？",
+    options: ["f\"值是{x}\"", "\"f值是{x}\"", "f值是{x}", "f\"值是\"{x}"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "不用 f-string，还有其他方法能拼接字符串和变量吗？",
+    options: [
+      "有，比如用 + 号拼接（需要先转成字符串）",
+      "没有，只能用 f-string",
+      "只能用 print 多次",
+      "只有C语言能做到",
+    ],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "name = \"Tom\"; print(f\"{name}\") 和 print(name) 结果一样吗？",
+    options: ["一样", "不一样", "会报错", "取决于Python版本"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "f-string 是 Python 哪个版本开始支持的？",
+    options: ["3.6+", "2.7", "1.0", "所有版本都支持"],
+    answer: 0,
+    targetLevel: 4,
+  },
 
   // ---- input（对应第5关）----
   {
@@ -140,6 +300,47 @@ const QUIZ = [
   {
     q: "想把 input() 的结果当成数字来做加法，应该怎么做？",
     options: ["用 int() 转换一下", "直接加就行", "input() 自动就是数字", "做不到"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "input() 会暂停程序，直到用户做什么？",
+    options: ["输入内容并按回车", "关闭浏览器", "点击按钮", "等待5秒"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "想要把 input() 的结果变成整数进行计算，应该怎么做？",
+    options: ["int(input())", "input().toInt()", "(int)input()", "input() 自动是整数"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "input(\"提示语\") 里的提示语会显示在哪里？",
+    options: ["输入前，提示用户要输入什么", "输入后", "不会显示", "只在网页版显示"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "下面哪个说法正确？",
+    options: [
+      "input() 的返回值永远是字符串类型",
+      "input() 的返回值永远是数字",
+      "input() 自动判断类型",
+      "input() 不能加提示文字",
+    ],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "如果用户直接按回车不输入任何内容，input() 会返回什么？",
+    options: ["空字符串 \"\"", "None", "报错", "0"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "input() 函数是 Python 的什么？",
+    options: ["内置函数", "关键字", "数据类型", "运算符"],
     answer: 0,
     targetLevel: 5,
   },
@@ -169,6 +370,42 @@ const QUIZ = [
     answer: 0,
     targetLevel: 6,
   },
+  {
+    q: "if 后面的条件表达式，结果需要是什么？",
+    options: ["能判断真假的值", "必须是数字", "必须是字符串", "必须是True或False这两个字面量"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "else 可以脱离 if 单独使用吗？",
+    options: ["不可以，必须配合if", "可以，随时能用", "只有在函数里才能单独用", "取决于Python版本"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "一个 if 语句最多能跟几个 elif？",
+    options: ["没有限制，可以写很多个", "最多1个", "最多3个", "不能有elif"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "if x > 5:\n    print(\"a\")\nprint(\"b\")\n当 x=10 时会打印什么？",
+    options: ["a和b都打印", "只打印a", "只打印b", "都不打印"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "下面哪个写法会导致语法错误？",
+    options: ["if x > 5 print(\"a\")（缺少冒号）", "if x > 5: print(\"a\")", "if (x > 5): print(\"a\")", "if x>5:\n    print(\"a\")"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "not、and、or 是什么？",
+    options: ["逻辑运算符，用来组合多个条件", "变量名", "函数名", "数据类型"],
+    answer: 0,
+    targetLevel: 6,
+  },
 
   // ---- for 循环（对应第7关）----
   {
@@ -192,6 +429,42 @@ const QUIZ = [
   {
     q: "range(5) 里的第一个数字是？",
     options: ["0", "1", "5", "-1"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "for i in range(3, 8): 会产生哪些数字？",
+    options: ["3,4,5,6,7", "3,4,5,6,7,8", "4,5,6,7,8", "3到8所有数（含小数）"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "range(0, 10, 2) 会产生哪些数字？",
+    options: ["0,2,4,6,8", "0,1,2...10", "2,4,6,8,10", "0到10所有偶数含10"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "for 循环里的变量名（比如 for i in ... 里的 i）能随便起吗？",
+    options: ["能，符合变量命名规则就行", "不能，必须叫i", "只能是单个字母", "必须提前声明"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "for item in [1,2,3]: 这种写法叫什么？",
+    options: ["遍历列表", "创建列表", "删除列表", "排序列表"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "for 循环执行的次数由什么决定？",
+    options: ["range()或者被遍历对象的长度", "电脑性能", "随机决定", "必须手动写死次数"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "下面哪个循环会打印5次？",
+    options: ["for i in range(5)", "for i in range(1,5)", "for i in range(0,5,2)", "for i in range(4)"],
     answer: 0,
     targetLevel: 7,
   },
@@ -231,6 +504,42 @@ const QUIZ = [
     answer: 0,
     targetLevel: 8,
   },
+  {
+    q: "while True: 会发生什么？",
+    options: ["无限循环，除非里面有break等方式跳出", "立刻结束", "报错", "只执行一次"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "while循环和for循环，哪个更适合\"不知道要循环几次，只看条件\"的场景？",
+    options: ["while", "for", "两者一样", "都不适合"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "break 关键字在循环里的作用是？",
+    options: ["立刻跳出当前循环", "跳过这一次循环", "结束整个程序", "重新开始循环"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "continue 关键字在循环里的作用是？",
+    options: ["跳过这一次循环剩下的代码，继续下一次循环", "立刻跳出循环", "结束程序", "什么都不做"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "while循环最容易犯的错误是什么？",
+    options: ["忘记让条件变化，导致死循环", "变量名起错", "忘记print", "用了中文标点"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "下面哪段代码会立刻结束循环，不打印任何东西？",
+    options: ["while False: print(\"a\")", "while True: print(\"a\")", "while 1: print(\"a\")", "for i in range(1): print(\"a\")"],
+    answer: 0,
+    targetLevel: 8,
+  },
 
   // ---- 列表（对应第9关）----
   {
@@ -254,6 +563,42 @@ const QUIZ = [
   {
     q: "想把一个新元素加到列表末尾，用哪个方法？",
     options: [".append()", ".add()", ".insert(0)", ".push()"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "len([1,2,3,4]) 的结果是？",
+    options: ["4", "3", "[1,2,3,4]", "报错"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "nums = [1,2,3]; nums.append(4) 之后 nums 是？",
+    options: ["[1,2,3,4]", "[4,1,2,3]", "[1,2,3]", "报错"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "列表可以装不同类型的数据吗（比如同时装数字和文字）？",
+    options: ["可以", "不可以，必须都是同一类型", "只有字符串列表可以", "取决于Python版本"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "nums[1:3] 这种写法叫什么？",
+    options: ["切片，取出下标1到2（不含3）的部分", "取第1到第3个", "报错", "删除操作"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "空列表怎么创建？",
+    options: ["[]", "{}", "()", "null"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "列表是有序的吗（元素的顺序会保留吗）？",
+    options: ["是的，顺序和添加时一致", "不是，会自动排序", "不是，顺序随机", "取决于元素类型"],
     answer: 0,
     targetLevel: 9,
   },
@@ -288,6 +633,42 @@ const QUIZ = [
     answer: 0,
     targetLevel: 10,
   },
+  {
+    q: "字典的键（key）可以重复吗？",
+    options: ["不可以，重复会覆盖之前的值", "可以，都会保留", "可以，但会报警告", "取决于值的类型"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "怎么判断一个键在不在字典里？",
+    options: ["\"键\" in 字典", "字典.has(\"键\")", "字典.contains(\"键\")", "字典[\"键\"] == True"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "person = {\"name\": \"小明\"}; person[\"age\"] = 13 之后会发生什么？",
+    options: ["给字典新增一个age键值对", "报错，因为age键不存在", "什么都不会发生", "覆盖name的值"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "字典的键一般用什么类型？",
+    options: ["字符串或数字这类不可变类型", "只能是字符串", "只能是数字", "可以是列表"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "空字典怎么创建？",
+    options: ["{}", "[]", "()", "dict[]"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "person.get(\"age\", 0) 这行代码的意思是？",
+    options: ["取age的值，如果不存在返回默认值0", "把age设成0", "删除age这个键", "报错"],
+    answer: 0,
+    targetLevel: 10,
+  },
 
   // ---- 函数（对应第11关）----
   {
@@ -311,6 +692,47 @@ const QUIZ = [
   {
     q: "调用一个已经定义好的函数 greet，应该怎么写？",
     options: ["greet(\"小明\")", "def greet(\"小明\")", "call greet(\"小明\")", "greet[\"小明\"]"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "函数如果没有 return 语句，调用它会返回什么？",
+    options: ["None", "0", "空字符串", "报错"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "def greet(name=\"小明\"): 这种写法叫什么？",
+    options: ["默认参数", "必填参数", "返回值", "局部变量"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "函数内部创建的变量，函数外面能访问吗？",
+    options: ["不能，这是局部变量", "能，所有变量都是全局的", "取决于变量名", "只有数字类型不能"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "调用函数和定义函数，哪个要写在前面？",
+    options: ["必须先定义，再调用", "必须先调用，再定义", "顺序不影响", "只要在同一个文件就行"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "return 和 print 在函数里的区别是？",
+    options: [
+      "return把值返回给调用者可以继续用，print只是显示在屏幕上",
+      "没有区别",
+      "return更快",
+      "print不能在函数里用",
+    ],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "def add(a, b): return a + b，调用 add(3, 5) 的结果是？",
+    options: ["8", "35", "报错", "None"],
     answer: 0,
     targetLevel: 11,
   },

@@ -1,6 +1,7 @@
 // 高级关卡：教一些新手课程和进阶测试都没教过的更硬核的概念——
 // 递归、排序算法、字符串编码、类(class)——难度比前两个阶段更高。
 // 和新手课程一样，只给骨架代码，写对了才能解锁下一关；报错时给具体解释。
+// check()会顺带检查代码里有没有真的用到对应的技术，防止把答案写死也能过关。
 
 const LEVELS = [
   {
@@ -24,8 +25,13 @@ const LEVELS = [
 
 print(factorial(5))`,
     hint: `factorial(5) = 5 * factorial(4) = 5 * 4 * factorial(3) = ... 一直乘到 factorial(1) 返回1为止。`,
+    why: `为什么不用循环算阶乘（更简单）？递归教的是一种更通用的思路——把大问题拆成"和自己结构一样的小问题"，这个思路在处理树、嵌套数据这些循环搞不定的问题时非常关键。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      const calls = (r.code.match(/factorial\s*\(/g) || []).length;
+      if (calls < 3) {
+        return { pass: false, message: "代码里 factorial( 出现的次数太少，看起来函数内部没有真的调用自己——检查一下是不是漏了递归调用 factorial(n-1)。" };
+      }
       if (r.stdout.includes("120")) return { pass: true, message: "递归学会了！5的阶乘是120，函数正确地调用了自己。" };
       return { pass: false, message: "结果不对，5! 应该是120（5×4×3×2×1），检查一下终止条件和递归调用。" };
     },
@@ -47,8 +53,15 @@ print(factorial(5))`,
 
 print(nums)`,
     hint: `外层 for _ in range(len(nums)): 内层 for i in range(len(nums)-1): 如果 nums[i] > nums[i+1] 就交换这两个位置。`,
+    why: `为什么不直接用 sorted()？内置的排序函数背后其实也是类似的比较+交换逻辑（只是更高效），自己实现一遍冒泡排序，是为了真正理解"排序"到底是怎么发生的，而不只是会调用一个黑盒函数。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (r.code.includes("sorted(") || r.code.includes(".sort(")) {
+        return { pass: false, message: "这一关不能用内置的 sorted() 或 .sort()，要自己写双层循环比较、交换来实现排序。" };
+      }
+      if (!r.code.includes(">")) {
+        return { pass: false, message: "代码里好像没有比较大小的逻辑（>），检查一下是不是真的在两两比较元素，而不是直接把排好的结果写死。" };
+      }
       if (r.stdout.includes("[1, 2, 5, 8, 9]")) {
         return { pass: true, message: "排序成功！这就是冒泡排序——用最朴素的两两比较实现了排序。" };
       }
@@ -78,8 +91,12 @@ shift = 3
 result = ""
 `,
     hint: `for c in message: 每个字母用 chr(ord(c) + shift) 转换，然后拼接到 result 后面：result = result + chr(ord(c) + shift)`,
+    why: `为什么计算机能这样"移位"加密文字？因为计算机眼里字母本来就是数字（ord值），文字处理本质上都是数字处理——这也是为什么后面能学到的字符串方法，底层都能用数字运算来实现。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("ord(") || !r.code.includes("chr(")) {
+        return { pass: false, message: "代码里好像没有用到 ord() 和 chr()，检查一下是不是把'khoor'直接写死了，而不是真的做了字母转换。" };
+      }
       if (r.stdout.includes("khoor")) {
         return { pass: true, message: "加密成功！'hello'每个字母往后移3位就是'khoor'。" };
       }
@@ -124,8 +141,12 @@ account.deposit(100)
 account.withdraw(30)
 print(account.balance)`,
     hint: `deposit里写 self.balance = self.balance + amount，withdraw里写 self.balance = self.balance - amount，记得删掉 pass。`,
+    why: `为什么不直接用几个变量存余额？类能把"数据"（余额）和"能对这个数据做的操作"（存、取）绑在一起，创建多个账户时，每个账户的余额互不干扰——这是面向对象编程的核心价值：把相关的东西打包成一个"物"。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("class ")) {
+        return { pass: false, message: "代码里好像没有用 class 定义类，检查一下是不是把70直接写死了，而不是真的通过BankAccount类算出来的。" };
+      }
       if (r.stdout.includes("70")) {
         return { pass: true, message: "类写对了！存100取30，余额正好是70。" };
       }
@@ -157,8 +178,12 @@ print(account.balance)`,
 
 binary_guess(42)`,
     hint: `guess > secret 说明猜大了，要往小的范围找：high = guess - 1；guess < secret 同理 low = guess + 1。`,
+    why: `为什么二分法比一个个数字试快这么多？每猜一次就排除一半的可能性——100个数字最多猜7次，1亿个数字最多也只要27次左右。这种"每次砍半"的思路（也叫对数复杂度）是很多高效算法的核心。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("while") || !r.code.includes("//")) {
+        return { pass: false, message: "代码里要用 while 循环和 (low+high)//2 算中间值，检查一下是不是把结果直接写死了。" };
+      }
       const lines = r.stdout.trim().split("\n").filter(Boolean);
       if (!r.stdout.includes("用了") || !r.stdout.includes("次猜中")) {
         return { pass: false, message: "还没看到'用了X次猜中'，检查一下猜中时有没有打印这句话并结束函数。" };
@@ -187,8 +212,15 @@ binary_guess(42)`,
 # 打印出现次数最多的那个
 `,
     hint: `recent = history[-3:]，然后跟之前的字典统计+max(counts, key=counts.get)套路一样。`,
+    why: `为什么"只看最近的"有时候比"看全部历史"更好？因为很多真实场景里，最近的行为更能代表现在的趋势——推荐系统、股票预测、天气预报都更看重近期数据，这叫"时间衰减"，是数据分析里很常见的思路。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("-3:")) {
+        return { pass: false, message: "代码里好像没有用切片取最后3个（history[-3:]），检查一下是不是把'布'直接写死了。" };
+      }
+      if (!r.code.includes("{")) {
+        return { pass: false, message: "这一关要用字典统计次数，检查一下代码里有没有真的创建字典。" };
+      }
       if (r.stdout.includes("布")) {
         return { pass: true, message: "毕业啦！只看最近3次，AI能更快跟上你的策略变化——这是很多真实推荐系统也会用的思路（更看重最近的行为）。" };
       }

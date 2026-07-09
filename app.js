@@ -4,6 +4,16 @@ const STORAGE_PROGRESS = `codecourse_${TRACK_ID}_v2_unlocked`;
 const STORAGE_PLACEMENT = `codecourse_${TRACK_ID}_v2_placement`;
 const codeKey = (id) => `codecourse_${TRACK_ID}_v2_code_${id}`;
 const inputKey = (id) => `codecourse_${TRACK_ID}_v2_input_${id}`;
+const failKey = (id) => `codecourse_${TRACK_ID}_v2_fails_${id}`;
+
+function getFailCount(id) {
+  const raw = localStorage.getItem(failKey(id));
+  return raw ? parseInt(raw, 10) : 0;
+}
+
+function bumpFailCount(id) {
+  localStorage.setItem(failKey(id), String(getFailCount(id) + 1));
+}
 
 let pyodide = null;
 let currentLevelId = 1;
@@ -14,6 +24,9 @@ function explainError(err) {
     return "缩进错了：Python靠每行前面的空格来判断代码属于哪一块。冒号(:)的下一行必须往右缩进（一般是4个空格），检查一下是不是漏了或者多了空格。";
   }
   if (err.includes("SyntaxError")) {
+    if (err.includes("Maybe you meant '=='")) {
+      return "语法错误：单个等号 = 是赋值（把值存进变量），判断'是否相等'要用两个等号 == 。";
+    }
     return "语法错误：检查是不是少写了引号 \" \"、括号 ( )，或者忘了在 if / else / while / for / def 结尾加冒号 : 。";
   }
   if (err.includes("NameError")) {
@@ -31,6 +44,16 @@ function explainError(err) {
   }
   if (err.includes("ZeroDivisionError")) {
     return "除数不能是0，检查一下除法算式里的分母。";
+  }
+  if (err.includes("IndexError")) {
+    return "下标越界：访问了列表里不存在的位置。记得下标从0开始数，最后一个元素的下标是'长度-1'，也可以直接用 -1 表示最后一个。";
+  }
+  if (err.includes("KeyError")) {
+    const match = err.match(/KeyError: '?(.+?)'?$/);
+    const key = match ? match[1] : "";
+    return key
+      ? `字典里没有找到键'${key}'。第一次用某个键之前，要先给它一个初始值，或者用 .get(键, 默认值) 来安全取值。`
+      : "字典里没有找到对应的键。第一次用某个键之前，要先给它一个初始值，或者用 .get(键, 默认值) 来安全取值。";
   }
   if (err.includes("EOFError")) {
     return "模拟输入不够用了：程序调用 input() 的次数比模拟输入框里的行数还多，检查一下逻辑，或者在模拟输入框里再加一行。";
@@ -169,9 +192,33 @@ function selectLevel(id) {
   document.getElementById("feedback-box").textContent = "";
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("hint-box").textContent = level.hint || "";
+  const whyBtn = document.getElementById("why-btn");
+  const whyBox = document.getElementById("why-box");
+  if (whyBox) {
+    whyBox.classList.add("hidden");
+    whyBox.textContent = level.why || "";
+  }
+  if (whyBtn) whyBtn.classList.toggle("hidden", !level.why);
   document.getElementById("next-level-btn").classList.add("hidden");
+  const summaryBox = document.getElementById("completion-summary");
+  if (summaryBox) summaryBox.classList.add("hidden");
 
   renderSidebar();
+}
+
+function showCompletionSummary() {
+  const summaryBox = document.getElementById("completion-summary");
+  if (!summaryBox) return;
+  const rows = LEVELS.map((l) => {
+    const fails = getFailCount(l.id);
+    const status = fails === 0 ? "一次通过 ✓" : `错了 ${fails} 次`;
+    return `<li><span class="completion-row-title">${l.title}</span><span class="completion-row-count">${status}</span></li>`;
+  });
+  summaryBox.innerHTML = `
+    <p class="completion-summary-title">🎉 全部关卡完成！每一关的情况：</p>
+    <ul class="completion-summary-list">${rows.join("")}</ul>
+  `;
+  summaryBox.classList.remove("hidden");
 }
 
 const RUNNER_TEMPLATE = `
@@ -226,7 +273,7 @@ async function runCurrentLevel() {
 
     outputBox.textContent = stdout + (err ? `\n--- 错误 ---\n${err}` : "");
 
-    const verdict = level.check({ stdout, err });
+    const verdict = level.check({ stdout, err, code });
     feedbackBox.classList.add(verdict.pass ? "success" : "fail");
     if (!verdict.pass && verdict.reviewLevel) {
       const messageSpan = document.createElement("span");
@@ -257,9 +304,11 @@ async function runCurrentLevel() {
         nextLevelBtn.onclick = () => selectLevel(next.id);
       } else {
         nextLevelBtn.classList.add("hidden");
+        showCompletionSummary();
       }
     } else {
       nextLevelBtn.classList.add("hidden");
+      bumpFailCount(level.id);
     }
   } catch (e) {
     outputBox.textContent = `运行环境出错：${e}`;
@@ -280,6 +329,13 @@ function setupButtons() {
   document.getElementById("hint-btn").addEventListener("click", () => {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
+
+  const whyBtn = document.getElementById("why-btn");
+  if (whyBtn) {
+    whyBtn.addEventListener("click", () => {
+      document.getElementById("why-box").classList.toggle("hidden");
+    });
+  }
 
   const resetProgressBtn = document.getElementById("reset-progress-btn");
   if (resetProgressBtn) {

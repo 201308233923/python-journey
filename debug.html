@@ -2,9 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>进阶 · 码芽</title>
+  <title>调试挑战 · 码芽</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="6道综合测试题，检验你的Python基础掌握程度，答错会链接回对应的初级关卡复习。" />
+  <meta name="description" content="8关调试挑战：每一关都是一段写好但有bug的代码，找到并修好它，练习真实世界最常用的能力——读代码、找bug。" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%B1%3C/text%3E%3C/svg%3E" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -13,13 +13,13 @@
     <aside class="sidebar">
       <div class="entry-switch">
         <a href="course.html">🌱 初级</a>
-        <span class="entry-switch-current">⚡ 进阶</span>
+        <a href="assessment.html">⚡ 进阶</a>
         <a href="advanced.html">🚀 高级</a>
-        <a href="debug.html">🐛 调试挑战</a>
+        <span class="entry-switch-current">🐛 调试挑战</span>
         <a href="ai-games.html">🎮 AI小游戏</a>
         <a href="index.html">🔄 重新测试</a>
       </div>
-      <h1>⚡ 编程能力测试</h1>
+      <h1>🐛 调试挑战</h1>
       <div id="progress-summary" class="progress-summary"></div>
       <div id="level-list" class="level-list"></div>
       <button id="reset-progress-btn" class="reset-progress-btn">重置进度</button>
@@ -63,7 +63,7 @@
 
         <div class="editor-row">
           <div class="editor-col">
-            <div class="editor-label">你的代码</div>
+            <div class="editor-label">这段代码有bug，找到并修好它</div>
             <textarea id="code-editor" spellcheck="false"></textarea>
             <div id="input-row" class="input-row hidden">
               <label class="editor-label">模拟输入（每行一个，对应一次 input()）</label>
@@ -71,7 +71,7 @@
             </div>
             <div class="button-row">
               <button id="run-btn">▶ 运行</button>
-              <button id="reset-btn" class="secondary">重置代码</button>
+              <button id="reset-btn" class="secondary">恢复原样</button>
               <button id="hint-btn" class="secondary">💡 提示</button>
               <button id="why-btn" class="secondary hidden">🤔 为什么</button>
             </div>
@@ -92,8 +92,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-  <script>const TRACK = "assessment";</script>
-  <script src="assessment-levels.js"></script>
+  <script>const TRACK = "debug";</script>
+  <script src="debug-levels.js"></script>
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="progress-sync.js"></script>

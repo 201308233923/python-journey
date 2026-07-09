@@ -10,7 +10,15 @@
 </head>
 <body>
   <div class="landing">
-    <div class="landing-inner" id="quiz-root"></div>
+    <div class="landing-inner">
+      <svg class="site-logo" width="56" height="56" viewBox="0 0 56 56" fill="none" role="img" aria-label="码芽">
+        <circle cx="28" cy="28" r="27" fill="var(--panel)" stroke="var(--border)" stroke-width="1" />
+        <path d="M28 40 L28 24" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+        <path d="M28 26 C20 26, 16 20, 18 14 C24 14, 28 20, 28 26 Z" fill="var(--accent)" />
+        <path d="M28 30 C36 30, 40 24, 38 18 C32 18, 28 24, 28 30 Z" fill="var(--accent)" />
+      </svg>
+      <div id="quiz-root"></div>
+    </div>
   </div>
 
   <footer class="site-footer">
@@ -22,6 +30,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="progress-sync.js"></script>
   <script src="quiz.js"></script>
+  <script src="quiz-intermediate.js"></script>
+  <script src="quiz-advanced.js"></script>
   <script src="quiz-app.js"></script>
 </body>
 </html>
