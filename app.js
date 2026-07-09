@@ -5,7 +5,11 @@ const STORAGE_PLACEMENT = `codecourse_${TRACK_ID}_v2_placement`;
 const codeKey = (id) => `codecourse_${TRACK_ID}_v2_code_${id}`;
 const inputKey = (id) => `codecourse_${TRACK_ID}_v2_input_${id}`;
 const failKey = (id) => `codecourse_${TRACK_ID}_v2_fails_${id}`;
+// 这个key带v2_，属于"重置进度"会清空的那批——决定"这次攻略这一关，用的是哪个样子"。
 const variantKey = (id) => `codecourse_${TRACK_ID}_v2_variant_${id}`;
+// 这个key故意不带v2_，"重置进度"清不到它——记录"这一关的几个样子，已经做过哪些了"，
+// 这样即使反复点重置，也不会立刻抽到刚做过的样子，除非6个样子都做过一轮了。
+const variantSeenKey = (id) => `codecourse_${TRACK_ID}_variantseen_${id}`;
 
 function getFailCount(id) {
   const raw = localStorage.getItem(failKey(id));
@@ -16,17 +20,35 @@ function bumpFailCount(id) {
   localStorage.setItem(failKey(id), String(getFailCount(id) + 1));
 }
 
-// 有的关卡准备了几个"样子"（同一个知识点，具体题目不同）。第一次碰到这一关时随机选一个
-// 并记下来，之后重新打开都是同一个样子，直到"重置进度"把这个记录也清掉，才会重新抽一次。
+// 有的关卡准备了几个"样子"（同一个知识点，用真正不同的写法/方法完成）。
+// 第一次碰到这一关、或者点了"重置进度"之后，会从"还没做过的样子"里随机选一个；
+// 之后重新打开这一关，用的还是同一个样子，不会中途换。6个样子都做过一轮了，才会重新循环。
 // 没有variants的关卡（比如目前的进阶/高级/调试挑战）直接把关卡本身当成唯一的"样子"用，行为不变。
 function resolveVariant(level) {
   if (!level.variants || level.variants.length === 0) return level;
-  const key = variantKey(level.id);
-  let idx = parseInt(localStorage.getItem(key), 10);
-  if (Number.isNaN(idx) || idx < 0 || idx >= level.variants.length) {
-    idx = Math.floor(Math.random() * level.variants.length);
-    localStorage.setItem(key, String(idx));
+
+  const currentKey = variantKey(level.id);
+  const cached = parseInt(localStorage.getItem(currentKey), 10);
+  if (!Number.isNaN(cached) && cached >= 0 && cached < level.variants.length) {
+    return level.variants[cached];
   }
+
+  const seenKey = variantSeenKey(level.id);
+  let seen = [];
+  try {
+    seen = JSON.parse(localStorage.getItem(seenKey) || "[]");
+  } catch (e) {
+    seen = [];
+  }
+  let candidates = level.variants.map((_, i) => i).filter((i) => !seen.includes(i));
+  if (candidates.length === 0) {
+    seen = []; // 全部样子都做过一轮了，重新开始新一轮
+    candidates = level.variants.map((_, i) => i);
+  }
+  const idx = candidates[Math.floor(Math.random() * candidates.length)];
+  localStorage.setItem(currentKey, String(idx));
+  seen.push(idx);
+  localStorage.setItem(seenKey, JSON.stringify(seen));
   return level.variants[idx];
 }
 
