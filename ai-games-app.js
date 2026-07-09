@@ -254,6 +254,37 @@ function setupButtons() {
     document.getElementById("code-editor").value = level.code;
   });
 
+  const saveBtn = document.getElementById("save-btn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      localStorage.setItem(codeKey(currentLevelId), document.getElementById("code-editor").value);
+
+      const originalText = saveBtn.textContent;
+      saveBtn.disabled = true;
+
+      if (typeof supabaseClient !== "undefined" && supabaseClient) {
+        try {
+          const { data } = await supabaseClient.auth.getUser();
+          if (data && data.user) {
+            await pushProgressToCloud(data.user.id);
+            saveBtn.textContent = "✅ 已保存到账号";
+          } else {
+            saveBtn.textContent = "✅ 已保存到本机（没登录账号，换设备会丢）";
+          }
+        } catch (e) {
+          saveBtn.textContent = "✅ 已保存到本机（同步到账号失败，检查网络）";
+        }
+      } else {
+        saveBtn.textContent = "✅ 已保存到本机";
+      }
+
+      setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }, 1800);
+    });
+  }
+
   document.getElementById("start-game-btn").addEventListener("click", startGame);
   document.getElementById("restart-game-btn").addEventListener("click", () => selectLevel(currentLevelId));
   document.getElementById("clear-chat-btn").addEventListener("click", clearChat);

@@ -206,6 +206,18 @@ function selectLevel(id) {
   renderSidebar();
 }
 
+// 登录了账号的话，每过一关就顺手把进度悄悄同步到云端，不用等用户自己点同步按钮。
+// 没登录、或者supabase还没加载好的时候，这里什么都不做——本地localStorage的保存不受影响。
+function autoSaveToCloud() {
+  if (typeof supabaseClient === "undefined" || !supabaseClient) return;
+  supabaseClient.auth
+    .getUser()
+    .then(({ data }) => {
+      if (data && data.user) return pushProgressToCloud(data.user.id);
+    })
+    .catch(() => {});
+}
+
 function showCompletionSummary() {
   const summaryBox = document.getElementById("completion-summary");
   if (!summaryBox) return;
@@ -306,6 +318,7 @@ async function runCurrentLevel() {
         nextLevelBtn.classList.add("hidden");
         showCompletionSummary();
       }
+      autoSaveToCloud();
     } else {
       nextLevelBtn.classList.add("hidden");
       bumpFailCount(level.id);
@@ -334,6 +347,41 @@ function setupButtons() {
   if (whyBtn) {
     whyBtn.addEventListener("click", () => {
       document.getElementById("why-box").classList.toggle("hidden");
+    });
+  }
+
+  const saveBtn = document.getElementById("save-btn");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      const level = LEVELS.find((l) => l.id === currentLevelId);
+      localStorage.setItem(codeKey(level.id), document.getElementById("code-editor").value);
+      if (level.needsInput) {
+        localStorage.setItem(inputKey(level.id), document.getElementById("input-editor").value);
+      }
+
+      const originalText = saveBtn.textContent;
+      saveBtn.disabled = true;
+
+      if (typeof supabaseClient !== "undefined" && supabaseClient) {
+        try {
+          const { data } = await supabaseClient.auth.getUser();
+          if (data && data.user) {
+            await pushProgressToCloud(data.user.id);
+            saveBtn.textContent = "✅ 已保存到账号";
+          } else {
+            saveBtn.textContent = "✅ 已保存到本机（没登录账号，换设备会丢）";
+          }
+        } catch (e) {
+          saveBtn.textContent = "✅ 已保存到本机（同步到账号失败，检查网络）";
+        }
+      } else {
+        saveBtn.textContent = "✅ 已保存到本机";
+      }
+
+      setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }, 1800);
     });
   }
 
