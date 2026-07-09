@@ -345,9 +345,9 @@ function renderDailyReviewResult() {
     <p class="quiz-score">答对 ${dailyReviewCorrect} / ${dailyReviewQuiz.length} 题</p>
     <h1>复习完成！</h1>
     <p class="landing-lede">明天再来看看能不能保持连续复习。</p>
-    <button class="quiz-btn-primary" id="continue-after-review-btn">继续 →</button>
+    <button class="quiz-btn-primary" id="continue-after-review-btn">继续学习 →</button>
   `;
-  document.getElementById("continue-after-review-btn").addEventListener("click", renderIntro);
+  document.getElementById("continue-after-review-btn").addEventListener("click", goToResumePoint);
 }
 
 function renderResult() {
