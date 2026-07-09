@@ -5,6 +5,7 @@ const STORAGE_PLACEMENT = `codecourse_${TRACK_ID}_v2_placement`;
 const codeKey = (id) => `codecourse_${TRACK_ID}_v2_code_${id}`;
 const inputKey = (id) => `codecourse_${TRACK_ID}_v2_input_${id}`;
 const failKey = (id) => `codecourse_${TRACK_ID}_v2_fails_${id}`;
+const variantKey = (id) => `codecourse_${TRACK_ID}_v2_variant_${id}`;
 
 function getFailCount(id) {
   const raw = localStorage.getItem(failKey(id));
@@ -15,8 +16,23 @@ function bumpFailCount(id) {
   localStorage.setItem(failKey(id), String(getFailCount(id) + 1));
 }
 
+// 有的关卡准备了几个"样子"（同一个知识点，具体题目不同）。第一次碰到这一关时随机选一个
+// 并记下来，之后重新打开都是同一个样子，直到"重置进度"把这个记录也清掉，才会重新抽一次。
+// 没有variants的关卡（比如目前的进阶/高级/调试挑战）直接把关卡本身当成唯一的"样子"用，行为不变。
+function resolveVariant(level) {
+  if (!level.variants || level.variants.length === 0) return level;
+  const key = variantKey(level.id);
+  let idx = parseInt(localStorage.getItem(key), 10);
+  if (Number.isNaN(idx) || idx < 0 || idx >= level.variants.length) {
+    idx = Math.floor(Math.random() * level.variants.length);
+    localStorage.setItem(key, String(idx));
+  }
+  return level.variants[idx];
+}
+
 let pyodide = null;
 let currentLevelId = 1;
+let currentVariant = null;
 
 function explainError(err) {
   if (!err) return "";
@@ -170,19 +186,20 @@ function renderSidebar() {
 function selectLevel(id) {
   currentLevelId = id;
   const level = LEVELS.find((l) => l.id === id);
+  currentVariant = resolveVariant(level);
 
   document.getElementById("level-title").textContent = level.title;
-  document.getElementById("level-explain").innerHTML = level.explain;
+  document.getElementById("level-explain").innerHTML = currentVariant.explain;
 
   const savedCode = localStorage.getItem(codeKey(id));
-  document.getElementById("code-editor").value = savedCode !== null ? savedCode : level.starter;
+  document.getElementById("code-editor").value = savedCode !== null ? savedCode : currentVariant.starter;
 
   const inputRow = document.getElementById("input-row");
   const inputEditor = document.getElementById("input-editor");
-  if (level.needsInput) {
+  if (currentVariant.needsInput) {
     inputRow.classList.remove("hidden");
     const savedInput = localStorage.getItem(inputKey(id));
-    inputEditor.value = savedInput !== null ? savedInput : (level.defaultInput || "");
+    inputEditor.value = savedInput !== null ? savedInput : (currentVariant.defaultInput || "");
   } else {
     inputRow.classList.add("hidden");
   }
@@ -191,7 +208,7 @@ function selectLevel(id) {
   document.getElementById("feedback-box").className = "feedback-box";
   document.getElementById("feedback-box").textContent = "";
   document.getElementById("hint-box").classList.add("hidden");
-  document.getElementById("hint-box").textContent = level.hint || "";
+  document.getElementById("hint-box").textContent = currentVariant.hint || "";
   const whyBtn = document.getElementById("why-btn");
   const whyBox = document.getElementById("why-box");
   if (whyBox) {
@@ -262,11 +279,12 @@ json.dumps([_buf.getvalue(), _err])
 
 async function runCurrentLevel() {
   const level = LEVELS.find((l) => l.id === currentLevelId);
+  const variant = currentVariant || resolveVariant(level);
   const code = document.getElementById("code-editor").value;
-  const inputRaw = level.needsInput ? document.getElementById("input-editor").value : "";
+  const inputRaw = variant.needsInput ? document.getElementById("input-editor").value : "";
 
   localStorage.setItem(codeKey(level.id), code);
-  if (level.needsInput) localStorage.setItem(inputKey(level.id), inputRaw);
+  if (variant.needsInput) localStorage.setItem(inputKey(level.id), inputRaw);
 
   const runBtn = document.getElementById("run-btn");
   runBtn.disabled = true;
@@ -285,7 +303,7 @@ async function runCurrentLevel() {
 
     outputBox.textContent = stdout + (err ? `\n--- 错误 ---\n${err}` : "");
 
-    const verdict = level.check({ stdout, err, code });
+    const verdict = variant.check({ stdout, err, code });
     feedbackBox.classList.add(verdict.pass ? "success" : "fail");
     if (!verdict.pass && verdict.reviewLevel) {
       const messageSpan = document.createElement("span");
@@ -336,7 +354,8 @@ function setupButtons() {
 
   document.getElementById("reset-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
-    document.getElementById("code-editor").value = level.starter;
+    const variant = currentVariant || resolveVariant(level);
+    document.getElementById("code-editor").value = variant.starter;
   });
 
   document.getElementById("hint-btn").addEventListener("click", () => {
@@ -354,8 +373,9 @@ function setupButtons() {
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
       const level = LEVELS.find((l) => l.id === currentLevelId);
+      const variant = currentVariant || resolveVariant(level);
       localStorage.setItem(codeKey(level.id), document.getElementById("code-editor").value);
-      if (level.needsInput) {
+      if (variant.needsInput) {
         localStorage.setItem(inputKey(level.id), document.getElementById("input-editor").value);
       }
 
