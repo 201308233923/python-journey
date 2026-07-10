@@ -283,11 +283,15 @@ function markDailyReviewDone() {
   localStorage.setItem(DAILY_REVIEW_KEY, getTodayString());
 }
 
-function renderDailyReview() {
+function buildDailyReviewQuiz() {
   const eligible = getEligibleReviewPool();
   dailyReviewQuiz = shuffle(eligible).slice(0, Math.min(DAILY_REVIEW_COUNT, eligible.length)).map(shuffleQuestion);
   dailyReviewIndex = 0;
   dailyReviewCorrect = 0;
+}
+
+function renderDailyReview() {
+  buildDailyReviewQuiz();
 
   root.innerHTML = `
     <div class="landing-eyebrow">今日复习</div>
@@ -345,9 +349,9 @@ function renderDailyReviewResult() {
     <p class="quiz-score">答对 ${dailyReviewCorrect} / ${dailyReviewQuiz.length} 题</p>
     <h1>复习完成！</h1>
     <p class="landing-lede">明天再来看看能不能保持连续复习。</p>
-    <button class="quiz-btn-primary" id="continue-after-review-btn">继续 →</button>
+    <button class="quiz-btn-primary" id="continue-after-review-btn">继续学习 →</button>
   `;
-  document.getElementById("continue-after-review-btn").addEventListener("click", renderIntro);
+  document.getElementById("continue-after-review-btn").addEventListener("click", goToResumePoint);
 }
 
 function renderResult() {
@@ -382,20 +386,17 @@ function renderResult() {
 }
 
 async function initQuizPage() {
-  // 如果之前登录过账号（Supabase会记住登录状态），先把云端的真实进度拉下来，
-  // 这样"今日复习"看的是账号里的进度，而不是这台设备本地可能是空的/过时的缓存。
-  if (supabaseClient) {
-    try {
-      const { data } = await supabaseClient.auth.getUser();
-      if (data && data.user) {
-        await pullProgressFromCloud(data.user.id);
-      }
-    } catch (e) {
-      // 拉取失败就退回本地缓存，不阻塞页面
-    }
-  }
+  // 如果之前登录过账号，先把云端的真实进度拉下来，这样"今日复习"看的是账号里的进度，
+  // 而不是这台设备本地可能是空的/过时的缓存（progress-sync.js 里定义的共享逻辑）。
+  if (window.cloudProgressReady) await window.cloudProgressReady;
 
-  if (shouldShowDailyReview()) {
+  // 侧栏"📝 复习"是用户主动点的，即使今天已经复习过、或者本来还没到弹出的时候，
+  // 只要还有可复习的内容就直接进题，不用再经过"复习/继续学"这一步选择。
+  const wantsReview = new URLSearchParams(location.search).get("review") === "1";
+  if (wantsReview && getEligibleReviewPool().length > 0) {
+    buildDailyReviewQuiz();
+    renderDailyReviewQuestion();
+  } else if (shouldShowDailyReview()) {
     renderDailyReview();
   } else {
     renderIntro();

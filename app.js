@@ -477,6 +477,12 @@ async function init() {
   pyodide = await loadPyodideWithFallback();
   if (!pyodide) return;
 
+  // 如果之前登录过账号（Supabase会话是持久化的），先把云端的真实进度拉下来盖掉本地缓存，
+  // 这样已经登录过的设备/浏览器直接打开这个学习页面，看到的也是最新进度——不用非得先去
+  // 首页或者重新点一次登录才会同步。这个promise是 progress-sync.js 定义的（脚本加载顺序上，
+  // 它在 app.js 之后才加载，所以只能在这里、也就是 app.js 已经执行过 await 之后再引用它）。
+  if (window.cloudProgressReady) await window.cloudProgressReady;
+
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");
 
