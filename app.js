@@ -257,6 +257,15 @@ function autoSaveToCloud() {
     .catch(() => {});
 }
 
+// 通关一整条赛道之后，提醒一下"这些东西在真实世界里是干嘛用的"——
+// 青少年对"学这个到底有什么用"特别敏感，光说"你完成了"不够有说服力。
+const TRACK_REAL_WORLD_USE = {
+  course: "从 print() 到猜数字小游戏——你写的 if 判断、循环、函数，就是每一个软件处理你每次点击背后的真实逻辑。",
+  assessment: "FizzBuzz、词频统计、质数判断——这些看着简单的题，是技术面试的常见敲门砖，也是搜索引擎、推荐系统这些'高级'技术拆开后的真实样子。",
+  advanced: "递归、排序、二分查找、类——这些是计算机科学的地基。你自己实现的二分法，跟数据库索引、搜索引擎背后用的是同一个思路。",
+  debug: "找bug、修bug——这是真实程序员日常工作里占比最大的一部分，比从零写代码更常见。你刚练的，是工作中最实用的能力之一。",
+};
+
 function showCompletionSummary() {
   const summaryBox = document.getElementById("completion-summary");
   if (!summaryBox) return;
@@ -271,9 +280,11 @@ function showCompletionSummary() {
     const status = fails === 0 ? "一次通过 ✓" : `错了 ${fails} 次`;
     return `<li><span class="completion-row-title">${l.title}</span><span class="completion-row-count">${status}</span></li>`;
   });
+  const realWorldUse = TRACK_REAL_WORLD_USE[TRACK_ID];
   summaryBox.innerHTML = `
     <p class="completion-summary-title">🎉 全部关卡完成！每一关的情况：</p>
     <ul class="completion-summary-list">${rows.join("")}</ul>
+    ${realWorldUse ? `<p class="completion-real-world">💡 ${realWorldUse}</p>` : ""}
     <a class="completion-cert-link" href="certificate.html">🎓 生成结业证书 →</a>
   `;
   summaryBox.classList.remove("hidden");
@@ -369,6 +380,13 @@ async function runCurrentLevel() {
     } else {
       nextLevelBtn.classList.add("hidden");
       bumpFailCount(level.id);
+      // 连续错3次以上、还没主动点开过提示的话，自动帮ta展开——降低"卡太久
+      // 就直接放弃"的概率，不用非得自己想起来点"💡提示"这个按钮。
+      const hintBox = document.getElementById("hint-box");
+      if (getFailCount(level.id) >= 3 && hintBox && hintBox.classList.contains("hidden") && variant.hint) {
+        hintBox.classList.remove("hidden");
+        hintBox.textContent = "😕 卡住好几次了？试试这个提示：\n" + variant.hint;
+      }
     }
   } catch (e) {
     outputBox.textContent = `运行环境出错：${e}`;

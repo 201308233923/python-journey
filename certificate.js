@@ -33,18 +33,18 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
-function render() {
-  const root = document.getElementById("cert-root");
-  const completed = TRACKS.filter((t) => getUnlocked(t.id) > t.count);
+function passedCount(unlocked, count) {
+  return Math.min(Math.max(unlocked - 1, 0), count);
+}
 
+function renderCertificateSection(completed) {
   if (completed.length === 0) {
-    root.innerHTML = `
+    return `
       <div class="landing-eyebrow">结业证书</div>
       <h1>还没有完成任何一条赛道</h1>
       <p class="landing-lede">通关初级、进阶、高级或调试挑战任意一条赛道的全部关卡，就能在这里生成你的证书。</p>
       <a class="quiz-btn-primary" href="course.html">去继续学 →</a>
     `;
-    return;
   }
 
   const savedName = localStorage.getItem(NAME_KEY) || "";
@@ -54,7 +54,7 @@ function render() {
     .sort()
     .pop();
 
-  root.innerHTML = `
+  return `
     <div class="cert-card" id="cert-card">
       <div class="cert-brand">🌱 码芽</div>
       <div class="cert-title">结业证书</div>
@@ -75,6 +75,10 @@ function render() {
       </div>
     </div>
   `;
+}
+
+function wireCertificateSection(completed) {
+  if (completed.length === 0) return;
 
   document.getElementById("cert-name-input").addEventListener("input", (e) => {
     const name = e.target.value.trim();
@@ -100,6 +104,50 @@ function render() {
       btn.textContent = originalText;
     }, 1800);
   });
+}
+
+// 跟朋友的进度码对比一下学到哪了——只解码读取，不会碰自己的本地存档
+// （跟"导入进度码"是两码事，那个是拿别人的码覆盖自己的进度，这里只是看一眼）。
+function renderCompareSection() {
+  return `
+    <div class="cert-compare no-print">
+      <h2 class="cert-compare-title">👥 跟朋友比一比</h2>
+      <p class="cert-compare-desc">让朋友在任意学习页侧栏点"📤 导出进度码"，把那段码粘贴到下面——不会动你自己的进度。</p>
+      <textarea id="compare-input" class="cert-compare-input" placeholder="粘贴朋友的进度码"></textarea>
+      <button class="quiz-btn-primary secondary" id="compare-btn">对比进度</button>
+      <div id="compare-result"></div>
+    </div>
+  `;
+}
+
+function wireCompareSection() {
+  document.getElementById("compare-btn").addEventListener("click", () => {
+    const code = document.getElementById("compare-input").value.trim();
+    const resultBox = document.getElementById("compare-result");
+    if (!code) return;
+    try {
+      const friendData = decodeProgressCode(code);
+      const rows = TRACKS.map((t) => {
+        const mine = passedCount(getUnlocked(t.id), t.count);
+        const theirsRaw = friendData[`codecourse_${t.id}_v2_unlocked`];
+        const theirs = passedCount(theirsRaw ? parseInt(theirsRaw, 10) : 1, t.count);
+        return `<li>${t.emoji} ${t.label}：你 ${mine}/${t.count} 关　·　TA ${theirs}/${t.count} 关</li>`;
+      });
+      resultBox.innerHTML = `<ul class="cert-track-list">${rows.join("")}</ul>`;
+    } catch (e) {
+      resultBox.innerHTML = `<p class="cert-compare-error">这段码看起来不完整或者不对，检查一下有没有复制全。</p>`;
+    }
+  });
+}
+
+function render() {
+  const root = document.getElementById("cert-root");
+  const completed = TRACKS.filter((t) => getUnlocked(t.id) > t.count);
+
+  root.innerHTML = renderCertificateSection(completed) + renderCompareSection();
+
+  wireCertificateSection(completed);
+  wireCompareSection();
 }
 
 async function init() {
