@@ -1696,7 +1696,11 @@ greet("小明")     # 你好，小明</pre>
           if (!/\bif\b/.test(r.code)) {
             return { pass: false, message: "这一关函数内部要用 if 判断，检查一下有没有写。" };
           }
-          if (r.stdout.includes("成年") && r.stdout.includes("未成年")) {
+          // "未成年"本身就包含"成年"两个字，不能直接用 includes("成年") 判断——
+          // 得排除掉"未成年"里那个"成年"，确认真的有一次独立打印了"成年"。
+          const hasAdult = /(^|[^未])成年/.test(r.stdout);
+          const hasMinor = r.stdout.includes("未成年");
+          if (hasAdult && hasMinor) {
             return { pass: true, message: "学会了！函数内部完全可以包含if这样的判断逻辑。" };
           }
           return { pass: false, message: "还没看到'成年'和'未成年'都出现，检查一下两次调用传的数字是不是一大一小。" };
