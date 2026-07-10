@@ -68,56 +68,12 @@ function renderIntro() {
     <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>
     <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
     <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a> · <a href="debug.html">直接做调试挑战</a></p>
-    <p class="quiz-skip">已经注册过账号？<a href="#" id="intro-login-toggle">登录恢复进度</a></p>
-    <div id="intro-login-box" class="account-gate hidden">
-      <input id="intro-username" type="text" placeholder="用户名" autocomplete="off" />
-      <input id="intro-password" type="password" placeholder="密码" autocomplete="off" />
-      <div class="account-btn-row">
-        <button id="intro-login-btn" class="quiz-btn-primary">登录</button>
-      </div>
-      <p class="account-gate-message" id="intro-login-message"></p>
-    </div>
   `;
   document.getElementById("start-quiz-btn").addEventListener("click", () => {
     sessionQuiz = shuffle(QUIZ).slice(0, QUESTIONS_PER_QUIZ).map(shuffleQuestion);
     currentQ = 0;
     wrongTargets = [];
     renderQuestion();
-  });
-
-  document.getElementById("intro-login-toggle").addEventListener("click", (e) => {
-    e.preventDefault();
-    document.getElementById("intro-login-box").classList.toggle("hidden");
-  });
-
-  document.getElementById("intro-login-btn").addEventListener("click", async () => {
-    const username = document.getElementById("intro-username").value.trim();
-    const password = document.getElementById("intro-password").value;
-    const msgBox = document.getElementById("intro-login-message");
-    const setMsg = (text, isError) => {
-      msgBox.textContent = text;
-      msgBox.className = "account-gate-message" + (isError ? " error" : "");
-    };
-
-    if (!username || !password) {
-      setMsg("请输入用户名和密码。", true);
-      return;
-    }
-    if (!supabaseClient) {
-      setMsg("账号功能暂时加载不出来，刷新页面再试试。", true);
-      return;
-    }
-    setMsg("登录中...");
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    if (error) {
-      setMsg("登录失败：用户名或密码不对。", true);
-      return;
-    }
-    await pullProgressFromCloud(data.user.id);
-    goToResumePoint();
   });
 }
 
@@ -405,5 +361,13 @@ async function initQuizPage() {
     renderIntro();
   }
 }
+
+// progress-sync.js 点"退出登录"之后会调用这个钩子。首页把"复习/继续学"选择页
+// 跟登录状态绑在一起，退出登录了就该退回水平测试，不能让选择页停在原地不动。
+// 直接跳 renderIntro()，不重新走 initQuizPage()——window.cloudProgressReady 是
+// 页面一开始就算好、缓存住的Promise，重新await只会拿到登录前的旧结果。
+window.onAccountLoggedOut = () => {
+  renderIntro();
+};
 
 initQuizPage();

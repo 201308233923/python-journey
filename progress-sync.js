@@ -227,6 +227,10 @@ function setupAccountUI() {
     await supabaseClient.auth.signOut();
     showLoggedOutUI();
     setAccountMessage("");
+    // 首页把"是否显示复习/继续学选择页"跟登录状态绑在一起，退出登录之后光改头像
+    // 不够，得让首页重新判断一次该显示哪个screen（退回水平测试）。学习页面
+    // （course.html等）没有定义这个钩子，退出登录不影响关卡内容，什么都不做。
+    if (typeof window.onAccountLoggedOut === "function") window.onAccountLoggedOut();
   });
 
   refreshAccountUI();
