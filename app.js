@@ -260,6 +260,12 @@ function autoSaveToCloud() {
 function showCompletionSummary() {
   const summaryBox = document.getElementById("completion-summary");
   if (!summaryBox) return;
+  // 只在第一次通关时记一次时间戳，之后重新打开这一关不会覆盖掉——
+  // 证书页要用这个时间戳显示"完成于XX年XX月"。
+  const completedAtKey = `codecourse_${TRACK_ID}_v2_completed_at`;
+  if (!localStorage.getItem(completedAtKey)) {
+    localStorage.setItem(completedAtKey, new Date().toISOString());
+  }
   const rows = LEVELS.map((l) => {
     const fails = getFailCount(l.id);
     const status = fails === 0 ? "一次通过 ✓" : `错了 ${fails} 次`;
@@ -268,6 +274,7 @@ function showCompletionSummary() {
   summaryBox.innerHTML = `
     <p class="completion-summary-title">🎉 全部关卡完成！每一关的情况：</p>
     <ul class="completion-summary-list">${rows.join("")}</ul>
+    <a class="completion-cert-link" href="certificate.html">🎓 生成结业证书 →</a>
   `;
   summaryBox.classList.remove("hidden");
 }

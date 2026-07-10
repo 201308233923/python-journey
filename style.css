@@ -513,12 +513,6 @@ body {
   padding-left: 20px;
 }
 
-.doc-page a.back-link {
-  color: var(--accent);
-  text-decoration: none;
-  font-size: 14px;
-}
-
 .level-item {
   display: flex;
   align-items: center;
@@ -906,5 +900,133 @@ button:disabled {
 
   .corner-account .account-avatar-label {
     display: none;
+  }
+}
+
+/* ---------- 结业证书 ---------- */
+
+a.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.completion-cert-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--success-text);
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.completion-cert-link:hover {
+  text-decoration: underline;
+}
+
+.cert-page {
+  max-width: 520px;
+}
+
+.cert-page .back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.cert-card {
+  padding: 40px 32px;
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  background: var(--panel);
+  text-align: center;
+}
+
+.cert-brand {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.cert-title {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 10px 0 20px;
+}
+
+.cert-name {
+  font-size: 20px;
+  font-weight: 700;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cert-desc {
+  color: var(--muted);
+  font-size: 13.5px;
+  margin: 0 0 12px;
+}
+
+.cert-track-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.cert-date {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.cert-controls {
+  margin-top: 24px;
+}
+
+.cert-name-label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.cert-name-label input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.cert-btn-row {
+  display: flex;
+  gap: 8px;
+}
+
+.cert-btn-row button {
+  flex: 1;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .landing {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .cert-card {
+    border-width: 3px;
   }
 }
