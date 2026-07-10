@@ -9,6 +9,31 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="corner-account account-box">
+    <button id="account-toggle-btn" class="account-avatar-btn">
+      <span id="account-avatar" class="account-avatar">👤</span>
+      <span id="account-avatar-label" class="account-avatar-label">登录 / 注册</span>
+    </button>
+    <div id="account-panel" class="account-panel hidden">
+      <div id="account-logged-out">
+        <input id="account-username" type="text" placeholder="用户名（随便起）" autocomplete="off" />
+        <input id="account-password" type="password" placeholder="密码（至少6位）" autocomplete="off" />
+        <div class="account-btn-row">
+          <button id="account-signup-btn">注册</button>
+          <button id="account-login-btn" class="secondary">登录</button>
+        </div>
+      </div>
+      <div id="account-logged-in" class="hidden">
+        <p id="account-status" class="account-status"></p>
+        <div class="account-btn-row">
+          <button id="account-sync-btn">☁️ 立即同步</button>
+          <button id="account-logout-btn" class="secondary">退出登录</button>
+        </div>
+      </div>
+      <div id="account-message" class="account-message"></div>
+    </div>
+  </div>
+
   <div class="landing">
     <div class="landing-inner">
       <svg class="site-logo" width="56" height="56" viewBox="0 0 56 56" fill="none" role="img" aria-label="码芽">
