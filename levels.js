@@ -1278,7 +1278,9 @@ print(steps)   # 8→4→2→1，一共3步</pre>
           if (!r.code.includes("while") || !r.code.includes("//")) {
             return { pass: false, message: "这一关要用 while 循环 + 整除（//）不断减半，检查一下代码里有没有都用到。" };
           }
-          if (r.stdout.includes("6")) {
+          // 用 \b6\b 而不是 includes("6")：光查子串的话，答案错成16、26、60这些
+          // 带"6"的数字也会被误判通过，加上单词边界确保匹配到的是独立的"6"。
+          if (/\b6\b/.test(r.stdout)) {
             return { pass: true, message: "学会了！100不断除以2，减到1需要6步——这种'每次砍半'的思路后面在高级关卡的二分法里还会再遇到。" };
           }
           return { pass: false, message: "结果不对，100不断整除2一直到1，应该是6步（100→50→25→12→6→3→1），检查一下循环逻辑。" };
