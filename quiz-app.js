@@ -406,4 +406,12 @@ async function initQuizPage() {
   }
 }
 
+// progress-sync.js 点"退出登录"之后会调用这个钩子。首页把"复习/继续学"选择页
+// 跟登录状态绑在一起，退出登录了就该退回水平测试，不能让选择页停在原地不动。
+// 直接跳 renderIntro()，不重新走 initQuizPage()——window.cloudProgressReady 是
+// 页面一开始就算好、缓存住的Promise，重新await只会拿到登录前的旧结果。
+window.onAccountLoggedOut = () => {
+  renderIntro();
+};
+
 initQuizPage();
