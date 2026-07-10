@@ -109,12 +109,13 @@ print(is_prime(15))`,
       if (!r.code.includes("def is_prime")) {
         return { pass: false, message: "代码里好像没有用 def 定义 is_prime 函数，检查一下是不是把 True/False 直接写死了。", reviewLevel: 11 };
       }
-      const hasTrue = r.stdout.includes("True");
-      const hasFalse = r.stdout.includes("False");
-      if (hasTrue && hasFalse) {
+      // 光检查 True/False 是否都出现过还不够——逻辑写反了（质数判True，合数判False）
+      // 也会让两个词都出现，得确认是 is_prime(17) 先打印 True、is_prime(15) 后打印 False。
+      const lines = r.stdout.trim().split("\n").filter(Boolean);
+      if (lines[0] === "True" && lines[1] === "False") {
         return { pass: true, message: "质数判断函数写对了，17是质数，15不是。" };
       }
-      if (!hasTrue) return { pass: false, message: "is_prime(17) 应该是 True（17是质数），检查一下函数逻辑。", reviewLevel: 11 };
+      if (lines[0] !== "True") return { pass: false, message: "is_prime(17) 应该是 True（17是质数），检查一下函数逻辑。", reviewLevel: 11 };
       return { pass: false, message: "is_prime(15) 应该是 False（15 = 3×5，不是质数），检查一下函数逻辑。", reviewLevel: 11 };
     },
   },
@@ -137,8 +138,12 @@ print(is_prime(15))`,
       if (!/\bfor\b/.test(r.code) || (!r.code.includes("{") && !r.code.includes("dict("))) {
         return { pass: false, message: "代码里好像没有用循环+字典统计，检查一下是不是把结果直接写死了。", reviewLevel: 10 };
       }
-      const okApple = r.stdout.includes("苹果") && r.stdout.includes("3");
-      const okBanana = r.stdout.includes("香蕉") && r.stdout.includes("2");
+      // 光分别检查"苹果"、"3"、"香蕉"、"2"是否出现还不够——次数算错了但刚好都
+      // 出现过（比如苹果2次香蕉3次，数字对调）也会通过。这一关允许打印字典或者
+      // 分别打印，格式不固定，所以用"词后面隔几个字符内出现对应次数"这种宽松的
+      // 邻近匹配，而不是要求完全固定的格式。
+      const okApple = /苹果.{0,8}3/.test(r.stdout);
+      const okBanana = /香蕉.{0,8}2/.test(r.stdout);
       if (okApple && okBanana) {
         return { pass: true, message: "词频统计正确：苹果3次，香蕉2次，橙子1次。" };
       }
@@ -161,8 +166,10 @@ print(is_prime(15))`,
     why: `"预测下一步"这类AI功能，本质上很多时候就是"统计历史数据里最常见的模式"。没有魔法，只是数据统计——理解了这一点，AI就没那么神秘了。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
-      if (!/\bfor\b/.test(r.code) || (!r.code.includes("{") && !r.code.includes("dict("))) {
-        return { pass: false, message: "代码里好像没有用循环+字典统计，检查一下是不是把'石头'直接写死了。", reviewLevel: 10 };
+      const hasDict = r.code.includes("{") || r.code.includes("dict(");
+      const hasCount = r.code.includes(".get(") || r.code.includes("+= 1") || r.code.includes("+=1") || r.code.includes(".count(");
+      if (!/\bfor\b/.test(r.code) || !hasDict || !hasCount) {
+        return { pass: false, message: "代码里好像没有真的用循环+字典统计出现次数，检查一下是不是把'石头'直接写死了。", reviewLevel: 10 };
       }
       if (r.stdout.includes("石头")) {
         return { pass: true, message: "全部测试通过！这正是 ai-games 里AI'学习'你出拳习惯的核心逻辑，你已经完全掌握了。去侧栏点'🎮 AI小游戏'试试真正的AI小游戏吧。" };
