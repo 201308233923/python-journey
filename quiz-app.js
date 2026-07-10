@@ -388,7 +388,10 @@ function renderResult() {
 async function initQuizPage() {
   // 如果之前登录过账号，先把云端的真实进度拉下来，这样"今日复习"看的是账号里的进度，
   // 而不是这台设备本地可能是空的/过时的缓存（progress-sync.js 里定义的共享逻辑）。
-  if (window.cloudProgressReady) await window.cloudProgressReady;
+  // isLoggedIn 记录这次是不是真的检测到了登录状态——只有真登录了，才允许首页自动跳过
+  // 水平测试；单纯本地有进度（没登录，比如用导入进度码恢复的）不算，得让用户自己点
+  // "直接当初级学"之类的链接，不做静默跳转。
+  const isLoggedIn = window.cloudProgressReady ? await window.cloudProgressReady : false;
 
   // 侧栏"📝 复习"是用户主动点的，即使今天已经复习过、或者本来还没到弹出的时候，
   // 只要还有可复习的内容就直接进题，不用再经过"复习/继续学"这一步选择。
@@ -396,7 +399,7 @@ async function initQuizPage() {
   if (wantsReview && getEligibleReviewPool().length > 0) {
     buildDailyReviewQuiz();
     renderDailyReviewQuestion();
-  } else if (shouldShowDailyReview()) {
+  } else if (isLoggedIn && shouldShowDailyReview()) {
     renderDailyReview();
   } else {
     renderIntro();

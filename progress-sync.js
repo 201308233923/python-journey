@@ -90,17 +90,20 @@ async function pullProgressFromCloud(userId) {
 // 页面一打开就检查是不是已经登录过（Supabase的登录状态本身是持久化在浏览器里的），
 // 是的话把云端的真实进度拉下来覆盖到localStorage，这样已经登录过的设备/浏览器换一个
 // 学习页面直接打开，看到的也是最新进度，不用非得先去首页或者重新点一次登录才会同步。
-// 存成一个全局Promise，好让 app.js / quiz-app.js 在真正要用进度数据之前 await 它。
+// 存成一个全局Promise，好让 app.js / quiz-app.js 在真正要用进度数据之前 await 它；
+// resolve出来的布尔值表示"这次检测到确实是登录状态"，给首页判断要不要跳过测试用。
 window.cloudProgressReady = (async () => {
-  if (!supabaseClient) return;
+  if (!supabaseClient) return false;
   try {
     const { data } = await supabaseClient.auth.getUser();
     if (data && data.user) {
       await pullProgressFromCloud(data.user.id);
+      return true;
     }
   } catch (e) {
     // 拉取失败就用本地缓存，不阻塞页面
   }
+  return false;
 })();
 
 function setAccountMessage(text, isError) {
