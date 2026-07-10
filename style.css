@@ -56,6 +56,16 @@ body {
   padding: 24px;
 }
 
+/* 首页（水平测试/每日复习）没有侧栏，账号头像固定在右上角，
+   保证不管当前显示的是测试页还是复习选择页，都有地方能退出登录/换账号。 */
+.corner-account {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 190px;
+  z-index: 20;
+}
+
 .landing-inner {
   max-width: 720px;
   width: 100%;
@@ -886,5 +896,15 @@ button:disabled {
   .editor-col,
   .output-col {
     min-width: 100%;
+  }
+
+  .corner-account {
+    top: 10px;
+    right: 10px;
+    width: 168px;
+  }
+
+  .corner-account .account-avatar-label {
+    display: none;
   }
 }
