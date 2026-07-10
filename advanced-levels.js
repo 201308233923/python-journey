@@ -28,7 +28,10 @@ print(factorial(5))`,
     why: `为什么不用循环算阶乘（更简单）？递归教的是一种更通用的思路——把大问题拆成"和自己结构一样的小问题"，这个思路在处理树、嵌套数据这些循环搞不定的问题时非常关键。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      const calls = (r.code.match(/factorial\s*\(/g) || []).length;
+      // 先去掉注释里的文字再数出现次数——不然在注释里随便写几个"factorial("
+      // 就能凑够次数，绕开"函数真的调用了自己"这个检查。
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      const calls = (codeWithoutComments.match(/factorial\s*\(/g) || []).length;
       if (calls < 3) {
         return { pass: false, message: "代码里 factorial( 出现的次数太少，看起来函数内部没有真的调用自己——检查一下是不是漏了递归调用 factorial(n-1)。" };
       }
@@ -59,8 +62,8 @@ print(nums)`,
       if (r.code.includes("sorted(") || r.code.includes(".sort(")) {
         return { pass: false, message: "这一关不能用内置的 sorted() 或 .sort()，要自己写双层循环比较、交换来实现排序。" };
       }
-      if (!r.code.includes(">")) {
-        return { pass: false, message: "代码里好像没有比较大小的逻辑（>），检查一下是不是真的在两两比较元素，而不是直接把排好的结果写死。" };
+      if (!/nums\s*\[[^\]]*\]\s*>=?\s*nums\s*\[/.test(r.code)) {
+        return { pass: false, message: "代码里好像没看到两个 nums[...] 元素直接比较大小，检查一下是不是真的在两两比较元素，而不是直接把排好的结果写死。" };
       }
       if (r.stdout.includes("[1, 2, 5, 8, 9]")) {
         return { pass: true, message: "排序成功！这就是冒泡排序——用最朴素的两两比较实现了排序。" };
@@ -94,8 +97,8 @@ result = ""
     why: `为什么计算机能这样"移位"加密文字？因为计算机眼里字母本来就是数字（ord值），文字处理本质上都是数字处理——这也是为什么后面能学到的字符串方法，底层都能用数字运算来实现。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("ord(") || !r.code.includes("chr(")) {
-        return { pass: false, message: "代码里好像没有用到 ord() 和 chr()，检查一下是不是把'khoor'直接写死了，而不是真的做了字母转换。" };
+      if (!/chr\s*\(\s*ord\s*\(/.test(r.code)) {
+        return { pass: false, message: "代码里好像没看到 chr(ord(...)+shift) 这种转换写法，检查一下是不是把'khoor'直接写死了，而不是真的做了字母转换。" };
       }
       if (r.stdout.includes("khoor")) {
         return { pass: true, message: "加密成功！'hello'每个字母往后移3位就是'khoor'。" };
@@ -144,8 +147,8 @@ print(account.balance)`,
     why: `为什么不直接用几个变量存余额？类能把"数据"（余额）和"能对这个数据做的操作"（存、取）绑在一起，创建多个账户时，每个账户的余额互不干扰——这是面向对象编程的核心价值：把相关的东西打包成一个"物"。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("class ")) {
-        return { pass: false, message: "代码里好像没有用 class 定义类，检查一下是不是把70直接写死了，而不是真的通过BankAccount类算出来的。" };
+      if (!r.code.includes("class BankAccount") || !r.code.includes(".deposit(") || !r.code.includes(".withdraw(")) {
+        return { pass: false, message: "代码里好像没有真的定义并用到 BankAccount 类的 deposit/withdraw 方法，检查一下是不是把70直接写死了。" };
       }
       if (r.stdout.includes("70")) {
         return { pass: true, message: "类写对了！存100取30，余额正好是70。" };
@@ -218,8 +221,8 @@ binary_guess(42)`,
       if (!r.code.includes("-3:")) {
         return { pass: false, message: "代码里好像没有用切片取最后3个（history[-3:]），检查一下是不是把'布'直接写死了。" };
       }
-      if (!r.code.includes("{")) {
-        return { pass: false, message: "这一关要用字典统计次数，检查一下代码里有没有真的创建字典。" };
+      if (!r.code.includes("{") || !(r.code.includes(".get(") || r.code.includes("+= 1") || r.code.includes("+=1"))) {
+        return { pass: false, message: "这一关要用字典统计次数（比如 counts[x] = counts.get(x, 0) + 1），检查一下代码里有没有真的统计出现次数，而不是直接把'布'写死。" };
       }
       if (r.stdout.includes("布")) {
         return { pass: true, message: "毕业啦！只看最近3次，AI能更快跟上你的策略变化——这是很多真实推荐系统也会用的思路（更看重最近的行为）。" };
