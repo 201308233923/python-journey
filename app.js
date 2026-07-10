@@ -492,8 +492,13 @@ async function init() {
   const startLevel = LEVELS.find((l) => l.id === startParam);
   // 从首页"继续上次的学习"按钮跳转过来的话，带着 ?resume=N，
   // 这些关卡是真的解锁过的，只是单纯跳过去，不改动解锁状态和跳关标记。
+  // 这个链接正常只会是网站自己生成的（真解锁到哪就带哪个N），但URL是用户能
+  // 直接改的，得再校验一次是不是真解锁过，不然手动把N改大就能跳过没写过的关卡，
+  // 一旦通过还会把中间跳过的关卡也悄悄标记成"解锁"。
   const resumeParam = parseInt(params.get("resume"), 10);
-  const resumeLevel = LEVELS.find((l) => l.id === resumeParam);
+  const resumeCandidate = LEVELS.find((l) => l.id === resumeParam);
+  const resumeIdx = resumeCandidate ? LEVELS.findIndex((l) => l.id === resumeParam) : -1;
+  const resumeLevel = resumeCandidate && resumeIdx + 1 <= getUnlockedCount() ? resumeCandidate : null;
 
   if (startLevel) {
     const idx = LEVELS.findIndex((l) => l.id === startParam);

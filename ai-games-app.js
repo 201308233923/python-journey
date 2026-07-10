@@ -1,6 +1,10 @@
 let pyodide = null;
 let currentLevelId = null;
 let session = null; // { code, seed, inputList } while a game is in progress
+// runTurn() 跑代码是异步的，跑完之前按钮没被禁用——连点"开始游戏"或者按住回车不放
+// 会在同一个pyodide全局命名空间上同时起两次 runPythonAsync，谁的结果后到就盖掉谁的，
+// 界面显示的内容可能跟真实游戏状态对不上。这个标志位保证同一时间只有一次在跑。
+let turnInFlight = false;
 
 const codeKey = (id) => `aigames_v1_code_${id}`;
 
@@ -206,7 +210,15 @@ async function runTurn() {
   }
 }
 
+function runTurnGuarded() {
+  turnInFlight = true;
+  runTurn().finally(() => {
+    turnInFlight = false;
+  });
+}
+
 function startGame() {
+  if (turnInFlight) return;
   const codeEditor = document.getElementById("code-editor");
   localStorage.setItem(codeKey(currentLevelId), codeEditor.value);
   codeEditor.disabled = true;
@@ -222,7 +234,7 @@ function startGame() {
   document.getElementById("game-feedback").className = "feedback-box";
   document.getElementById("game-feedback").textContent = "";
   document.getElementById("clear-chat-btn").classList.remove("hidden");
-  runTurn();
+  runTurnGuarded();
 }
 
 function clearChat() {
@@ -232,11 +244,12 @@ function clearChat() {
 }
 
 function submitTurn() {
+  if (turnInFlight) return;
   const input = document.getElementById("turn-input");
   if (!session) return;
   session.inputList.push(input.value);
   input.value = "";
-  runTurn();
+  runTurnGuarded();
 }
 
 function setupButtons() {
