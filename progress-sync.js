@@ -121,8 +121,16 @@ function showLoggedInUI(email) {
   if (!out || !inn) return;
   out.classList.add("hidden");
   inn.classList.remove("hidden");
-  document.getElementById("account-status").textContent =
-    "已登录：" + email.replace("@" + FAKE_EMAIL_DOMAIN, "");
+  const username = email.replace("@" + FAKE_EMAIL_DOMAIN, "");
+  document.getElementById("account-status").textContent = "已登录：" + username;
+
+  const avatar = document.getElementById("account-avatar");
+  const label = document.getElementById("account-avatar-label");
+  if (avatar) {
+    avatar.textContent = username.slice(0, 1).toUpperCase();
+    avatar.classList.add("logged-in");
+  }
+  if (label) label.textContent = username;
 }
 
 function showLoggedOutUI() {
@@ -131,6 +139,16 @@ function showLoggedOutUI() {
   if (!out || !inn) return;
   out.classList.remove("hidden");
   inn.classList.add("hidden");
+
+  // 退出登录之后头像和面板都退回未登录状态，登录表单还开着，
+  // 可以直接输入另一个账号的用户名密码登录——这就是"换个账号"的路径。
+  const avatar = document.getElementById("account-avatar");
+  const label = document.getElementById("account-avatar-label");
+  if (avatar) {
+    avatar.textContent = "👤";
+    avatar.classList.remove("logged-in");
+  }
+  if (label) label.textContent = "登录 / 注册";
 }
 
 async function refreshAccountUI() {
