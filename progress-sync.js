@@ -63,6 +63,23 @@ function restoreLocalData(data) {
   });
 }
 
+// 清掉本机所有跟进度相关的本地存档（不动 daily_review_date 之外的其他本地设置）。
+// 只在"确定要切换成另一个身份"的时候调用——明确登录一个账号之前，先把本机可能
+// 属于上一个账号（或者匿名试用留下）的旧进度清干净，不然两边的key会混在一起：
+// 比如共享电脑上A做了初级到第6关，退出后B登录，B从没做过初级，但本机还留着
+// "初级解锁到第6关"这条数据，B一旦触发自动同步，就会把A的进度当成自己的推上云端。
+function clearLocalProgressData() {
+  Object.keys(localStorage).forEach((k) => {
+    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+      localStorage.removeItem(k);
+    }
+  });
+  // "今天复习过了没"这个标记不走 codecourse_/aigames_ 前缀（定义在 quiz-app.js 里），
+  // 但它也是跟身份绑定的本地状态，同一个道理，换账号时也得跟着清掉，不然会出现
+  // "A今天复习过了，B登录同一台设备当天就不会再被提示复习"这种串号。
+  localStorage.removeItem("daily_review_date");
+}
+
 async function pushProgressToCloud(userId) {
   const local = gatherLocalData();
   const { data: existing } = await supabaseClient
@@ -76,12 +93,18 @@ async function pushProgressToCloud(userId) {
     .upsert({ user_id: userId, data: merged, updated_at: new Date().toISOString() });
 }
 
-async function pullProgressFromCloud(userId) {
+// clearFirst=true 表示这是一次明确的"登录切换身份"操作，先清本地再复原云端数据，
+// 避免跟上一个账号/匿名试用留下的本地数据混在一起。留空/false是页面打开时被动
+// 检测已登录状态的例行拉取（cloudProgressReady），这种情况不清本地——如果这台
+// 设备上一次的关卡完成还没来得及异步推上云端（autoSaveToCloud没await，有极小
+// 概率的race），例行拉取时先清本地再等云端数据，反而可能把刚拿到的进度清没了。
+async function pullProgressFromCloud(userId, clearFirst) {
   const { data: existing } = await supabaseClient
     .from("progress")
     .select("data")
     .eq("user_id", userId)
     .maybeSingle();
+  if (clearFirst) clearLocalProgressData();
   if (existing && existing.data) {
     restoreLocalData(existing.data);
   }
@@ -91,19 +114,20 @@ async function pullProgressFromCloud(userId) {
 // 是的话把云端的真实进度拉下来覆盖到localStorage，这样已经登录过的设备/浏览器换一个
 // 学习页面直接打开，看到的也是最新进度，不用非得先去首页或者重新点一次登录才会同步。
 // 存成一个全局Promise，好让 app.js / quiz-app.js 在真正要用进度数据之前 await 它；
-// resolve出来的布尔值表示"这次检测到确实是登录状态"，给首页判断要不要跳过测试用。
+// resolve出来的是当前登录用户对象（没登录是null），首页用它判断要不要跳过测试，
+// refreshAccountUI() 也直接复用这个结果，不用自己再查一次登录状态。
 window.cloudProgressReady = (async () => {
-  if (!supabaseClient) return false;
+  if (!supabaseClient) return null;
   try {
     const { data } = await supabaseClient.auth.getUser();
     if (data && data.user) {
       await pullProgressFromCloud(data.user.id);
-      return true;
+      return data.user;
     }
   } catch (e) {
     // 拉取失败就用本地缓存，不阻塞页面
   }
-  return false;
+  return null;
 })();
 
 function setAccountMessage(text, isError) {
@@ -153,9 +177,10 @@ function showLoggedOutUI() {
 
 async function refreshAccountUI() {
   if (!supabaseClient || !document.getElementById("account-logged-out")) return;
-  const { data } = await supabaseClient.auth.getUser();
-  if (data && data.user) {
-    showLoggedInUI(data.user.email);
+  // 复用 cloudProgressReady 已经查过的登录状态，不用自己再调一次 auth.getUser()。
+  const user = window.cloudProgressReady ? await window.cloudProgressReady : null;
+  if (user) {
+    showLoggedInUI(user.email);
   } else {
     showLoggedOutUI();
   }
@@ -209,7 +234,7 @@ function setupAccountUI() {
       setAccountMessage("登录失败：用户名或密码不对。", true);
       return;
     }
-    await pullProgressFromCloud(data.user.id);
+    await pullProgressFromCloud(data.user.id, true);
     setAccountMessage("登录成功，进度已经恢复！点确定后会刷新页面。");
     alert("登录成功！点确定刷新页面查看恢复的进度。");
     location.reload();

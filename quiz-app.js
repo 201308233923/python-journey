@@ -177,7 +177,7 @@ function wireAccountGate(destinationUrl) {
       setGateMessage("登录失败：用户名或密码不对。", true);
       return;
     }
-    await pullProgressFromCloud(data.user.id);
+    await pullProgressFromCloud(data.user.id, true);
     location.href = destinationUrl;
   });
 }
@@ -347,7 +347,8 @@ async function initQuizPage() {
   // isLoggedIn 记录这次是不是真的检测到了登录状态——只有真登录了，才允许首页自动跳过
   // 水平测试；单纯本地有进度（没登录，比如用导入进度码恢复的）不算，得让用户自己点
   // "直接当初级学"之类的链接，不做静默跳转。
-  const isLoggedIn = window.cloudProgressReady ? await window.cloudProgressReady : false;
+  const loggedInUser = window.cloudProgressReady ? await window.cloudProgressReady : null;
+  const isLoggedIn = !!loggedInUser;
 
   // 侧栏"📝 复习"是用户主动点的，即使今天已经复习过、或者本来还没到弹出的时候，
   // 只要还有可复习的内容就直接进题，不用再经过"复习/继续学"这一步选择。
