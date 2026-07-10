@@ -329,6 +329,10 @@ async function init() {
   pyodide = await loadPyodideWithFallback();
   if (!pyodide) return;
 
+  // 跟 app.js 同一个道理：登录过账号的话，先把云端进度拉下来盖掉本地缓存，
+  // 这个promise是 progress-sync.js 定义的，只能在这里（已经过了第一个await）之后引用它。
+  if (window.cloudProgressReady) await window.cloudProgressReady;
+
   document.getElementById("loading").classList.add("hidden");
   document.getElementById("level-view").classList.remove("hidden");
 
