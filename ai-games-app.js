@@ -32,6 +32,16 @@ function explainError(err) {
   if (err.includes("ZeroDivisionError")) {
     return "除数不能是0，检查一下除法算式里的分母。";
   }
+  if (err.includes("IndexError")) {
+    return "下标越界：访问了列表里不存在的位置。记得下标从0开始数，最后一个元素的下标是'长度-1'，也可以直接用 -1 表示最后一个。";
+  }
+  if (err.includes("KeyError")) {
+    const match = err.match(/KeyError: '?(.+?)'?$/);
+    const key = match ? match[1] : "";
+    return key
+      ? `字典里没有找到键'${key}'。第一次用某个键之前，要先给它一个初始值，或者用 .get(键, 默认值) 来安全取值。`
+      : "字典里没有找到对应的键。第一次用某个键之前，要先给它一个初始值，或者用 .get(键, 默认值) 来安全取值。";
+  }
   return `程序运行出错了：${err}`;
 }
 
