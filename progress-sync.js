@@ -39,6 +39,15 @@ function importProgressCode(code) {
   return keys.length;
 }
 
+// 只解码、不写入本地——给"跟朋友比一比进度"用，看一眼朋友的进度码里有什么，
+// 不能真的导入（导入会覆盖掉自己的进度）。
+function decodeProgressCode(code) {
+  const json = decodeURIComponent(escape(atob(code.trim())));
+  const data = JSON.parse(json);
+  if (Object.keys(data).length === 0) throw new Error("empty");
+  return data;
+}
+
 // ---------- 账号同步 ----------
 
 function usernameToEmail(username) {
@@ -290,3 +299,46 @@ function setupProgressSyncButtons() {
 }
 
 setupProgressSyncButtons();
+
+// ---------- 连续学习天数 ----------
+// 每天第一次打开网站（任意页面都算，不要求真的通关一关）就记一次"打卡"。
+// 存"当天本地零点"的时间戳而不是格式化字符串，是为了后面能直接做数字减法算
+// 天数差，不用再把字符串解析回Date对象（不同浏览器解析非标准日期字符串的
+// 行为不完全一致，容易出隐藏bug）。
+
+const STREAK_COUNT_KEY = "codecourse_streak_count";
+const STREAK_LAST_KEY = "codecourse_streak_last_midnight";
+
+function localMidnight(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+}
+
+async function bumpStreakAndRender() {
+  // 这两个key带 codecourse_ 前缀，会被登录同步/云端拉取一起打包处理（这样换设备
+  // 也能接着连续记录，账号切换时也会正确清掉换成新账号自己的）。但也正因为这样，
+  // 必须先等 cloudProgressReady 拉完云端数据，再读本地、算今天要不要+1——不然
+  // 这里先同步地把本地存档改了，云端数据晚一步拉下来时会把刚改的这次悄悄覆盖掉，
+  // 不仅今天白打卡，连带明天算"是否连续"用的时间戳也变成了旧的，可能把真实的
+  // 连续记录也错误地打断。
+  if (window.cloudProgressReady) await window.cloudProgressReady;
+
+  const todayMidnight = localMidnight(new Date());
+  const lastMidnight = parseInt(localStorage.getItem(STREAK_LAST_KEY) || "0", 10);
+
+  if (lastMidnight !== todayMidnight) {
+    const lastCount = parseInt(localStorage.getItem(STREAK_COUNT_KEY) || "0", 10);
+    const gapDays = lastMidnight ? Math.round((todayMidnight - lastMidnight) / 86400000) : null;
+    const newCount = gapDays === 1 ? lastCount + 1 : 1; // 隔了不止一天，连续记录断了，重新从1开始
+    localStorage.setItem(STREAK_COUNT_KEY, String(newCount));
+    localStorage.setItem(STREAK_LAST_KEY, String(todayMidnight));
+  }
+
+  const count = parseInt(localStorage.getItem(STREAK_COUNT_KEY) || "0", 10);
+  const badge = document.getElementById("streak-badge");
+  if (badge && count > 0) {
+    badge.textContent = `🔥 连续学习 ${count} 天`;
+    badge.classList.remove("hidden");
+  }
+}
+
+bumpStreakAndRender();
