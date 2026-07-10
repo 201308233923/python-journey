@@ -21,6 +21,9 @@ print(celsius_to_fahrenheit(100))`,
     why: `为什么Python这么在意缩进？因为很多语言用花括号{}来表示"这段代码属于哪一块"，Python选择了用缩进本身来表达，代码更简洁好读，代价是缩进错一点就会出错——这是Python的设计取舍，不是bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!/\bdef\s+\w+\s*\(/.test(r.code) || !/\breturn\b/.test(r.code)) {
+        return { pass: false, message: "函数定义和 return 好像被删掉了，这一关是改缩进修好bug，不是绕开函数直接打印结果。" };
+      }
       if (r.stdout.includes("32.0") && r.stdout.includes("212.0")) {
         return { pass: true, message: "修好了！这是最常见的bug之一：缩进不对齐。" };
       }
@@ -39,6 +42,9 @@ print(celsius_to_fahrenheit(100))`,
     why: `为什么range()的终点不包含本身？这是编程语言里一个常见的设计习惯（叫"左闭右开区间"），好处是range(0, n)正好给出n个数、配合列表长度用起来很顺手——刚接触时反直觉，习惯了会发现它其实更方便。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("range(") || !/\bfor\b/.test(r.code)) {
+        return { pass: false, message: "for 循环和 range() 好像被删掉了，这一关是改 range() 的参数修好bug，不是绕开循环直接打印数字。" };
+      }
       const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
       if (nums.length === 10 && nums[9] === "10") {
         return { pass: true, message: "修好了！这种'差一错误'（off-by-one）是最经典的编程bug类型。" };
@@ -61,6 +67,9 @@ else:
     why: `为什么Python不让 if age = 18 这样写（有些语言允许）？因为这是一个极容易手滑的错误，Python选择在这里直接报错，而不是"悄悄按你可能没想到的方式执行"，这样的错误更容易被发现，而不是留到后面变成难查的bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!/\bif\b/.test(r.code) || !r.code.includes("==")) {
+        return { pass: false, message: "if 判断和 == 好像被删掉了，这一关是把 = 改成 == 修好bug，不是绕开判断直接打印结果。" };
+      }
       if (r.stdout.includes("正好18岁")) {
         return { pass: true, message: "修好了！= 和 == 混淆是新手最常犯的错误之一，以后要多注意。" };
       }
@@ -80,6 +89,9 @@ print(name + "今年" + age + "岁")`,
     why: `为什么Python不自动把数字转成文字？因为"13" + "岁"和13+多少哪个是"加法"，如果自动转换，容易掩盖真正的bug（比如你以为在做数学运算，其实在做拼接）。Python选择让你明确写出 str(age)，代码意图更清楚。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("+") || !r.code.includes("str(")) {
+        return { pass: false, message: "字符串拼接和 str() 转换好像被删掉了，这一关是加 str() 修好bug，不是绕开拼接直接打印结果。" };
+      }
       if (r.stdout.includes("小明今年13岁")) {
         return { pass: true, message: "修好了！数字不能直接和文字拼接，这是很常见的类型问题。" };
       }
@@ -104,6 +116,9 @@ else:
     why: `为什么if/elif的顺序会影响结果？因为Python的if/elif是"从上往下，第一个满足的条件就执行，后面全部跳过"，不会继续往下检查。这跟很多人以为的"每个条件都会单独判断一次"不一样，是很容易踩的坑。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!/\bif\b/.test(r.code) || !r.code.includes("elif")) {
+        return { pass: false, message: "if/elif 判断好像被删掉了，这一关是调整条件顺序修好bug，不是绕开判断直接打印结果。" };
+      }
       if (r.stdout.includes("优秀")) {
         return { pass: true, message: "修好了！条件判断的顺序很重要，范围更小/更严格的条件要写在前面。" };
       }
@@ -125,6 +140,9 @@ print("倒数结束")`,
     why: `这个bug没有报错，只是"什么都没做"——这类bug往往比直接报错的bug更难发现，因为程序看起来"正常运行完了"。养成运行后检查结果是否符合预期的习惯，比只看"有没有报错"更重要。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("while")) {
+        return { pass: false, message: "while 循环好像被删掉了，这一关是改循环条件修好bug，不是绕开循环直接打印数字。" };
+      }
       const lines = r.stdout.trim().split("\n").filter(Boolean);
       if (lines.length === 6 && lines[0] === "5" && lines[4] === "1") {
         return { pass: true, message: "修好了！while 的条件方向写反是很容易忽略的bug。" };
@@ -144,6 +162,9 @@ print("最后一个水果是：" + fruits[3])`,
     why: `为什么下标从0开始，而不是像日常数数一样从1开始？这跟计算机内存的存储方式有关——下标本质上是"从起始位置数过去多少步"，第一个元素就在起始位置，走0步就到了。这是几乎所有编程语言的共同设计。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
+      if (!r.code.includes("fruits[")) {
+        return { pass: false, message: "fruits[下标] 这种取值方式好像被删掉了，这一关是改下标修好bug，不是绕开列表直接打印结果。" };
+      }
       if (r.stdout.includes("最后一个水果是：橙子")) {
         return { pass: true, message: "修好了！下标越界（IndexError）通常是数错了位置，或者忘了下标从0开始。" };
       }
@@ -165,10 +186,19 @@ print(counts)`,
     why: `为什么字典不会自动给不存在的键一个默认值？因为如果访问不存在的键都"悄悄"返回某个默认值（比如0），拼写错误的键名就会被无声无息地放过，很难发现——报错反而是一种保护，逼你处理"这个键真的存在吗"这个问题。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (r.stdout.includes("苹果") && r.stdout.includes("2") && r.stdout.includes("香蕉") && r.stdout.includes("橙子")) {
+      if (!/\bfor\b/.test(r.code) || !r.code.includes("counts")) {
+        return { pass: false, message: "for 循环和 counts 字典好像被删掉了，这一关是给默认值修好bug，不是绕开统计直接打印结果。" };
+      }
+      // 光检查"苹果"、"香蕉"、"橙子"、"2"这几个字符串是不是都出现过还不够——
+      // 词和次数配对配错了（比如苹果1次、香蕉2次）也会让这几个子串全部命中。
+      // 用正则确认每个词后面紧跟的就是它该有的次数。
+      const hasApple2 = /苹果['"]?\s*:\s*2\b/.test(r.stdout);
+      const hasBanana1 = /香蕉['"]?\s*:\s*1\b/.test(r.stdout);
+      const hasOrange1 = /橙子['"]?\s*:\s*1\b/.test(r.stdout);
+      if (hasApple2 && hasBanana1 && hasOrange1) {
         return { pass: true, message: "毕业啦！KeyError（键不存在）是字典最常见的bug，遇到陌生代码报这个错，先检查是不是忘了给默认值。" };
       }
-      return { pass: false, message: "结果应该包含苹果2次、香蕉1次、橙子1次，检查一下统计逻辑。" };
+      return { pass: false, message: "结果应该是苹果2次、香蕉1次、橙子1次，检查一下统计逻辑（是不是哪个词的次数算错了）。" };
     },
   },
 ];
