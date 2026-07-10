@@ -145,11 +145,11 @@ def play():
         if user_move == ai_move:
             print("平局！")
         elif BEATS[user_move] == ai_move:
-            print("AI赢了！")
-            ai_score += 1
-        else:
             print("你赢了！")
             you_score += 1
+        else:
+            print("AI赢了！")
+            ai_score += 1
 
         print(f"比分——你：{you_score}  AI：{ai_score}\\n")
 
