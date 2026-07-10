@@ -313,7 +313,15 @@ function localMidnight(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
 }
 
-function bumpStreakAndRender() {
+async function bumpStreakAndRender() {
+  // 这两个key带 codecourse_ 前缀，会被登录同步/云端拉取一起打包处理（这样换设备
+  // 也能接着连续记录，账号切换时也会正确清掉换成新账号自己的）。但也正因为这样，
+  // 必须先等 cloudProgressReady 拉完云端数据，再读本地、算今天要不要+1——不然
+  // 这里先同步地把本地存档改了，云端数据晚一步拉下来时会把刚改的这次悄悄覆盖掉，
+  // 不仅今天白打卡，连带明天算"是否连续"用的时间戳也变成了旧的，可能把真实的
+  // 连续记录也错误地打断。
+  if (window.cloudProgressReady) await window.cloudProgressReady;
+
   const todayMidnight = localMidnight(new Date());
   const lastMidnight = parseInt(localStorage.getItem(STREAK_LAST_KEY) || "0", 10);
 

@@ -130,7 +130,10 @@ function wireCompareSection() {
       const rows = TRACKS.map((t) => {
         const mine = passedCount(getUnlocked(t.id), t.count);
         const theirsRaw = friendData[`codecourse_${t.id}_v2_unlocked`];
-        const theirs = passedCount(theirsRaw ? parseInt(theirsRaw, 10) : 1, t.count);
+        // parseInt 解析不出数字（码被手动改坏了之类）就当1处理，而不是让 NaN
+        // 一路传下去，最后在页面上显示"TA NaN/12关"这种东西。
+        const theirsUnlocked = theirsRaw ? parseInt(theirsRaw, 10) || 1 : 1;
+        const theirs = passedCount(theirsUnlocked, t.count);
         return `<li>${t.emoji} ${t.label}：你 ${mine}/${t.count} 关　·　TA ${theirs}/${t.count} 关</li>`;
       });
       resultBox.innerHTML = `<ul class="cert-track-list">${rows.join("")}</ul>`;

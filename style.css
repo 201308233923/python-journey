@@ -72,8 +72,13 @@ body {
   text-align: center;
 }
 
-.site-logo {
-  margin-bottom: 18px;
+/* 首页左上角固定的小logo，跟右上角的账号头像对称，两边视觉重量差不多，
+   中间居中的内容才真的显得"居中"，不会因为只有右边有东西而看着偏左。 */
+.corner-logo {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 20;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
 }
 
@@ -909,6 +914,13 @@ button:disabled {
 
   .corner-account .account-avatar-label {
     display: none;
+  }
+
+  .corner-logo {
+    top: 10px;
+    left: 10px;
+    width: 28px;
+    height: 28px;
   }
 }
 

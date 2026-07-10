@@ -9,6 +9,13 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <svg class="corner-logo" width="36" height="36" viewBox="0 0 56 56" fill="none" role="img" aria-label="码芽">
+    <circle cx="28" cy="28" r="27" fill="var(--panel)" stroke="var(--border)" stroke-width="1" />
+    <path d="M28 40 L28 24" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+    <path d="M28 26 C20 26, 16 20, 18 14 C24 14, 28 20, 28 26 Z" fill="var(--accent)" />
+    <path d="M28 26 C36 26, 40 20, 38 14 C32 14, 28 20, 28 26 Z" fill="var(--accent)" />
+  </svg>
+
   <div class="corner-account account-box">
     <button id="account-toggle-btn" class="account-avatar-btn">
       <span id="account-avatar" class="account-avatar">👤</span>
@@ -36,12 +43,6 @@
 
   <div class="landing">
     <div class="landing-inner">
-      <svg class="site-logo" width="56" height="56" viewBox="0 0 56 56" fill="none" role="img" aria-label="码芽">
-        <circle cx="28" cy="28" r="27" fill="var(--panel)" stroke="var(--border)" stroke-width="1" />
-        <path d="M28 40 L28 24" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
-        <path d="M28 26 C20 26, 16 20, 18 14 C24 14, 28 20, 28 26 Z" fill="var(--accent)" />
-        <path d="M28 30 C36 30, 40 24, 38 18 C32 18, 28 24, 28 30 Z" fill="var(--accent)" />
-      </svg>
       <div id="streak-badge" class="streak-badge hidden"></div>
       <div id="quiz-root"></div>
     </div>
