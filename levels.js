@@ -426,7 +426,7 @@ print(a // b)   # 3（不是3.33）</pre>
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
-          if (!r.stdout.includes("6")) {
+          if (!/\b6\b/.test(r.stdout)) {
             return { pass: false, message: "打印出数字了，但结果不是6，检查一下 total_apples 和 people 的值，以及整除有没有写对。" };
           }
           if (!r.code.includes("//")) {
@@ -988,6 +988,9 @@ else:
         hint: `range(1, 11) 会从1数到10（不包含11）。格式：for i in range(1, 11): 换行缩进 print(i)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!/\bfor\b/.test(r.code) || !r.code.includes("range(")) {
+            return { pass: false, message: "代码里好像没有用 for 循环 + range()，检查一下是不是把1到10直接写死了十个print()。" };
+          }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
           if (nums.length < 10) {
             return { pass: false, message: `目前只打印了${nums.length}行，应该要有10行（1到10），检查一下 range() 里的数字。` };
@@ -1119,6 +1122,9 @@ print(total)   # 1+2+3 = 6</pre>
         hint: `格式：for i in range(1, 10): 换行缩进 print(f"5x{i}={5*i}")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!/\bfor\b/.test(r.code)) {
+            return { pass: false, message: "代码里好像没有用 for 循环，检查一下是不是把9行结果直接写死了。" };
+          }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length < 9) {
             return { pass: false, message: `目前只打印了${lines.length}行，5的乘法表应该有9行（5x1到5x9）。` };
@@ -1152,6 +1158,9 @@ while count < 5:
         hint: `每次循环都要让count变小，不然会陷入"死循环"。格式：count = 10 / while count >= 1: 换行缩进 print(count) 换行缩进 count = count - 1`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!r.code.includes("while")) {
+            return { pass: false, message: "代码里好像没有用 while 循环，检查一下是不是把10行结果直接写死了。" };
+          }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
           if (nums.length < 10) {
             return { pass: false, message: `目前只打印了${nums.length}行，应该要有10行（10倒数到1），检查一下循环条件。` };
@@ -1895,6 +1904,9 @@ found = False
         defaultInput: "5\n8\n7",
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!r.code.includes("while") || !r.code.includes("input(")) {
+            return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
+          }
           if (!r.code.includes("break")) {
             return { pass: false, message: "这一关猜中时要用 break 提前跳出循环，检查一下代码里有没有 break。" };
           }
@@ -1989,6 +2001,9 @@ history = []
         defaultInput: "5\n8\n7",
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!r.code.includes("while") || !r.code.includes("input(")) {
+            return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
+          }
           if (!r.code.includes(".append(")) {
             return { pass: false, message: "这一关要用 .append() 把每次猜测记进 history 列表，检查一下代码里有没有用到。" };
           }
