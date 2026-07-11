@@ -1037,7 +1037,8 @@ a.back-link {
   flex: 1;
 }
 
-.cert-compare {
+.cert-compare,
+.cert-weak-points {
   margin-top: 28px;
   padding-top: 24px;
   border-top: 1px solid var(--border);

@@ -399,6 +399,19 @@ async function runCurrentLevel() {
 function setupButtons() {
   document.getElementById("run-btn").addEventListener("click", runCurrentLevel);
 
+  // Ctrl/Cmd+Enter 直接运行代码，不用每次都用鼠标点"运行"按钮——
+  // 写代码时"改一点、跑一下"这个动作要重复很多次，快捷键能省不少来回。
+  const runShortcutHandler = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      e.preventDefault();
+      const runBtn = document.getElementById("run-btn");
+      if (!runBtn.disabled) runCurrentLevel();
+    }
+  };
+  document.getElementById("code-editor").addEventListener("keydown", runShortcutHandler);
+  const inputEditor = document.getElementById("input-editor");
+  if (inputEditor) inputEditor.addEventListener("keydown", runShortcutHandler);
+
   document.getElementById("reset-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
     const variant = currentVariant || resolveVariant(level);

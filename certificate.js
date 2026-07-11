@@ -37,6 +37,37 @@ function passedCount(unlocked, count) {
   return Math.min(Math.max(unlocked - 1, 0), count);
 }
 
+// 复用各赛道关卡页已经在记的"每一关错了几次"（app.js 的 failKey），跨四条赛道汇总一遍，
+// 挑出错得最多的几关——不用等通关一整条赛道才看得到，只要真的卡过就会出现在这里。
+// 只用关卡编号而不是关卡标题，是因为证书页刻意没有加载四个关卡数据文件（levels.js等）
+// 来省页面体积，标题得从那些文件里查，而编号从本地存档的key名就能直接读出来。
+function getWeakPoints() {
+  const points = [];
+  TRACKS.forEach((t) => {
+    for (let id = 1; id <= t.count; id++) {
+      const fails = parseInt(localStorage.getItem(`codecourse_${t.id}_v2_fails_${id}`) || "0", 10);
+      if (fails > 0) points.push({ track: t, levelId: id, fails });
+    }
+  });
+  points.sort((a, b) => b.fails - a.fails);
+  return points.slice(0, 5);
+}
+
+function renderWeakPointsSection() {
+  const points = getWeakPoints();
+  if (points.length === 0) return "";
+  const rows = points
+    .map((p) => `<li>${p.track.emoji} ${p.track.label} 第${p.levelId}关：错了 ${p.fails} 次</li>`)
+    .join("");
+  return `
+    <div class="cert-weak-points no-print">
+      <h2 class="cert-compare-title">🎯 你比较容易卡壳的地方</h2>
+      <p class="cert-compare-desc">按错误次数从多到少排的前几个，可以回去再看看是不是同一类知识点。</p>
+      <ul class="cert-track-list">${rows}</ul>
+    </div>
+  `;
+}
+
 function renderCertificateSection(completed) {
   if (completed.length === 0) {
     return `
@@ -147,7 +178,7 @@ function render() {
   const root = document.getElementById("cert-root");
   const completed = TRACKS.filter((t) => getUnlocked(t.id) > t.count);
 
-  root.innerHTML = renderCertificateSection(completed) + renderCompareSection();
+  root.innerHTML = renderCertificateSection(completed) + renderWeakPointsSection() + renderCompareSection();
 
   wireCertificateSection(completed);
   wireCompareSection();
