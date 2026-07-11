@@ -1031,10 +1031,12 @@ a.back-link {
 .cert-btn-row {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .cert-btn-row button {
   flex: 1;
+  min-width: 160px;
 }
 
 .cert-compare,
