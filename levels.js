@@ -980,7 +980,9 @@ else:
           <p>循环可以让电脑帮你重复做一件事，不用自己写100遍。</p>
           <pre>for i in range(5):
     print(f"第{i}次")</pre>
-          <p><code>range(5)</code> 会依次给出 0,1,2,3,4 这5个数字。</p>
+          <p><code>range(5)</code> 会依次给出 0,1,2,3,4 这5个数字，<code>i</code> 就是用来装这些数字的变量——
+          每循环一次，<code>i</code> 就会变成下一个数字，所以上面这段代码会依次打印"第0次""第1次"……"第4次"。
+          （<code>i</code> 只是习惯用的名字，换成别的名字比如 num 也完全可以。）</p>
           <p>用 for 循环打印出1到10（每个数字一行）。</p>
         `,
         starter: `# 用 for 循环和 range()，打印1到10
@@ -1115,6 +1117,8 @@ print(total)   # 1+2+3 = 6</pre>
           <p>循环体里可以用f-string，每次打印不一样的计算结果，比如打印乘法表：</p>
           <pre>for i in range(1, 4):
     print(f"2x{i}={2*i}")   # 2x1=2 / 2x2=4 / 2x3=6</pre>
+          <p><code>i</code> 依次是1、2、3，每一轮就用当前的 <code>i</code> 拼出"2x{i}"这句话，
+          再算出 <code>2*i</code> 当结果——i变了，拼出来的文字和算出来的结果就跟着变。</p>
           <p>用 for 循环，打印出"5的乘法表"：5x1=5 一直到 5x9=45（每行一个）。</p>
         `,
         starter: `# 用 for 循环 + f-string，打印5的乘法表：5x1=5 到 5x9=45
@@ -1377,6 +1381,9 @@ for f in fruits:
           <pre>fruits = ["苹果", "香蕉"]
 for i in range(len(fruits)):
     print(fruits[i])</pre>
+          <p>这里的 <code>i</code> 不再只是"第几次循环"，而是被当成"下标"用——len(fruits)是2，
+          所以 <code>i</code> 会依次是0和1，正好是fruits里每一项的下标，<code>fruits[i]</code> 就是
+          "取出下标为i的那一项"（第一轮i=0，取到"苹果"；第二轮i=1，取到"香蕉"）。</p>
           <p>做一个装有3个你喜欢的电影/动画名字的列表，用 <code>range(len(...))</code> + 下标的方式遍历打印。</p>
         `,
         starter: `# 创建列表 movies，装3个你喜欢的电影/动画名字
@@ -1755,6 +1762,9 @@ print(result * 2)   # 32</pre>
         print(n * i)
 
 print_multiples(2)   # 2, 4, 6</pre>
+          <p>这里 <code>i</code> 依次是1、2、3（range(1,4)不包含4），代表"第几倍"——
+          <code>n * i</code> 就是"n的第i倍"：n=2时，i=1算出2，i=2算出4，i=3算出6，
+          所以依次打印出2、4、6。</p>
           <p>写一个函数 print_multiples(n)，内部用 for 循环，打印 n 的1到5倍（5行）。
           调用 print_multiples(3)。</p>
         `,
