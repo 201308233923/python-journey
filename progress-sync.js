@@ -89,6 +89,11 @@ function clearLocalProgressData() {
   localStorage.removeItem("daily_review_date");
 }
 
+// 记一下"本机现在这份本地数据，上一次是跟哪个账号同步过的"——登录时用来区分
+// "真的换了个人"和"还是自己，只是session不知道为什么过期了、重新登录一次"，
+// 这两种情况该不该清本地是不一样的（见下面 pullProgressFromCloud 的注释）。
+const SYNCED_USER_ID_KEY = "codecourse_synced_user_id";
+
 async function pushProgressToCloud(userId) {
   const local = gatherLocalData();
   const { data: existing } = await supabaseClient
@@ -100,23 +105,44 @@ async function pushProgressToCloud(userId) {
   await supabaseClient
     .from("progress")
     .upsert({ user_id: userId, data: merged, updated_at: new Date().toISOString() });
+  localStorage.setItem(SYNCED_USER_ID_KEY, userId);
 }
 
-// clearFirst=true 表示这是一次明确的"登录切换身份"操作，先清本地再复原云端数据，
-// 避免跟上一个账号/匿名试用留下的本地数据混在一起。留空/false是页面打开时被动
-// 检测已登录状态的例行拉取（cloudProgressReady），这种情况不清本地——如果这台
-// 设备上一次的关卡完成还没来得及异步推上云端（autoSaveToCloud没await，有极小
-// 概率的race），例行拉取时先清本地再等云端数据，反而可能把刚拿到的进度清没了。
+// clearFirst=true 表示这是一次"登录"操作，理论上可能是切换身份，要避免跟上一个
+// 账号/匿名试用留下的本地数据混在一起。但登录表单弹出来，不代表一定是"换了个人"——
+// 也可能就是同一个人，只是session过期了、重新输一遍自己的密码而已。这两种情况
+// 不能一视同仁地"清本地"：真换人的话必须清，不然会把上一个人的数据当成自己的
+// 推上云端；但如果就是自己，本地可能还有没来得及同步的改动（比如正在写、还没
+// 通关的代码），直接清空就永久丢了——这正是之前"退出登录再登录代码丢了"那个bug
+// 的另一个入口，只是这次不是从"退出登录"进来的，是从"session自己过期"进来的。
+//
+// 区分方法：看本机记的"上一次跟谁同步过"（SYNCED_USER_ID_KEY）是不是就是这次
+// 登录的这个账号——是的话，大概率就是同一个人，先把本地兜底推一次再覆盖，不
+// 做破坏性清空；不是（或者从来没记录过，比如这台设备第一次用）才真的清空。
+//
+// 留空/false 是页面打开时被动检测已登录状态的例行拉取（cloudProgressReady），
+// 这种情况不清本地也不用做身份判断——如果这台设备上一次的关卡完成还没来得及
+// 异步推上云端（autoSaveToCloud没await，有极小概率的race），例行拉取时先清本地
+// 再等云端数据，反而可能把刚拿到的进度清没了。
 async function pullProgressFromCloud(userId, clearFirst) {
+  if (clearFirst) {
+    const lastSyncedUserId = localStorage.getItem(SYNCED_USER_ID_KEY);
+    if (lastSyncedUserId === userId) {
+      await pushProgressToCloud(userId);
+    } else {
+      clearLocalProgressData();
+    }
+  }
+
   const { data: existing } = await supabaseClient
     .from("progress")
     .select("data")
     .eq("user_id", userId)
     .maybeSingle();
-  if (clearFirst) clearLocalProgressData();
   if (existing && existing.data) {
     restoreLocalData(existing.data);
   }
+  localStorage.setItem(SYNCED_USER_ID_KEY, userId);
 }
 
 // 页面一打开就检查是不是已经登录过（Supabase的登录状态本身是持久化在浏览器里的），
