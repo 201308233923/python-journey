@@ -27,6 +27,7 @@ const LEVELS = [
 # 用 print() 打印出：你好，世界！
 `,
         hint: `记得文字要用引号 "" 包起来，Python 才知道这是一段文字（叫"字符串"）。格式是 print("你好，世界！")`,
+        answer: `print("你好，世界！")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.trim().length === 0) {
@@ -48,6 +49,7 @@ const LEVELS = [
 # print("你好", "世界！")
 `,
         hint: `格式：print("你好", "世界！")，注意是用逗号，不是加号。`,
+        answer: `print("你好", "世界！")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/print\(\s*["'][^"']*["']\s*,/.test(r.code)) {
@@ -70,6 +72,8 @@ print(message)</pre>
 # 然后 print(message)
 `,
         hint: `格式：message = "Python真好玩！" 换行 print(message)`,
+        answer: `message = "Python真好玩！"
+print(message)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\w+\s*=(?!=)/.test(r.code)) {
@@ -90,6 +94,7 @@ print(message)</pre>
         starter: `# 用 + 号把几段文字拼接起来，打印出：你好，世界！
 `,
         hint: `格式：print("你" + "好" + "，" + "世界" + "！")，每一段都要用引号包起来。`,
+        answer: `print("你" + "好" + "，" + "世界" + "！")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("+")) {
@@ -113,6 +118,8 @@ print("第二行")</pre>
 # 第二次打印：世界！
 `,
         hint: `格式：print("你好") 换行 print("世界！")`,
+        answer: `print("你好")
+print("世界！")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -137,6 +144,8 @@ print("第二行")</pre>
 # 世界！""")
 `,
         hint: `格式：print("""你好\\n世界！"""）——把上面starter里的注释去掉，中间保留真正的换行（不是打\\n两个字符）。`,
+        answer: `print("""你好
+世界！""")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes('"""') && !r.code.includes("'''")) {
@@ -173,6 +182,8 @@ print(age)</pre>
 # 然后用 print(my_name) 打印出来
 `,
         hint: `变量名不能有空格，也不能用数字开头。文字记得加引号，格式是 my_name = "你的名字"，然后另起一行 print(my_name)`,
+        answer: `my_name = "小明"
+print(my_name)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.trim().length === 0) {
@@ -195,6 +206,8 @@ print(age)</pre>
 # 然后用 print(my_age) 打印出来
 `,
         hint: `数字不用加引号，格式是 my_age = 13，然后另起一行 print(my_age)`,
+        answer: `my_age = 13
+print(my_age)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.trim().length === 0) {
@@ -221,6 +234,9 @@ print(b)</pre>
 # 然后分别 print(my_name) 和 print(my_age)
 `,
         hint: `格式：my_name, my_age = "小明", 13，然后 print(my_name) 换行 print(my_age)`,
+        answer: `my_name, my_age = "小明", 13
+print(my_name)
+print(my_age)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -246,6 +262,10 @@ print(score)</pre>
 # 再把 score 重新赋值成 90，打印
 `,
         hint: `格式：score = 60 换行 print(score) 换行 score = 90 换行 print(score)`,
+        answer: `score = 60
+print(score)
+score = 90
+print(score)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -274,6 +294,9 @@ print(copy)</pre>
 # print(copy)
 `,
         hint: `格式：original = "苹果" 换行 copy = original 换行 print(copy)`,
+        answer: `original = "苹果"
+copy = original
+print(copy)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.trim().length === 0) {
@@ -297,6 +320,9 @@ print(y)</pre>
 # 然后分别 print(a) 和 print(b)
 `,
         hint: `格式：a = b = "你好" 换行 print(a) 换行 print(b)`,
+        answer: `a = b = "你好"
+print(a)
+print(b)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -334,6 +360,10 @@ print(a + b)</pre>
 # 打印 future_age
 `,
         hint: `格式大概是：age = 13 / years_later = 10 / future_age = age + years_later / print(future_age)`,
+        answer: `age = 13
+years_later = 10
+future_age = age + years_later
+print(future_age)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -363,6 +393,10 @@ print(a - b)</pre>
 # 打印 remaining_money
 `,
         hint: `格式大概是：total_money = 20 / spent_money = 7 / remaining_money = total_money - spent_money / print(remaining_money)`,
+        answer: `total_money = 20
+spent_money = 7
+remaining_money = total_money - spent_money
+print(remaining_money)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -392,6 +426,10 @@ print(a * b)</pre>
 # 打印 total
 `,
         hint: `格式大概是：price = 3 / quantity = 5 / total = price * quantity / print(total)`,
+        answer: `price = 3
+quantity = 5
+total = price * quantity
+print(total)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -421,6 +459,10 @@ print(a // b)   # 3（不是3.33）</pre>
 # 打印 each
 `,
         hint: `格式大概是：total_apples = 30 / people = 5 / each = total_apples // people / print(each)`,
+        answer: `total_apples = 30
+people = 5
+each = total_apples // people
+print(each)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -446,6 +488,11 @@ print(a // b)   # 3（不是3.33）</pre>
 # 打印 result
 `,
         hint: `格式大概是：a = 2 / b = 3 / c = 4 / result = (a + b) * c / print(result)`,
+        answer: `a = 2
+b = 3
+c = 4
+result = (a + b) * c
+print(result)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -475,6 +522,12 @@ print(total)</pre>
 # 打印 total
 `,
         hint: `格式大概是：price = 25 / quantity = 3 / shipping = 10 / clothes_total = price * quantity / total = clothes_total + shipping / print(total)`,
+        answer: `price = 25
+quantity = 3
+shipping = 10
+clothes_total = price * quantity
+total = clothes_total + shipping
+print(total)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\d/.test(r.stdout)) {
@@ -508,6 +561,9 @@ print(f"我住在{city}")</pre>
 # 用 f-string 打印："我叫{name}，今年{age}岁"
 `,
         hint: `别忘了字符串前面的 f，格式是 print(f"我叫{name}，今年{age}岁")，花括号里不要再加引号。`,
+        answer: `name = "小明"
+age = 13
+print(f"我叫{name}，今年{age}岁")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -534,6 +590,8 @@ print(f"5年后我{age + 5}岁")   # 花括号里直接算</pre>
 # 花括号里直接写算式，不用额外创建变量
 `,
         hint: `格式：print(f"我今年{age}岁，5年后我{age + 5}岁")`,
+        answer: `age = 13
+print(f"我今年{age}岁，5年后我{age + 5}岁")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -561,6 +619,10 @@ print(f"{a}和{b}")</pre>
 # 用 f-string 打印："我叫{name}，来自{city}，喜欢{hobby}"
 `,
         hint: `格式：print(f"我叫{name}，来自{city}，喜欢{hobby}")`,
+        answer: `name = "小明"
+city = "北京"
+hobby = "篮球"
+print(f"我叫{name}，来自{city}，喜欢{hobby}")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -587,6 +649,8 @@ print(f"大写是{name.upper()}")   # 大写是TOM</pre>
 # 用 f-string 打印："我的英文名大写是{name.upper()}"
 `,
         hint: `格式：name = "xiaoming" 换行 print(f"我的英文名大写是{name.upper()}")`,
+        answer: `name = "xiaoming"
+print(f"我的英文名大写是{name.upper()}")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -615,6 +679,10 @@ print(f"""姓名：{name}
 # 年龄：{age}
 `,
         hint: `格式：print(f"""姓名：{name}\\n年龄：{age}"""）——中间是真正的换行，不是打\\n两个字符。`,
+        answer: `name = "小明"
+age = 13
+print(f"""姓名：{name}
+年龄：{age}""")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -644,6 +712,8 @@ print(f"价格是{price:.2f}元")   # 价格是9.50元</pre>
 # 用 f-string 打印："价格是{price:.2f}元"
 `,
         hint: `格式：price = 9.5 换行 print(f"价格是{price:.2f}元")`,
+        answer: `price = 9.5
+print(f"价格是{price:.2f}元")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.stdout.includes("{")) {
@@ -678,6 +748,8 @@ print(answer)</pre>
 # 用 f-string 打印："你好，{name}！"
 `,
         hint: `格式大概是：name = input("你叫什么名字？") 然后 print(f"你好，{name}！")`,
+        answer: `name = input("你叫什么名字？")
+print(f"你好，{name}！")`,
         needsInput: true,
         defaultInput: "小明",
         check: (r) => {
@@ -701,6 +773,8 @@ print(age + 1)</pre>
 # 用 f-string 打印："明年你{age + 1}岁"
 `,
         hint: `格式：age = int(input("你几岁？")) 换行 print(f"明年你{age + 1}岁")`,
+        answer: `age = int(input("你几岁？"))
+print(f"明年你{age + 1}岁")`,
         needsInput: true,
         defaultInput: "13",
         check: (r) => {
@@ -727,6 +801,9 @@ print(f"{name}最喜欢吃{food}")</pre>
 # 用 f-string 打印："{name}最喜欢吃{food}"
 `,
         hint: `模拟输入框里要写两行，第一行是名字，第二行是食物。格式：name = input(...) 换行 food = input(...) 换行 print(f"{name}最喜欢吃{food}")`,
+        answer: `name = input("你叫什么？")
+food = input("你喜欢吃什么？")
+print(f"{name}最喜欢吃{food}")`,
         needsInput: true,
         defaultInput: "小明\n披萨",
         check: (r) => {
@@ -754,6 +831,9 @@ print(f"华氏温度是{f}度")</pre>
 # 用 f-string 打印："华氏温度是{fahrenheit}度"
 `,
         hint: `格式：celsius = int(input("今天几度（摄氏）？")) 换行 fahrenheit = celsius * 9 / 5 + 32 换行 print(f"华氏温度是{fahrenheit}度")`,
+        answer: `celsius = int(input("今天几度（摄氏）？"))
+fahrenheit = celsius * 9 / 5 + 32
+print(f"华氏温度是{fahrenheit}度")`,
         needsInput: true,
         defaultInput: "0",
         check: (r) => {
@@ -779,6 +859,8 @@ print("我" + "住在" + city)</pre>
 # 用加号 + 拼接打印："我住在" + city
 `,
         hint: `格式：city = input("你住哪个城市？") 换行 print("我" + "住在" + city)`,
+        answer: `city = input("你住哪个城市？")
+print("我" + "住在" + city)`,
         needsInput: true,
         defaultInput: "北京",
         check: (r) => {
@@ -807,6 +889,8 @@ print(len(word))   # 2</pre>
 # 用 f-string 和 len()，打印："这个词有{len(word)}个字"
 `,
         hint: `格式：word = input("说一个词：") 换行 print(f"这个词有{len(word)}个字")`,
+        answer: `word = input("说一个词：")
+print(f"这个词有{len(word)}个字")`,
         needsInput: true,
         defaultInput: "编程",
         check: (r) => {
@@ -842,6 +926,11 @@ else:
 # 写 if / else：分数>=60 打印"及格"，否则打印"不及格"
 `,
         hint: `冒号后面换行，下一行要缩进（一般是4个空格）。格式：if score >= 60: 换行缩进 print("及格") 另起一行 else: 换行缩进 print("不及格")`,
+        answer: `score = 75
+if score >= 60:
+    print("及格")
+else:
+    print("不及格")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bif\b/.test(r.code)) {
@@ -866,6 +955,13 @@ else:
 # 写 if/elif/else：>=90打印"A"，>=60打印"B"，否则打印"C"
 `,
         hint: `格式：if score >= 90: 换行缩进 print("A") 另起一行 elif score >= 60: 换行缩进 print("B") 另起一行 else: 换行缩进 print("C")`,
+        answer: `score = 95
+if score >= 90:
+    print("A")
+elif score >= 60:
+    print("B")
+else:
+    print("C")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\belif\b/.test(r.code)) {
@@ -887,6 +983,9 @@ if balance < 50:
 # 写一个只有 if（不需要else）的判断：balance < 50 时打印"余额不足，请充值"
 `,
         hint: `格式：if balance < 50: 换行缩进 print("余额不足，请充值")——不需要写else。`,
+        answer: `balance = 30
+if balance < 50:
+    print("余额不足，请充值")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bif\b/.test(r.code)) {
@@ -909,6 +1008,12 @@ else:
 # 写判断：score >= 60 and attendance >= 80 时打印"通过"，否则"不通过"
 `,
         hint: `格式：if score >= 60 and attendance >= 80: 换行缩进 print("通过") 另起一行 else: 换行缩进 print("不通过")`,
+        answer: `score = 80
+attendance = 90
+if score >= 60 and attendance >= 80:
+    print("通过")
+else:
+    print("不通过")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\band\b/.test(r.code)) {
@@ -933,6 +1038,11 @@ else:
 # 写判断：day == "周六" or day == "周日" 时打印"周末"，否则"工作日"
 `,
         hint: `格式：if day == "周六" or day == "周日": 换行缩进 print("周末") 另起一行 else: 换行缩进 print("工作日")`,
+        answer: `day = "周六"
+if day == "周六" or day == "周日":
+    print("周末")
+else:
+    print("工作日")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bor\b/.test(r.code)) {
@@ -957,6 +1067,11 @@ else:
 # 写判断：not (age >= 18) 时打印"未成年人"，否则"成年人"
 `,
         hint: `格式：if not (age >= 18): 换行缩进 print("未成年人") 另起一行 else: 换行缩进 print("成年人")`,
+        answer: `age = 15
+if not (age >= 18):
+    print("未成年人")
+else:
+    print("成年人")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bnot\b/.test(r.code)) {
@@ -988,6 +1103,8 @@ else:
         starter: `# 用 for 循环和 range()，打印1到10
 `,
         hint: `range(1, 11) 会从1数到10（不包含11）。格式：for i in range(1, 11): 换行缩进 print(i)`,
+        answer: `for i in range(1, 11):
+    print(i)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bfor\b/.test(r.code) || !r.code.includes("range(")) {
@@ -1019,6 +1136,8 @@ else:
         starter: `# 用 range(起点, 终点, 步长)，打印2, 4, 6, 8, 10
 `,
         hint: `格式：for i in range(2, 11, 2): 换行缩进 print(i)`,
+        answer: `for i in range(2, 11, 2):
+    print(i)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/range\([^)]*,[^)]*,[^)]*\)/.test(r.code)) {
@@ -1044,6 +1163,8 @@ else:
         starter: `# 用 range(起点, 终点, -1)，从10倒数到1
 `,
         hint: `格式：for i in range(10, 0, -1): 换行缩进 print(i)`,
+        answer: `for i in range(10, 0, -1):
+    print(i)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/range\([^)]*-1[^)]*\)/.test(r.code)) {
@@ -1071,6 +1192,9 @@ for c in colors:
 # 用 for 循环直接遍历 fruits，打印每一项
 `,
         hint: `格式：fruits = ["苹果", "香蕉", "橙子"] 换行 for f in fruits: 换行缩进 print(f)`,
+        answer: `fruits = ["苹果", "香蕉", "橙子"]
+for f in fruits:
+    print(f)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (r.code.includes("range(")) {
@@ -1098,6 +1222,10 @@ print(total)   # 1+2+3 = 6</pre>
 # 打印 total
 `,
         hint: `格式：total = 0 换行 for i in range(1, 11): 换行缩进 total += i 换行 print(total)`,
+        answer: `total = 0
+for i in range(1, 11):
+    total += i
+print(total)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bfor\b/.test(r.code)) {
@@ -1124,6 +1252,8 @@ print(total)   # 1+2+3 = 6</pre>
         starter: `# 用 for 循环 + f-string，打印5的乘法表：5x1=5 到 5x9=45
 `,
         hint: `格式：for i in range(1, 10): 换行缩进 print(f"5x{i}={5*i}")`,
+        answer: `for i in range(1, 10):
+    print(f"5x{i}={5*i}")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bfor\b/.test(r.code)) {
@@ -1160,6 +1290,10 @@ while count < 5:
 # 用 while 循环倒数到1，每次打印 count
 `,
         hint: `每次循环都要让count变小，不然会陷入"死循环"。格式：count = 10 / while count >= 1: 换行缩进 print(count) 换行缩进 count = count - 1`,
+        answer: `count = 10
+while count >= 1:
+    print(count)
+    count = count - 1`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("while")) {
@@ -1192,6 +1326,12 @@ print(total)</pre>
 # 循环结束后打印 total
 `,
         hint: `格式：count = 1 / total = 0 / while total < 50: 换行缩进 total += count 换行缩进 count += 1 / print(total)`,
+        answer: `count = 1
+total = 0
+while total < 50:
+    total += count
+    count += 1
+print(total)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("while")) {
@@ -1222,6 +1362,12 @@ while True:
 # 当 count == 5 时用 break 跳出循环
 `,
         hint: `格式：count = 0 / while True: 换行缩进 count += 1 换行缩进 print("继续") 换行缩进 if count == 5: 换行缩进缩进 break`,
+        answer: `count = 0
+while True:
+    count += 1
+    print("继续")
+    if count == 5:
+        break`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("break")) {
@@ -1256,6 +1402,13 @@ print(count)   # 3、4、5 比2大，一共3个</pre>
 # 打印 count
 `,
         hint: `格式：count = 0 / n = 1 / while n <= 20: 换行缩进 if n > 10: 换行缩进缩进 count += 1 换行缩进 n += 1 / print(count)`,
+        answer: `count = 0
+n = 1
+while n <= 20:
+    if n > 10:
+        count += 1
+    n += 1
+print(count)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("while") || !/\bif\b/.test(r.code)) {
@@ -1286,6 +1439,12 @@ print(steps)   # 8→4→2→1，一共3步</pre>
 # 打印 steps
 `,
         hint: `格式：num = 100 / steps = 0 / while num > 1: 换行缩进 num = num // 2 换行缩进 steps += 1 / print(steps)`,
+        answer: `num = 100
+steps = 0
+while num > 1:
+    num = num // 2
+    steps += 1
+print(steps)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("while") || !r.code.includes("//")) {
@@ -1312,6 +1471,9 @@ while items:
 # 用 while 循环：只要 items 不是空的，就用 .pop() 取出一个并打印
 `,
         hint: `格式：items = ["a", "b", "c"] 换行 while items: 换行缩进 print(items.pop())`,
+        answer: `items = ["a", "b", "c"]
+while items:
+    print(items.pop())`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes(".pop(")) {
@@ -1346,6 +1508,10 @@ print(fruits[0])</pre>
 # 用下标把列表里的每一项都打印出来，一行一个
 `,
         hint: `列表用方括号[]，每一项用逗号分开，用下标取出每一项：favorites = ["篮球", "游戏", "音乐"] / print(favorites[0]) / print(favorites[1]) / print(favorites[2])`,
+        answer: `favorites = ["篮球", "游戏", "音乐"]
+print(favorites[0])
+print(favorites[1])
+print(favorites[2])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -1365,6 +1531,9 @@ for f in fruits:
 # 用 for 循环遍历打印，不要用下标 [0][1][2]
 `,
         hint: `格式：dream_places = ["东京", "巴黎", "纽约"] 换行 for place in dream_places: 换行缩进 print(place)`,
+        answer: `dream_places = ["东京", "巴黎", "纽约"]
+for place in dream_places:
+    print(place)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bfor\b/.test(r.code) || r.code.includes("range(")) {
@@ -1390,6 +1559,9 @@ for i in range(len(fruits)):
 # 用 for i in range(len(movies)): 遍历，print(movies[i])
 `,
         hint: `格式：movies = ["A", "B", "C"] 换行 for i in range(len(movies)): 换行缩进 print(movies[i])`,
+        answer: `movies = ["A", "B", "C"]
+for i in range(len(movies)):
+    print(movies[i])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/range\(\s*len\(/.test(r.code)) {
@@ -1413,6 +1585,12 @@ fruits.append("香蕉")</pre>
 # 遍历打印出来
 `,
         hint: `格式：hobbies = [] 换行 hobbies.append("篮球") 换行 hobbies.append("画画") 换行 hobbies.append("音乐") 换行 for h in hobbies: 换行缩进 print(h)`,
+        answer: `hobbies = []
+hobbies.append("篮球")
+hobbies.append("画画")
+hobbies.append("音乐")
+for h in hobbies:
+    print(h)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const appendCount = (r.code.match(/\.append\(/g) || []).length;
@@ -1438,6 +1616,10 @@ print(fruits[-1])   # 橙子</pre>
 # 用负数下标 favorites[-1] 打印最后一项
 `,
         hint: `格式：favorites = ["篮球", "游戏", "音乐"] 换行 print(favorites[0]) 换行 print(favorites[1]) 换行 print(favorites[-1])`,
+        answer: `favorites = ["篮球", "游戏", "音乐"]
+print(favorites[0])
+print(favorites[1])
+print(favorites[-1])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("[-1]")) {
@@ -1461,6 +1643,9 @@ print(nums[0:2])   # [1, 2]</pre>
 # 再单独打印第三项 favorites[2]
 `,
         hint: `格式：favorites = ["篮球", "游戏", "音乐"] 换行 print(favorites[0:2]) 换行 print(favorites[2])`,
+        answer: `favorites = ["篮球", "游戏", "音乐"]
+print(favorites[0:2])
+print(favorites[2])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\[\s*\d*\s*:\s*\d*\s*\]/.test(r.code)) {
@@ -1490,6 +1675,10 @@ print(person["name"])</pre>
 # 分别打印 me["name"]、me["age"]、me["hobby"]
 `,
         hint: `字典用花括号{}，键和值中间用冒号:，取值时用方括号["键名"]。格式：me = {"name": "小明", "age": 13, "hobby": "篮球"}`,
+        answer: `me = {"name": "小明", "age": 13, "hobby": "篮球"}
+print(me["name"])
+print(me["age"])
+print(me["hobby"])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("{") || !r.code.includes(":")) {
@@ -1512,6 +1701,10 @@ print(person.get("age", 0))   # age不存在，返回默认值0</pre>
 # 用 .get() 方法分别打印 pet.get("name")、pet.get("type")、pet.get("age")
 `,
         hint: `格式：pet = {"name": "旺财", "type": "狗", "age": 2} 换行 print(pet.get("name")) 换行 print(pet.get("type")) 换行 print(pet.get("age"))`,
+        answer: `pet = {"name": "旺财", "type": "狗", "age": 2}
+print(pet.get("name"))
+print(pet.get("type"))
+print(pet.get("age"))`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if ((r.code.match(/\.get\(/g) || []).length < 2) {
@@ -1534,6 +1727,9 @@ for key in scores:
 # 用 for key in pet: 遍历，print(pet[key])
 `,
         hint: `格式：pet = {"name": "旺财", "type": "狗", "age": 2} 换行 for key in pet: 换行缩进 print(pet[key])`,
+        answer: `pet = {"name": "旺财", "type": "狗", "age": 2}
+for key in pet:
+    print(pet[key])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("{") || !r.code.includes(":")) {
@@ -1564,6 +1760,9 @@ for subject, score in scores.items():
 # 打印 f"{key}: {value}"
 `,
         hint: `格式：pet = {"name": "旺财", "type": "狗", "age": 2} 换行 for key, value in pet.items(): 换行缩进 print(f"{key}: {value}")`,
+        answer: `pet = {"name": "旺财", "type": "狗", "age": 2}
+for key, value in pet.items():
+    print(f"{key}: {value}")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes(".items(")) {
@@ -1588,6 +1787,11 @@ print(person["age"])</pre>
 # 打印 pet["name"]、pet["type"]、pet["age"]
 `,
         hint: `格式：pet = {"name": "旺财", "type": "狗"} 换行 pet["age"] = 2 换行 print(pet["name"]) 换行 print(pet["type"]) 换行 print(pet["age"])`,
+        answer: `pet = {"name": "旺财", "type": "狗"}
+pet["age"] = 2
+print(pet["name"])
+print(pet["type"])
+print(pet["age"])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\w+\[["'][\w]+["']\]\s*=(?!=)/.test(r.code)) {
@@ -1614,6 +1818,10 @@ print(pet["age"])</pre>
 # print(pet["age"])
 `,
         hint: `格式：pet = {"name": "旺财", "type": "狗", "age": 1} 换行 print(pet["age"]) 换行 pet["age"] = 2 换行 print(pet["age"])`,
+        answer: `pet = {"name": "旺财", "type": "狗", "age": 1}
+print(pet["age"])
+pet["age"] = 2
+print(pet["age"])`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -1649,6 +1857,12 @@ greet("小明")</pre>
 # 调用两次 add()，传入不同的数字
 `,
         hint: `格式：def add(a, b): 换行缩进 result = a + b 换行缩进 print(result)，然后另起一行调用 add(3, 5)`,
+        answer: `def add(a, b):
+    result = a + b
+    print(result)
+
+add(3, 5)
+add(10, 20)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bdef\s+\w+\s*\(/.test(r.code)) {
@@ -1676,6 +1890,11 @@ greet("小明")     # 你好，小明</pre>
 # 调用一次不传参数，再调用一次传入具体名字
 `,
         hint: `格式：def greet(name="朋友"): 换行缩进 print(f"你好，{name}") 换行 greet() 换行 greet("小明")`,
+        answer: `def greet(name="朋友"):
+    print(f"你好，{name}")
+
+greet()
+greet("小明")`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/def\s+\w+\([^)]*=\s*["']/.test(r.code)) {
@@ -1706,6 +1925,14 @@ greet("小明")     # 你好，小明</pre>
 # 调用两次，分别传大于18和小于18的数字
 `,
         hint: `格式：def check_age(age): 换行缩进 if age >= 18: 换行缩进缩进 print("成年") 换行缩进 else: 换行缩进缩进 print("未成年") 换行 check_age(20) 换行 check_age(10)`,
+        answer: `def check_age(age):
+    if age >= 18:
+        print("成年")
+    else:
+        print("未成年")
+
+check_age(20)
+check_age(10)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bdef\s+\w+\s*\(/.test(r.code)) {
@@ -1740,6 +1967,11 @@ print(result * 2)   # 32</pre>
 # print(result * 2)
 `,
         hint: `格式：def square(n): 换行缩进 return n * n 换行 result = square(4) 换行 print(result * 2)`,
+        answer: `def square(n):
+    return n * n
+
+result = square(4)
+print(result * 2)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!r.code.includes("return")) {
@@ -1772,6 +2004,11 @@ print_multiples(2)   # 2, 4, 6</pre>
 # 调用 print_multiples(3)
 `,
         hint: `格式：def print_multiples(n): 换行缩进 for i in range(1, 6): 换行缩进缩进 print(n * i) 换行 print_multiples(3)`,
+        answer: `def print_multiples(n):
+    for i in range(1, 6):
+        print(n * i)
+
+print_multiples(3)`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if (!/\bdef\s+\w+\s*\(/.test(r.code) || !/\bfor\b/.test(r.code)) {
@@ -1805,6 +2042,13 @@ print(quadruple(3))   # 12</pre>
 # print(quadruple(3))
 `,
         hint: `格式：def double(n): 换行缩进 return n * 2 换行 def quadruple(n): 换行缩进 return double(double(n)) 换行 print(quadruple(3))`,
+        answer: `def double(n):
+    return n * 2
+
+def quadruple(n):
+    return double(double(n))
+
+print(quadruple(3))`,
         check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
           if ((r.code.match(/\bdef\b/g) || []).length < 2) {
@@ -1849,6 +2093,15 @@ print(quadruple(3))   # 12</pre>
 # 循环结束后打印"猜对了！"
 `,
         hint: `模拟输入框里每行写一个猜测数字，比如：5 / 8 / 7 ，让它们一步步逼近7。别忘了循环里要重新调用 input() 更新 guess，不然会死循环。`,
+        answer: `secret = 7
+guess = int(input("猜一个数字："))
+while guess != secret:
+    if guess > secret:
+        print("太大了")
+    else:
+        print("太小了")
+    guess = int(input("再猜一个："))
+print("猜对了！")`,
         needsInput: true,
         defaultInput: "5\n8\n7",
         check: (r) => {
@@ -1877,6 +2130,19 @@ count = 0
 # 循环结束后打印"猜对了！"，再打印 f"你用了{count}次猜中！"
 `,
         hint: `模拟输入框里写：10 / 20 / 15，一步步逼近15。别忘了每问一次就要把count加1（count += 1），循环内外都要加。`,
+        answer: `secret = 15
+count = 0
+guess = int(input("猜一个数字："))
+count += 1
+while guess != secret:
+    if guess > secret:
+        print("太大了")
+    else:
+        print("太小了")
+    guess = int(input("再猜一个："))
+    count += 1
+print("猜对了！")
+print(f"你用了{count}次猜中！")`,
         needsInput: true,
         defaultInput: "10\n20\n15",
         check: (r) => {
@@ -1910,6 +2176,24 @@ found = False
 # 循环结束后，如果 not found，打印"太可惜了，没猜中"
 `,
         hint: `模拟输入框写：5 / 8 / 7，第3次正好猜中。别忘了猜中时要用 break 提前跳出循环，并且把 found 设成 True。`,
+        answer: `secret = 7
+max_tries = 3
+tries = 0
+found = False
+while tries < max_tries:
+    guess = int(input("猜一个数字："))
+    tries += 1
+    if guess == secret:
+        print("猜对了！")
+        found = True
+        break
+    else:
+        if guess > secret:
+            print("太大了")
+        else:
+            print("太小了")
+if not found:
+    print("太可惜了，没猜中")`,
         needsInput: true,
         defaultInput: "5\n8\n7",
         check: (r) => {
@@ -1943,6 +2227,12 @@ found = False
 # 循环结束后打印"猜对了！"
 `,
         hint: `模拟输入框写：狮子 / 老虎 / 大象。这一关猜的是文字，不需要用int()转换。`,
+        answer: `secret = "大象"
+guess = input("猜一个动物：")
+while guess != secret:
+    print("再想想")
+    guess = input("再猜一个：")
+print("猜对了！")`,
         needsInput: true,
         defaultInput: "狮子\n老虎\n大象",
         check: (r) => {
@@ -1975,6 +2265,17 @@ found = False
 # 循环结束后打印"猜对了！"
 `,
         hint: `模拟输入框写：150 / 30 / 70 / 50。第一次故意超出范围看看提示，后面几次正常逼近50。`,
+        answer: `secret = 50
+guess = int(input("猜一个数字（1-100）："))
+while guess != secret:
+    if guess < 1 or guess > 100:
+        print("超出范围了！")
+    elif guess > secret:
+        print("太大了")
+    else:
+        print("太小了")
+    guess = int(input("再猜一个："))
+print("猜对了！")`,
         needsInput: true,
         defaultInput: "150\n30\n70\n50",
         check: (r) => {
@@ -2007,6 +2308,19 @@ history = []
 # 打印 f"你一共猜了这些数字：{history}"
 `,
         hint: `模拟输入框写：5 / 8 / 7。别忘了每次猜测（包括第一次和每次循环里）都要用 history.append(guess) 记下来。`,
+        answer: `secret = 7
+history = []
+guess = int(input("猜一个数字："))
+history.append(guess)
+while guess != secret:
+    if guess > secret:
+        print("太大了")
+    else:
+        print("太小了")
+    guess = int(input("再猜一个："))
+    history.append(guess)
+print("猜对了！")
+print(f"你一共猜了这些数字：{history}")`,
         needsInput: true,
         defaultInput: "5\n8\n7",
         check: (r) => {

@@ -18,6 +18,12 @@ const LEVELS = [
 print(celsius_to_fahrenheit(0))
 print(celsius_to_fahrenheit(100))`,
     hint: `报错信息里提到"缩进不匹配"——检查 return 这一行前面的空格数量，是不是和上面 f = ... 那一行对不齐。`,
+    answer: `def celsius_to_fahrenheit(c):
+    f = c * 9/5 + 32
+    return f
+
+print(celsius_to_fahrenheit(0))
+print(celsius_to_fahrenheit(100))`,
     why: `为什么Python这么在意缩进？因为很多语言用花括号{}来表示"这段代码属于哪一块"，Python选择了用缩进本身来表达，代码更简洁好读，代价是缩进错一点就会出错——这是Python的设计取舍，不是bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -39,6 +45,8 @@ print(celsius_to_fahrenheit(100))`,
     starter: `for i in range(1, 10):
     print(i)`,
     hint: `range(1, 10) 里的10是"不包含"的，检查一下打印到了几，需要改成几才能到10。这种"差一"的bug在编程里非常常见。`,
+    answer: `for i in range(1, 11):
+    print(i)`,
     why: `为什么range()的终点不包含本身？这是编程语言里一个常见的设计习惯（叫"左闭右开区间"），好处是range(0, n)正好给出n个数、配合列表长度用起来很顺手——刚接触时反直觉，习惯了会发现它其实更方便。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -64,6 +72,11 @@ if age = 18:
 else:
     print("不是18岁")`,
     hint: `单个等号 = 是"赋值"（把值放进变量），判断"是否相等"要用两个等号 == 。`,
+    answer: `age = 18
+if age == 18:
+    print("正好18岁")
+else:
+    print("不是18岁")`,
     why: `为什么Python不让 if age = 18 这样写（有些语言允许）？因为这是一个极容易手滑的错误，Python选择在这里直接报错，而不是"悄悄按你可能没想到的方式执行"，这样的错误更容易被发现，而不是留到后面变成难查的bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -86,6 +99,9 @@ else:
 age = 13
 print(name + "今年" + age + "岁")`,
     hint: `+ 拼接字符串时，两边必须都是文字（字符串）。age是数字，需要先转换成文字才能拼接。`,
+    answer: `name = "小明"
+age = 13
+print(name + "今年" + str(age) + "岁")`,
     why: `为什么Python不自动把数字转成文字？因为"13" + "岁"和13+多少哪个是"加法"，如果自动转换，容易掩盖真正的bug（比如你以为在做数学运算，其实在做拼接）。Python选择让你明确写出 str(age)，代码意图更清楚。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -113,6 +129,13 @@ elif score >= 90:
 else:
     print("不及格")`,
     hint: `95分应该显示"优秀"，但如果第一个条件已经是"大于等于60"，95分会先被这一条拦下来，永远走不到下面的判断。检查一下几个条件的先后顺序。`,
+    answer: `score = 95
+if score >= 90:
+    print("优秀")
+elif score >= 60:
+    print("及格")
+else:
+    print("不及格")`,
     why: `为什么if/elif的顺序会影响结果？因为Python的if/elif是"从上往下，第一个满足的条件就执行，后面全部跳过"，不会继续往下检查。这跟很多人以为的"每个条件都会单独判断一次"不一样，是很容易踩的坑。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -137,6 +160,11 @@ while count < 0:
     count -= 1
 print("倒数结束")`,
     hint: `count 一开始是5（正数），检查一下 while 后面的条件——要让循环真的执行，条件该写成"大于"还是"小于"？`,
+    answer: `count = 5
+while count > 0:
+    print(count)
+    count -= 1
+print("倒数结束")`,
     why: `这个bug没有报错，只是"什么都没做"——这类bug往往比直接报错的bug更难发现，因为程序看起来"正常运行完了"。养成运行后检查结果是否符合预期的习惯，比只看"有没有报错"更重要。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -159,6 +187,8 @@ print("倒数结束")`,
     starter: `fruits = ["苹果", "香蕉", "橙子"]
 print("最后一个水果是：" + fruits[3])`,
     hint: `这个列表只有3个元素，下标是0、1、2。想取"最后一个"，除了用正确的下标，也可以用一个更简便的写法：负数下标（比如-1代表最后一个）。`,
+    answer: `fruits = ["苹果", "香蕉", "橙子"]
+print("最后一个水果是：" + fruits[2])`,
     why: `为什么下标从0开始，而不是像日常数数一样从1开始？这跟计算机内存的存储方式有关——下标本质上是"从起始位置数过去多少步"，第一个元素就在起始位置，走0步就到了。这是几乎所有编程语言的共同设计。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
@@ -183,6 +213,11 @@ for w in words:
     counts[w] += 1
 print(counts)`,
     hint: `counts[w] += 1 的意思是"取出counts[w]的值，加1，再存回去"——但第一次遇到某个词的时候，counts里还没有这个键，取值这一步就会失败。需要先给它一个初始值（比如用 .get() 方法设置默认值0）。`,
+    answer: `words = ["苹果", "香蕉", "苹果", "橙子"]
+counts = {}
+for w in words:
+    counts[w] = counts.get(w, 0) + 1
+print(counts)`,
     why: `为什么字典不会自动给不存在的键一个默认值？因为如果访问不存在的键都"悄悄"返回某个默认值（比如0），拼写错误的键名就会被无声无息地放过，很难发现——报错反而是一种保护，逼你处理"这个键真的存在吗"这个问题。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };

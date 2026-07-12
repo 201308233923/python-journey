@@ -233,6 +233,13 @@ function selectLevel(id) {
   document.getElementById("hint-box").textContent = currentVariant.hint || "";
   const hintNudgeBtn = document.getElementById("hint-nudge-btn");
   if (hintNudgeBtn) hintNudgeBtn.classList.add("hidden");
+  const answerBox = document.getElementById("answer-box");
+  const answerNudgeBtn = document.getElementById("answer-nudge-btn");
+  if (answerBox) {
+    answerBox.classList.add("hidden");
+    answerBox.textContent = currentVariant.answer || "";
+  }
+  if (answerNudgeBtn) answerNudgeBtn.classList.add("hidden");
   const whyBtn = document.getElementById("why-btn");
   const whyBox = document.getElementById("why-box");
   if (whyBox) {
@@ -396,6 +403,20 @@ async function runCurrentLevel() {
       ) {
         hintNudgeBtn.classList.remove("hidden");
       }
+      // 同样3次以上才冒出来，跟提示按钮并列——这个是真的完整参考答案，
+      // 不是提示，得自己主动点"查看参考答案"才会展开，不会被动塞过来。
+      const answerBox = document.getElementById("answer-box");
+      const answerNudgeBtn = document.getElementById("answer-nudge-btn");
+      if (
+        getFailCount(level.id) >= 3 &&
+        answerBox &&
+        answerBox.classList.contains("hidden") &&
+        variant.answer &&
+        answerNudgeBtn &&
+        answerNudgeBtn.classList.contains("hidden")
+      ) {
+        answerNudgeBtn.classList.remove("hidden");
+      }
     }
   } catch (e) {
     outputBox.textContent = `运行环境出错：${e}`;
@@ -436,6 +457,14 @@ function setupButtons() {
     hintNudgeBtn.addEventListener("click", () => {
       document.getElementById("hint-box").classList.remove("hidden");
       hintNudgeBtn.classList.add("hidden");
+    });
+  }
+
+  const answerNudgeBtn = document.getElementById("answer-nudge-btn");
+  if (answerNudgeBtn) {
+    answerNudgeBtn.addEventListener("click", () => {
+      document.getElementById("answer-box").classList.remove("hidden");
+      answerNudgeBtn.classList.add("hidden");
     });
   }
 
