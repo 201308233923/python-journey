@@ -2110,7 +2110,7 @@ print("猜对了！")`,
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
           }
           if (r.stdout.includes("猜对了")) {
-            return { pass: true, message: "毕业啦！点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "模拟输入里的数字最终要等于secret（7），并且要打印出'猜对了！'才算通关。" };
         },
@@ -2154,7 +2154,7 @@ print(f"你用了{count}次猜中！")`,
             return { pass: false, message: "这一关要用一个计数器统计猜测次数，检查一下有没有用 count += 1 这样的写法。" };
           }
           if (r.stdout.includes("猜对了") && r.stdout.includes("次猜中")) {
-            return { pass: true, message: "毕业啦！加上计数器之后，游戏还能告诉玩家用了几次才猜中。点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！加上计数器之后，游戏还能告诉玩家用了几次才猜中。点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "要打印'猜对了！'和'你用了X次猜中！'两句话才算通关，检查一下有没有都写。" };
         },
@@ -2208,7 +2208,7 @@ if not found:
             return { pass: false, message: "这一关要限制最多猜的次数，检查一下有没有用一个变量记录已经猜了几次。" };
           }
           if (r.stdout.includes("猜对了")) {
-            return { pass: true, message: "毕业啦！限制次数之后，游戏多了一点挑战性。点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！限制次数之后，游戏多了一点挑战性。点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "按照默认输入应该在第3次就能猜中并打印'猜对了！'，检查一下逻辑。" };
         },
@@ -2244,7 +2244,7 @@ print("猜对了！")`,
             return { pass: false, message: "这一关猜的是文字，不需要用 int() 转换成数字，检查一下是不是多此一举了。" };
           }
           if (r.stdout.includes("猜对了")) {
-            return { pass: true, message: "毕业啦！同样的while+input结构，不仅能猜数字，也能猜文字。点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！同样的while+input结构，不仅能猜数字，也能猜文字。点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "模拟输入里最终要猜出'大象'，并且打印'猜对了！'才算通关。" };
         },
@@ -2287,7 +2287,7 @@ print("猜对了！")`,
             return { pass: false, message: "判断'超出范围'要用 or 合并两个条件（小于1 或 大于100），检查一下有没有用or。" };
           }
           if (r.stdout.includes("超出范围了") && r.stdout.includes("猜对了")) {
-            return { pass: true, message: "毕业啦！加了范围检查之后，游戏能应对更多不合理的输入了。点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！加了范围检查之后，游戏能应对更多不合理的输入了。点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "要先看到一次'超出范围了！'，最后打印'猜对了！'才算通关，检查一下逻辑和模拟输入。" };
         },
@@ -2332,7 +2332,7 @@ print(f"你一共猜了这些数字：{history}")`,
             return { pass: false, message: "这一关要用 .append() 把每次猜测记进 history 列表，检查一下代码里有没有用到。" };
           }
           if (r.stdout.includes("猜对了") && r.stdout.includes("你一共猜了")) {
-            return { pass: true, message: "毕业啦！用列表记录整个猜测过程，是很实用的调试/回顾技巧。点侧栏的'🎮 AI小游戏'解锁真正的AI小游戏吧。" };
+            return { pass: true, message: "毕业啦！用列表记录整个猜测过程，是很实用的调试/回顾技巧。点侧栏的'🎮 AI小游戏'去玩真正的AI小游戏吧。" };
           }
           return { pass: false, message: "要打印'猜对了！'和'你一共猜了这些数字：...'才算通关，检查一下有没有都写。" };
         },
