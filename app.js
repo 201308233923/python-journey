@@ -463,8 +463,20 @@ function setupButtons() {
   const answerNudgeBtn = document.getElementById("answer-nudge-btn");
   if (answerNudgeBtn) {
     answerNudgeBtn.addEventListener("click", () => {
-      document.getElementById("answer-box").classList.remove("hidden");
+      const answerBox = document.getElementById("answer-box");
+      answerBox.classList.remove("hidden");
       answerNudgeBtn.classList.add("hidden");
+      // 需要模拟输入的关卡（比如猜数字），参考答案是配合 defaultInput 写的——
+      // 只展示代码、不把模拟输入框也换成配套的输入，学生复制这份代码去跑，
+      // 输入框里如果还留着自己之前乱试的数字，光是代码对也会跑不出预期结果，
+      // 看起来就像"这份参考答案是错的"。
+      if (currentVariant && currentVariant.needsInput) {
+        const inputEditor = document.getElementById("input-editor");
+        if (inputEditor) inputEditor.value = currentVariant.defaultInput || "";
+        answerBox.textContent =
+          (currentVariant.answer || "") +
+          "\n\n# （这一关需要模拟输入，已经帮你把左边\"模拟输入\"框也换成配合这份答案的内容了）";
+      }
     });
   }
 
