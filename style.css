@@ -831,6 +831,39 @@ button:disabled {
   opacity: 0.85;
 }
 
+/* 参考答案：连错3次以上才冒出来的按钮，点了才展开完整代码——不是自动摆出来的。
+   跟提示按钮并列，颜色更"正式"一点，跟"这是完整答案"这件事的分量对上。 */
+.answer-nudge-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.answer-nudge-btn:hover {
+  opacity: 0.85;
+}
+
+.answer-box {
+  margin: 12px 0 0;
+  background: var(--code-bg);
+  color: var(--code-text);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .why-box {
   margin-top: 12px;
   padding: 10px 14px;

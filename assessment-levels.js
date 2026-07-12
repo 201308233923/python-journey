@@ -20,6 +20,15 @@ const LEVELS = [
 # 用 % 取余数来判断能不能被3或5整除
 `,
     hint: `判断"能不能被3整除"用 n % 3 == 0。记得先判断"同时被3和5整除"这个条件，不然会漏掉FizzBuzz。`,
+    answer: `for n in range(1, 21):
+    if n % 3 == 0 and n % 5 == 0:
+        print("FizzBuzz")
+    elif n % 3 == 0:
+        print("Fizz")
+    elif n % 5 == 0:
+        print("Buzz")
+    else:
+        print(n)`,
     why: `FizzBuzz为什么是经典面试题？它同时考"循环+条件判断+取余运算"这三个基础，而且条件顺序稍微写错就会出bug（比如15漏判成Fizz），很适合检验对基础语法的熟练程度。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 6 };
@@ -50,6 +59,9 @@ const LEVELS = [
 # 打印 nums 的最大值
 `,
     hint: `sum(nums) 直接算总和，max(nums) 直接算最大值。`,
+    answer: `nums = [4, 8, 15, 16, 23, 42]
+print(sum(nums))
+print(max(nums))`,
     why: `为什么Python要内置sum()/max()这些函数？因为"对一组数据求和/求最大值"是极其常见的需求，内置函数比自己写循环更快、更不容易出错——但理解它们背后就是遍历+累加/比较，遇到内置函数解决不了的情况时才知道怎么自己实现。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 9 };
@@ -77,6 +89,9 @@ const LEVELS = [
 # 统计 text 里字母 m 出现的次数，打印出来
 `,
     hint: `可以用 text.count("m")，也可以自己写循环逐个字符判断。`,
+    answer: `text = "programming is fun"
+count = text.count("m")
+print(count)`,
     why: `为什么字符串可以像列表一样遍历？因为字符串本质上就是"字符的序列"，Python里很多用在列表上的操作（遍历、切片、count）字符串也能用，这种"不同类型共享同一套操作"的设计能少记很多规则。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 4 };
@@ -103,6 +118,16 @@ const LEVELS = [
 print(is_prime(17))
 print(is_prime(15))`,
     hint: `可以用 for 循环从2试到 n-1，看有没有能整除n的数；一个都没有就是质数。别忘了 n<=1 的情况直接返回 False。`,
+    answer: `def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, n):
+        if n % i == 0:
+            return False
+    return True
+
+print(is_prime(17))
+print(is_prime(15))`,
     why: `判断质数为什么要试到n-1？因为质数的定义就是"除了1和自己没有别的因数"，逐个试是最直接的验证方式（后面学更多算法后会知道其实只需要试到根号n，但现在这样写完全正确，只是慢一点）。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 11 };
@@ -132,6 +157,11 @@ print(is_prime(15))`,
 # 打印统计结果
 `,
     hint: `可以先创建一个空字典 counts = {}，然后遍历 words，用 counts[word] = counts.get(word, 0) + 1 累加次数。`,
+    answer: `words = ["苹果", "香蕉", "苹果", "橙子", "苹果", "香蕉"]
+counts = {}
+for word in words:
+    counts[word] = counts.get(word, 0) + 1
+print(counts)`,
     why: `词频统计是文本分析最基础的操作——搜索引擎、推荐系统、垃圾邮件过滤，很多都是从"数一数每个词出现了几次"这一步开始的。字典正是干这个最合适的数据结构。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
@@ -163,6 +193,12 @@ print(is_prime(15))`,
 # 统计出现次数最多的选择，打印出来
 `,
     hint: `可以用字典统计每个选择出现的次数，再用 max(counts, key=counts.get) 找出次数最多的那个键。`,
+    answer: `history = ["石头", "石头", "剪刀", "石头", "布", "石头"]
+counts = {}
+for move in history:
+    counts[move] = counts.get(move, 0) + 1
+prediction = max(counts, key=counts.get)
+print(prediction)`,
     why: `"预测下一步"这类AI功能，本质上很多时候就是"统计历史数据里最常见的模式"。没有魔法，只是数据统计——理解了这一点，AI就没那么神秘了。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
