@@ -258,6 +258,18 @@ function setupAccountUI() {
   });
 
   document.getElementById("account-logout-btn").addEventListener("click", async () => {
+    // 退出登录前先补一次同步——自动同步只在"通关某一关"那一刻触发，
+    // 还没通关、正在写的代码，或者刚通关但那次自动同步还没跑完，都只存在本地。
+    // 下次重新登录会先清本地再拉云端数据，这次没同步上去的东西就再也找不回来了，
+    // 所以退出前得先补一次推送，把本地当前的状态兜底存一遍。
+    setAccountMessage("退出中...");
+    try {
+      const { data } = await supabaseClient.auth.getUser();
+      if (data && data.user) await pushProgressToCloud(data.user.id);
+    } catch (e) {
+      // 同步失败（比如网络问题）也不能卡住退出登录，只能接受这次退出可能丢失
+      // 未同步的本地改动——跟直接断网关闭浏览器的效果一样，不是这次改动能解决的。
+    }
     await supabaseClient.auth.signOut();
     showLoggedOutUI();
     setAccountMessage("");
