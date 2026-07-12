@@ -231,6 +231,8 @@ function selectLevel(id) {
   document.getElementById("feedback-box").textContent = "";
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("hint-box").textContent = currentVariant.hint || "";
+  const hintNudgeBtn = document.getElementById("hint-nudge-btn");
+  if (hintNudgeBtn) hintNudgeBtn.classList.add("hidden");
   const whyBtn = document.getElementById("why-btn");
   const whyBox = document.getElementById("why-box");
   if (whyBox) {
@@ -380,12 +382,19 @@ async function runCurrentLevel() {
     } else {
       nextLevelBtn.classList.add("hidden");
       bumpFailCount(level.id);
-      // 连续错3次以上、还没主动点开过提示的话，自动帮ta展开——降低"卡太久
-      // 就直接放弃"的概率，不用非得自己想起来点"💡提示"这个按钮。
+      // 连续错3次以上、还没主动点开过提示的话，冒出一个按钮提醒ta可以看提示了——
+      // 但不直接把提示内容摆出来，得自己点一下才展开，不是被动接收。
       const hintBox = document.getElementById("hint-box");
-      if (getFailCount(level.id) >= 3 && hintBox && hintBox.classList.contains("hidden") && variant.hint) {
-        hintBox.classList.remove("hidden");
-        hintBox.textContent = "😕 卡住好几次了？试试这个提示：\n" + variant.hint;
+      const hintNudgeBtn = document.getElementById("hint-nudge-btn");
+      if (
+        getFailCount(level.id) >= 3 &&
+        hintBox &&
+        hintBox.classList.contains("hidden") &&
+        variant.hint &&
+        hintNudgeBtn &&
+        hintNudgeBtn.classList.contains("hidden")
+      ) {
+        hintNudgeBtn.classList.remove("hidden");
       }
     }
   } catch (e) {
@@ -421,6 +430,14 @@ function setupButtons() {
   document.getElementById("hint-btn").addEventListener("click", () => {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
+
+  const hintNudgeBtn = document.getElementById("hint-nudge-btn");
+  if (hintNudgeBtn) {
+    hintNudgeBtn.addEventListener("click", () => {
+      document.getElementById("hint-box").classList.remove("hidden");
+      hintNudgeBtn.classList.add("hidden");
+    });
+  }
 
   const whyBtn = document.getElementById("why-btn");
   if (whyBtn) {

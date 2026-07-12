@@ -811,6 +811,26 @@ button:disabled {
   color: var(--muted);
 }
 
+/* 连续错3次以上才会冒出来的按钮，需要主动点一下才展开提示（不是自动摆出来的）。 */
+.hint-nudge-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--fail-bg);
+  border: 1px dashed var(--fail-text);
+  color: var(--fail-text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hint-nudge-btn:hover {
+  opacity: 0.85;
+}
+
 .why-box {
   margin-top: 12px;
   padding: 10px 14px;
