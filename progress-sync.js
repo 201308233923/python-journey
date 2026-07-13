@@ -106,6 +106,50 @@ async function pushProgressToCloud(userId) {
     .from("progress")
     .upsert({ user_id: userId, data: merged, updated_at: new Date().toISOString() });
   localStorage.setItem(SYNCED_USER_ID_KEY, userId);
+  // 顺带把排行榜分数也更新一下——不额外新增同步时机，复用这个已有的"进度推上云端"
+  // 节点（每过一关自动同步、退出登录前兜底同步、手动点立即同步、注册时同步，
+  // 都会走到这里）。排行榜表是独立的、只读公开的一张表，跟这里的 progress
+  // 私有表分开，见 pushLeaderboardScore 的注释。
+  await pushLeaderboardScore(userId);
+}
+
+// 排行榜用的表（leaderboard）是新建的，跟存完整进度的 progress 表分开——
+// progress 里存的是每一关写的代码原文，不适合整体公开；排行榜只暴露"用户名 +
+// 总通关数"这一点点必要信息。这张表可能还没建（要用户自己去Supabase后台跑一次
+// SQL），所以这里全程 try/catch，写失败/表不存在都只是静默跳过，不能因为
+// 排行榜这个附加功能失败就把主流程的进度同步也搞挂了。
+const LEADERBOARD_TRACKS = [
+  { id: "course", count: 12 },
+  { id: "assessment", count: 6 },
+  { id: "advanced", count: 6 },
+  { id: "debug", count: 8 },
+];
+
+function computeTotalLevelsPassed() {
+  let total = 0;
+  LEADERBOARD_TRACKS.forEach((t) => {
+    const raw = localStorage.getItem(`codecourse_${t.id}_v2_unlocked`);
+    const unlocked = raw ? parseInt(raw, 10) : 1;
+    total += Math.min(Math.max(unlocked - 1, 0), t.count);
+  });
+  return total;
+}
+
+async function pushLeaderboardScore(userId) {
+  try {
+    const { data: userData } = await supabaseClient.auth.getUser();
+    if (!userData || !userData.user) return;
+    const username = userData.user.email.replace("@" + FAKE_EMAIL_DOMAIN, "");
+    const totalLevels = computeTotalLevelsPassed();
+    await supabaseClient.from("leaderboard").upsert({
+      user_id: userId,
+      username,
+      total_levels: totalLevels,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    // 表还没建、网络问题等——排行榜是附加功能，静默失败，不影响主流程。
+  }
 }
 
 // clearFirst=true 表示这是一次"登录"操作，理论上可能是切换身份，要避免跟上一个
