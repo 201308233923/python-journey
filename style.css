@@ -1137,6 +1137,61 @@ a.back-link {
   font-size: 13.5px;
 }
 
+/* ---------- 排行榜 ---------- */
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.leaderboard-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.leaderboard-row-me {
+  border-color: var(--accent) !important;
+  background: var(--success-bg) !important;
+}
+
+.leaderboard-rank {
+  flex: none;
+  width: 32px;
+  font-weight: 700;
+  font-size: 15px;
+  text-align: center;
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-score {
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-hint {
+  margin-top: 16px;
+}
+
 @media print {
   .no-print {
     display: none !important;
