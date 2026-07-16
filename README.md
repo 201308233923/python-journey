@@ -77,3 +77,29 @@ python3 -m http.server 8765
 - `app.js` — 让页面动起来的逻辑，负责在浏览器里真的运行Python代码。
   初级/进阶/高级/调试挑战共用同一份，用 `TRACK` 变量区分存档；支持 `?start=N`（测试推荐的起点，前面关卡标记为"测试跳过"）
   和 `?resume=N`（继续上次学习，不影响解锁状态）两种跳转方式。
+
+## 测试 / CI
+
+`scripts/verify.mjs`（零依赖，只用Node内置模块）跑一遍：
+
+- 三档题库结构（答案下标越界、选项重复、targetLevel越界）
+- 四条赛道所有关卡/变体：参考答案真的用python3跑一遍，确认能通过自己的check()
+- assessment赛道"去初级复习"链接的reviewLevel数字越界
+- ai-games的Python代码语法（compile()，不实际执行）
+- 所有HTML页面的本地链接/脚本引用是否指向真实存在的文件
+
+```
+node scripts/verify.mjs
+```
+
+push / 开PR 时 GitHub Actions（`.github/workflows/validate.yml`）会自动跑这个，
+加上JS语法检查和HTML标签配对检查。
+
+本地想在commit之前就跑（不用等push后CI），设置一次：
+
+```
+git config core.hooksPath .githooks
+```
+
+之后每次 `git commit` 会先跑 `.githooks/pre-commit`，三项检查任何一项没过
+就会阻止commit。

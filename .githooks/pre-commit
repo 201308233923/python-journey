@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# 本地pre-commit钩子：跟CI（.github/workflows/validate.yml）跑一样的三项检查，
+# 在真的commit之前就拦住问题，不用等push之后CI跑完才知道。
+# 启用方式（每个clone只需要设置一次）：
+#   git config core.hooksPath .githooks
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+echo "[pre-commit] JS语法检查..."
+js_status=0
+for f in $(find . -name "*.js" -not -path "./.git/*"); do
+  node --check "$f" || js_status=1
+done
+if [ "$js_status" -ne 0 ]; then
+  echo "[pre-commit] JS语法检查失败，commit已阻止。"
+  exit 1
+fi
+
+echo "[pre-commit] HTML标签配对检查..."
+python3 scripts/check_html_balance.py || {
+  echo "[pre-commit] HTML标签配对检查失败，commit已阻止。"
+  exit 1
+}
+
+echo "[pre-commit] 题库/关卡/链接回归测试..."
+node scripts/verify.mjs || {
+  echo "[pre-commit] 回归测试失败，commit已阻止。"
+  exit 1
+}
+
+echo "[pre-commit] 全部通过。"
