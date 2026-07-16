@@ -2,11 +2,15 @@
 // 零依赖的回归校验脚本：
 // 1) 三档题库（quiz.js/quiz-intermediate.js/quiz-advanced.js）结构校验
 //    （答案下标越界、选项重复、targetLevel越界）。
-// 2) 四条赛道的关卡文件（levels.js/assessment-levels.js/advanced-levels.js/
+// 2) 四条赛道的关卡文件（levels/、assessment-levels.js/advanced-levels.js/
 //    debug-levels.js）——每一关（或每个variant）的参考答案 answer，真的用
 //    python3跑一遍（跟app.js里RUNNER_TEMPLATE同样的模拟逻辑），再喂给这一关
 //    自己的 check()，确认参考答案真的能通过校验。防止以后改check()或改answer
 //    的时候，两边不匹配了却没人发现。
+// 3) assessment-levels.js里"去初级复习"链接用到的 reviewLevel 数字越界校验。
+// 4) ai-games-levels.js（交互式，没有check()/answer）：至少校验每个游戏的
+//    Python代码本身能正常编译（无语法错误）。
+// 5) 所有HTML页面的 href/src 本地文件引用完整性校验（防止死链接）。
 //
 // 用法：node scripts/verify.mjs
 
@@ -140,9 +144,106 @@ function verifyLevels(label, LEVELS) {
 
 console.log("\n== 关卡 参考答案<->check() 配对校验 ==");
 verifyLevels("levels/ (初级)", loadLevelsDirInSandbox("levels", "LEVELS"));
-verifyLevels("assessment-levels.js", loadInSandbox("assessment-levels.js", "LEVELS"));
+const assessmentLevels = loadInSandbox("assessment-levels.js", "LEVELS");
+verifyLevels("assessment-levels.js", assessmentLevels);
 verifyLevels("advanced-levels.js", loadInSandbox("advanced-levels.js", "LEVELS"));
 verifyLevels("debug-levels.js", loadInSandbox("debug-levels.js", "LEVELS"));
+
+// ---------- reviewLevel 越界校验 ----------
+// assessment-levels.js 答错时会给一个"去初级复习这个知识点"的链接
+// （course.html?start=reviewLevel），这个数字是从check()函数体里直接
+// return出来的，不是一个独立可以直接读的字段，只能从函数源码里用正则挖出来。
+// 校验它落在初级12关的合法范围内——手滑打错一个数字，就会生成一个指向
+// 不存在关卡的死链接，而且只有真的连错触发到那个分支才会被人发现。
+const COURSE_LEVEL_COUNT = 12;
+
+function verifyReviewLevels(label, LEVELS) {
+  const before = failures;
+  LEVELS.forEach((level) => {
+    const variants = Array.isArray(level.variants) && level.variants.length ? level.variants : [level];
+    variants.forEach((variant) => {
+      if (typeof variant.check !== "function") return;
+      const src = variant.check.toString();
+      const matches = [...src.matchAll(/reviewLevel:\s*(\d+)/g)];
+      matches.forEach((m) => {
+        checks += 1;
+        const n = parseInt(m[1], 10);
+        if (n < 1 || n > COURSE_LEVEL_COUNT) {
+          fail(`${label} 第${level.id}关: reviewLevel越界 (${n})，初级只有${COURSE_LEVEL_COUNT}关`);
+        }
+      });
+    });
+  });
+  console.log(`  ${label}: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== reviewLevel 越界校验 ==");
+verifyReviewLevels("assessment-levels.js", assessmentLevels);
+
+// ---------- ai-games-levels.js：Python语法校验 ----------
+// 这4个AI小游戏是交互式的（没有 answer/check()，靠真人一步步输入），
+// 没法像其他赛道那样跑一遍确认"参考答案能通过校验"。退而求其次，至少
+// 确认每个游戏的Python代码本身能正常编译（没有语法错误）——不实际执行
+// （代码里有 input() 会卡住等输入），只用 compile() 检查语法。
+function verifyAiGamesSyntax() {
+  const before = failures;
+  const LEVELS = loadInSandbox("ai-games-levels.js", "LEVELS");
+  if (!Array.isArray(LEVELS)) {
+    fail("ai-games-levels.js: 没有找到 LEVELS 数组");
+    return;
+  }
+  LEVELS.forEach((level) => {
+    checks += 1;
+    if (!level.code || typeof level.code !== "string") {
+      fail(`ai-games-levels.js 第${level.id}关: 没有 code 字段`);
+      return;
+    }
+    try {
+      execFileSync("python3", ["-c", "import sys; compile(sys.stdin.read(), '<code>', 'exec')"], {
+        input: level.code,
+        encoding: "utf8",
+      });
+    } catch (e) {
+      fail(`ai-games-levels.js 第${level.id}关: Python语法错误 -- ${e.message}`);
+    }
+  });
+  console.log(`  ai-games-levels.js: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== ai-games-levels.js Python语法校验 ==");
+verifyAiGamesSyntax();
+
+// ---------- HTML内部链接/脚本引用完整性校验 ----------
+// 网站现在11个HTML页面互相跳转，<a href>和<script src>指向的本地文件
+// 全靠人肉核对，很容易在改文件名/加新页面的时候悄悄产生死链接，没人
+// 会发现（不像404页面那样一打开就能看到）。这里扫一遍所有HTML文件，
+// 校验每一个"看起来是本地文件"的href/src真的存在。
+// 跳过：外部链接(http/https)、锚点(#xxx)、mailto:、javascript:。
+function verifyLinks() {
+  const before = failures;
+  const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html"));
+  const refRegex = /(?:href|src)="([^"]+)"/g;
+
+  htmlFiles.forEach((htmlFile) => {
+    const content = fs.readFileSync(path.join(ROOT, htmlFile), "utf8");
+    [...content.matchAll(refRegex)].forEach((m) => {
+      const ref = m[1];
+      if (/^(https?:)?\/\//.test(ref) || ref.startsWith("#") || ref.startsWith("mailto:") || ref.startsWith("javascript:") || ref.startsWith("data:")) {
+        return;
+      }
+      checks += 1;
+      const cleanPath = ref.split("?")[0].split("#")[0];
+      const target = path.join(ROOT, cleanPath);
+      if (!fs.existsSync(target)) {
+        fail(`${htmlFile}: 引用的文件不存在 -- "${ref}"`);
+      }
+    });
+  });
+  console.log(`  ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== HTML内部链接/脚本引用完整性校验 ==");
+verifyLinks();
 
 console.log(`\n共 ${checks} 项检查，${failures} 项失败。`);
 process.exit(failures > 0 ? 1 : 0);
