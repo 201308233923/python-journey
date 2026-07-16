@@ -1093,6 +1093,22 @@ a.back-link {
   min-width: 160px;
 }
 
+.share-card-preview {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.share-card-img {
+  max-width: 100%;
+  width: 320px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.share-card-hint {
+  margin: 14px auto 16px;
+}
+
 .cert-compare,
 .cert-weak-points {
   margin-top: 28px;

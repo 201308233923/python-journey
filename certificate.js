@@ -103,9 +103,102 @@ function renderCertificateSection(completed) {
       <div class="cert-btn-row">
         <button class="quiz-btn-primary" id="cert-print-btn">🖨 打印 / 保存为PDF</button>
         <button class="quiz-btn-primary secondary" id="cert-share-btn">📋 复制分享文案</button>
+        <button class="quiz-btn-primary secondary" id="cert-shareimg-btn">📸 生成分享图</button>
       </div>
+      <div id="share-card-preview" class="share-card-preview hidden no-print"></div>
     </div>
   `;
+}
+
+// 手写一个圆角矩形路径——不用 ctx.roundRect()，避免依赖太新的浏览器API。
+function drawRoundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// 分享图用固定的浅色配色（不跟随访客系统的深色/浅色模式）——分享出去给别人看的
+// 图片，画面得自己保持一致好看，不能因为生成图片那一刻用户的系统是深色模式，
+// 分享出去之后别人看到的却是另一种配色。
+function buildShareCardCanvas(completed, name) {
+  const W = 750;
+  const H = 1000;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  const fontFamily = "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif";
+  const centerX = W / 2;
+
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#4f6df5");
+  bg.addColorStop(1, "#7b93ff");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = "#ffffff";
+  drawRoundedRect(ctx, 40, 40, W - 80, H - 80, 28);
+  ctx.fill();
+
+  ctx.textAlign = "center";
+
+  ctx.fillStyle = "#4f6df5";
+  ctx.font = `700 22px ${fontFamily}`;
+  ctx.fillText("🌱 码芽", centerX, 140);
+
+  ctx.fillStyle = "#22262e";
+  ctx.font = `800 40px ${fontFamily}`;
+  ctx.fillText("结业证书", centerX, 195);
+
+  ctx.strokeStyle = "#e3e6ec";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(centerX - 60, 225);
+  ctx.lineTo(centerX + 60, 225);
+  ctx.stroke();
+
+  ctx.fillStyle = "#22262e";
+  ctx.font = `700 34px ${fontFamily}`;
+  ctx.fillText(name || "编程学习者", centerX, 285);
+
+  ctx.fillStyle = "#6b7280";
+  ctx.font = `400 18px ${fontFamily}`;
+  ctx.fillText("在码芽完成了以下学习内容：", centerX, 325);
+
+  let y = 380;
+  ctx.fillStyle = "#22262e";
+  ctx.font = `600 24px ${fontFamily}`;
+  completed.forEach((t) => {
+    ctx.fillText(`${t.emoji} ${t.label}（全部${t.count}关）`, centerX, y);
+    y += 46;
+  });
+
+  const streakCount = parseInt(localStorage.getItem("codecourse_streak_count") || "0", 10);
+  if (streakCount > 0) {
+    y += 16;
+    ctx.fillStyle = "#e8590c";
+    ctx.font = `600 22px ${fontFamily}`;
+    ctx.fillText(`🔥 连续学习 ${streakCount} 天`, centerX, y);
+  }
+
+  ctx.fillStyle = "#6b7280";
+  ctx.font = `400 16px ${fontFamily}`;
+  ctx.fillText(
+    new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" }),
+    centerX,
+    900
+  );
+
+  const url = `${location.origin}${location.pathname.replace(/certificate\.html$/, "index.html")}`;
+  ctx.fillStyle = "#9aa0ac";
+  ctx.font = `400 15px ${fontFamily}`;
+  ctx.fillText(`🌱 码芽 · 免费学Python · ${url}`, centerX, 935);
+
+  return canvas;
 }
 
 function wireCertificateSection(completed) {
@@ -134,6 +227,20 @@ function wireCertificateSection(completed) {
     setTimeout(() => {
       btn.textContent = originalText;
     }, 1800);
+  });
+
+  document.getElementById("cert-shareimg-btn").addEventListener("click", () => {
+    const name = localStorage.getItem(NAME_KEY) || "";
+    const canvas = buildShareCardCanvas(completed, name);
+    const dataUrl = canvas.toDataURL("image/png");
+    const previewBox = document.getElementById("share-card-preview");
+    previewBox.innerHTML = `
+      <img src="${dataUrl}" alt="码芽结业证书分享图" class="share-card-img" />
+      <p class="landing-lede share-card-hint">手机上长按图片保存到相册，就能发朋友圈/小红书了；电脑上点下面按钮下载。</p>
+      <a class="quiz-btn-primary secondary" href="${dataUrl}" download="码芽结业证书.png">⬇️ 下载图片</a>
+    `;
+    previewBox.classList.remove("hidden");
+    previewBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
 }
 
