@@ -1,0 +1,130 @@
+#!/usr/bin/env node
+// 零依赖的回归校验脚本：
+// 1) 三档题库（quiz.js/quiz-intermediate.js/quiz-advanced.js）结构校验
+//    （答案下标越界、选项重复、targetLevel越界）。
+// 2) 四条赛道的关卡文件（levels.js/assessment-levels.js/advanced-levels.js/
+//    debug-levels.js）——每一关（或每个variant）的参考答案 answer，真的用
+//    python3跑一遍（跟app.js里RUNNER_TEMPLATE同样的模拟逻辑），再喂给这一关
+//    自己的 check()，确认参考答案真的能通过校验。防止以后改check()或改answer
+//    的时候，两边不匹配了却没人发现。
+//
+// 用法：node scripts/verify.mjs
+
+import fs from "node:fs";
+import path from "node:path";
+import vm from "node:vm";
+import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.join(__dirname, "..");
+
+let failures = 0;
+let checks = 0;
+
+function fail(msg) {
+  failures += 1;
+  console.error(`FAIL: ${msg}`);
+}
+
+function loadInSandbox(relPath, globalName) {
+  const code = fs.readFileSync(path.join(ROOT, relPath), "utf8");
+  // explainError 是 app.js 里定义的，levels文件的check()在 r.err 分支会调用它——
+  // 单独加载关卡文件时不存在，给个占位实现，避免真出错的参考答案在这里直接
+  // 因为 ReferenceError 崩溃，而不是被正常判定成"没通过check()"。
+  const sandbox = { explainError: (err) => String(err) };
+  vm.createContext(sandbox);
+  // 文件里用的是 const/let 声明（QUIZ / LEVELS），这些不会挂到vm的全局对象上
+  // （Node vm的已知行为：只有var/函数声明才会变成contextify对象的属性）。
+  // 包一层立即执行函数，靠闭包拿到声明的值，作为整个脚本的返回值带出来。
+  const wrapped = `(function(){\n${code}\nreturn typeof ${globalName} !== "undefined" ? ${globalName} : undefined;\n})()`;
+  return vm.runInContext(wrapped, sandbox, { filename: relPath });
+}
+
+function validateQuiz(name, arr, maxLevel) {
+  if (!Array.isArray(arr)) {
+    fail(`${name}: 没有找到题库数组`);
+    return;
+  }
+  arr.forEach((q, i) => {
+    checks += 1;
+    const where = `${name}#${i} "${(q.q || "").slice(0, 24)}"`;
+    if (!q.q || typeof q.q !== "string") fail(`${where}: 缺少题目文本`);
+    if (!Array.isArray(q.options) || q.options.length < 2) fail(`${where}: 选项数量不对`);
+    if (typeof q.answer !== "number" || q.answer < 0 || q.answer >= (q.options || []).length) {
+      fail(`${where}: 答案下标越界 (answer=${q.answer}, options=${(q.options || []).length})`);
+    }
+    if (new Set(q.options || []).size !== (q.options || []).length) fail(`${where}: 选项有重复`);
+    if (typeof q.targetLevel !== "number" || q.targetLevel < 1 || q.targetLevel > maxLevel) {
+      fail(`${where}: targetLevel越界 (${q.targetLevel})`);
+    }
+  });
+}
+
+console.log("== 题库结构校验 ==");
+validateQuiz("quiz.js", loadInSandbox("quiz.js", "QUIZ"), 12);
+validateQuiz("quiz-intermediate.js", loadInSandbox("quiz-intermediate.js", "QUIZ_INTERMEDIATE"), 6);
+validateQuiz("quiz-advanced.js", loadInSandbox("quiz-advanced.js", "QUIZ_ADVANCED"), 6);
+console.log(`  ${checks} 道题检查完毕`);
+
+function runPython(code, input) {
+  const out = execFileSync("python3", [path.join(__dirname, "py_shim.py")], {
+    input: JSON.stringify({ code, input: input || "" }),
+    encoding: "utf8",
+  });
+  return JSON.parse(out); // [stdout, err]
+}
+
+function verifyLevelsFile(relPath) {
+  const before = failures;
+  const LEVELS = loadInSandbox(relPath, "LEVELS");
+  if (!Array.isArray(LEVELS)) {
+    fail(`${relPath}: 没有找到 LEVELS 数组`);
+    return;
+  }
+  LEVELS.forEach((level) => {
+    const hasVariants = Array.isArray(level.variants) && level.variants.length > 0;
+    const variants = hasVariants ? level.variants : [level];
+    variants.forEach((variant, vi) => {
+      checks += 1;
+      const where = `${relPath} 第${level.id}关${hasVariants ? ` 变体${vi}` : ""}`;
+      if (!variant.answer) {
+        fail(`${where}: 没有 answer 字段可校验`);
+        return;
+      }
+      if (typeof variant.check !== "function") {
+        fail(`${where}: 没有 check() 函数`);
+        return;
+      }
+      const input = variant.needsInput ? variant.defaultInput || "" : "";
+      let stdout;
+      let err;
+      try {
+        [stdout, err] = runPython(variant.answer, input);
+      } catch (e) {
+        fail(`${where}: python shim 崩溃 -- ${e.message}`);
+        return;
+      }
+      let verdict;
+      try {
+        verdict = variant.check({ stdout, err, code: variant.answer });
+      } catch (e) {
+        fail(`${where}: check() 抛出异常 -- ${e.message}`);
+        return;
+      }
+      if (!verdict || verdict.pass !== true) {
+        fail(`${where}: 参考答案没有通过 check() -- ${verdict && verdict.message}`);
+      }
+    });
+  });
+  console.log(`  ${relPath}: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== 关卡 参考答案<->check() 配对校验 ==");
+verifyLevelsFile("levels.js");
+verifyLevelsFile("assessment-levels.js");
+verifyLevelsFile("advanced-levels.js");
+verifyLevelsFile("debug-levels.js");
+
+console.log(`\n共 ${checks} 项检查，${failures} 项失败。`);
+process.exit(failures > 0 ? 1 : 0);
