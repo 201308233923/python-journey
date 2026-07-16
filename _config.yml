@@ -1,0 +1,3 @@
+exclude:
+  - start.command
+  - README.md
