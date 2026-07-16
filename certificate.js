@@ -39,8 +39,9 @@ function passedCount(unlocked, count) {
 
 // 复用各赛道关卡页已经在记的"每一关错了几次"（app.js 的 failKey），跨四条赛道汇总一遍，
 // 挑出错得最多的几关——不用等通关一整条赛道才看得到，只要真的卡过就会出现在这里。
-// 只用关卡编号而不是关卡标题，是因为证书页刻意没有加载四个关卡数据文件（levels.js等）
-// 来省页面体积，标题得从那些文件里查，而编号从本地存档的key名就能直接读出来。
+// 只用关卡编号而不是关卡标题，是因为证书页刻意没有加载四条赛道的关卡数据
+// （levels/ 目录、assessment-levels.js等）来省页面体积，标题得从那些文件里查，
+// 而编号从本地存档的key名就能直接读出来。
 function getWeakPoints() {
   const points = [];
   TRACKS.forEach((t) => {

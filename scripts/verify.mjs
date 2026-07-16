@@ -75,11 +75,29 @@ function runPython(code, input) {
   return JSON.parse(out); // [stdout, err]
 }
 
-function verifyLevelsFile(relPath) {
+// 初级(course)赛道的关卡拆成了 levels/ 目录下每关一个文件 + index.js 汇总
+// （原来的单个 levels.js 2342行不好改），这里把目录下所有文件按顺序拼起来，
+// 当成一个整体脚本去eval，跟浏览器里 <script> 标签依次加载共享全局作用域
+// 是同一个效果。
+function loadLevelsDirInSandbox(dirRelPath, globalName) {
+  const dir = path.join(ROOT, dirRelPath);
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith(".js") && f !== "index.js")
+    .sort();
+  const combined = [...files.map((f) => fs.readFileSync(path.join(dir, f), "utf8")), fs.readFileSync(path.join(dir, "index.js"), "utf8")].join(
+    "\n"
+  );
+  const sandbox = { explainError: (err) => String(err) };
+  vm.createContext(sandbox);
+  const wrapped = `(function(){\n${combined}\nreturn typeof ${globalName} !== "undefined" ? ${globalName} : undefined;\n})()`;
+  return vm.runInContext(wrapped, sandbox, { filename: dirRelPath });
+}
+
+function verifyLevels(label, LEVELS) {
   const before = failures;
-  const LEVELS = loadInSandbox(relPath, "LEVELS");
   if (!Array.isArray(LEVELS)) {
-    fail(`${relPath}: 没有找到 LEVELS 数组`);
+    fail(`${label}: 没有找到 LEVELS 数组`);
     return;
   }
   LEVELS.forEach((level) => {
@@ -87,7 +105,7 @@ function verifyLevelsFile(relPath) {
     const variants = hasVariants ? level.variants : [level];
     variants.forEach((variant, vi) => {
       checks += 1;
-      const where = `${relPath} 第${level.id}关${hasVariants ? ` 变体${vi}` : ""}`;
+      const where = `${label} 第${level.id}关${hasVariants ? ` 变体${vi}` : ""}`;
       if (!variant.answer) {
         fail(`${where}: 没有 answer 字段可校验`);
         return;
@@ -117,14 +135,14 @@ function verifyLevelsFile(relPath) {
       }
     });
   });
-  console.log(`  ${relPath}: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+  console.log(`  ${label}: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
 }
 
 console.log("\n== 关卡 参考答案<->check() 配对校验 ==");
-verifyLevelsFile("levels.js");
-verifyLevelsFile("assessment-levels.js");
-verifyLevelsFile("advanced-levels.js");
-verifyLevelsFile("debug-levels.js");
+verifyLevels("levels/ (初级)", loadLevelsDirInSandbox("levels", "LEVELS"));
+verifyLevels("assessment-levels.js", loadInSandbox("assessment-levels.js", "LEVELS"));
+verifyLevels("advanced-levels.js", loadInSandbox("advanced-levels.js", "LEVELS"));
+verifyLevels("debug-levels.js", loadInSandbox("debug-levels.js", "LEVELS"));
 
 console.log(`\n共 ${checks} 项检查，${failures} 项失败。`);
 process.exit(failures > 0 ? 1 : 0);

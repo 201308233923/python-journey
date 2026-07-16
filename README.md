@@ -67,7 +67,7 @@ python3 -m http.server 8765
 ## 文件说明（给你未来的自己看）
 
 - `index.html` + `quiz.js` + `quiz-app.js` — 入口的水平测试
-- `course.html` + `levels.js` — 初级12关
+- `course.html` + `levels/`（`level-01.js`..`level-12.js` + `index.js` 汇总） — 初级12关，每关6个变体
 - `assessment.html` + `assessment-levels.js` — 进阶6题
 - `advanced.html` + `advanced-levels.js` — 高级6关
 - `debug.html` + `debug-levels.js` — 调试挑战8关
