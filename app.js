@@ -446,6 +446,13 @@ function setupButtons() {
     const level = LEVELS.find((l) => l.id === currentLevelId);
     const variant = currentVariant || resolveVariant(level);
     document.getElementById("code-editor").value = variant.starter;
+    // 需要模拟输入的关卡，"重置代码"/"恢复原样"也得把输入框一起复位——
+    // 不然代码恢复原样了，输入框还留着之前乱试的内容，跑出来的结果对不上，
+    // 看起来像是"恢复"没生效。
+    if (variant.needsInput) {
+      const inputEditor = document.getElementById("input-editor");
+      if (inputEditor) inputEditor.value = variant.defaultInput || "";
+    }
   });
 
   document.getElementById("hint-btn").addEventListener("click", () => {
