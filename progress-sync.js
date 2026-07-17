@@ -402,7 +402,11 @@ async function bumpStreakAndRender() {
   // 这里先同步地把本地存档改了，云端数据晚一步拉下来时会把刚改的这次悄悄覆盖掉，
   // 不仅今天白打卡，连带明天算"是否连续"用的时间戳也变成了旧的，可能把真实的
   // 连续记录也错误地打断。
-  if (window.cloudProgressReady) await window.cloudProgressReady;
+  // 顺带拿到登录状态：打卡计数不管有没有登录都照常记（这样哪天真的注册了，
+  // 之前本地攒的连续天数不会归零），但徽章展示只给登录用户看——没有账号的
+  // 访客看到"连续学习"没有意义，这条记录只存在这台设备上，换个人打开也会
+  // 看到同样的数字，容易让人误以为这是"网站认出了你"，其实不是。
+  const user = window.cloudProgressReady ? await window.cloudProgressReady : null;
 
   const todayMidnight = localMidnight(new Date());
   const lastMidnight = parseInt(localStorage.getItem(STREAK_LAST_KEY) || "0", 10);
@@ -414,6 +418,8 @@ async function bumpStreakAndRender() {
     localStorage.setItem(STREAK_COUNT_KEY, String(newCount));
     localStorage.setItem(STREAK_LAST_KEY, String(todayMidnight));
   }
+
+  if (!user) return;
 
   const count = parseInt(localStorage.getItem(STREAK_COUNT_KEY) || "0", 10);
   const badge = document.getElementById("streak-badge");
