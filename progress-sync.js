@@ -417,7 +417,10 @@ async function bumpStreakAndRender() {
 
   const count = parseInt(localStorage.getItem(STREAK_COUNT_KEY) || "0", 10);
   const badge = document.getElementById("streak-badge");
-  if (badge && count > 0) {
+  // count>1才显示——第一次打开网站，什么都还没做，就弹出"连续学习1天"，
+  // 这个"连续"没有意义（谁都是从1开始），显得像是白送的虚假成就感。
+  // 真的连续两天以上才值得亮出来。
+  if (badge && count > 1) {
     badge.textContent = `🔥 连续学习 ${count} 天`;
     badge.classList.remove("hidden");
   }
