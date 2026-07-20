@@ -42,6 +42,20 @@ const LEVELS = [
 
 ai_guess_number()`,
     hint: `AI第一次总是猜(1+100)//2=50。如果你想的数比50小就回答"大"（意思是AI猜大了），比50大就回答"小"。`,
+    walkthrough: [
+      { code: `def ai_guess_number():`, note: `定义一个函数，把整个猜数字的逻辑都装在里面——光定义不算真的运行，最后一行调用它才会真的开始玩。` },
+      { code: `print("请在心里想一个...")\ninput("想好了按回车继续...")`, note: `先让你心里想好数字。这里的 input() 只是"等你按一下回车"，不是真的要你输入什么内容。` },
+      { code: `low, high = 1, 100`, note: `设定猜测范围的上下界——二分法的起点：先假设答案可能是1到100之间任意一个数。` },
+      { code: `guess_count = 0`, note: `记一下总共猜了几次，猜中的时候要报给你听。` },
+      { code: `while low <= high:`, note: `只要范围还没缩没了（上界依然大于等于下界），就继续猜下去。` },
+      { code: `guess = (low + high) // 2`, note: `二分法的核心：永远猜"当前范围的正中间"，这样不管猜对猜错，每猜一次都能排除掉一半的可能性。` },
+      { code: `answer = input(...).strip()`, note: `读你的反馈（"大"/"小"/"对"），.strip() 是去掉你不小心多打的空格。` },
+      { code: `if answer == "对":\n    ...\n    return`, note: `猜中了：打印结果和"这就是二分法"的讲解，然后用 return 直接结束整个函数。` },
+      { code: `elif answer == "大":\n    high = guess - 1`, note: `你说AI猜大了，说明真正的数字比guess小，把上界收缩到guess-1，下一轮只在更小的范围里猜。` },
+      { code: `elif answer == "小":\n    low = guess + 1`, note: `同理，猜小了就把下界往上收缩，下一轮只在更大的范围里猜。` },
+      { code: `else:\n    ...\n    guess_count -= 1`, note: `如果你打的不是这三个词，提示重新输入，同时把计数减回去——这一次没有真正猜中或猜错，不该算数。` },
+      { code: `ai_guess_number()`, note: `前面全是"定义"，这一行才是真正"调用"函数——游戏从这一行开始跑。` },
+    ],
   },
   {
     id: 2,
@@ -91,6 +105,21 @@ def chat():
 
 chat()`,
     hint: `试试打"你好"、"你叫什么名字"、"AI"、"无聊"，看看会不会触发不一样的回复；最后打"再见"结束。`,
+    walkthrough: [
+      { code: `import random`, note: `待会儿要从"多个可能的回复"里随机选一句，需要用到这个内置模块。` },
+      { code: `RULES = {...}`, note: `整个机器人的"知识库"：键是关键词，值是"看到这个词可能回复的话"（可以不止一句，随机挑一句）。` },
+      { code: `DEFAULT_REPLIES = [...]`, note: `如果你说的话一个关键词都没命中，就从这里随便回你一句，不会卡住答不上来。` },
+      { code: `def get_reply(user_input):`, note: `定义"怎么根据你说的话决定回复什么"这个逻辑。` },
+      { code: `for keyword, replies in RULES.items():\n    if keyword in user_input:`, note: `逐个检查RULES里的每一个关键词，看看有没有出现在你刚打的话里面。` },
+      { code: `return random.choice(replies)`, note: `命中了某个关键词，就从它对应的回复列表里随机挑一句返回。` },
+      { code: `return random.choice(DEFAULT_REPLIES)`, note: `for循环走完了都没命中任何关键词，就返回一句默认回复。` },
+      { code: `def chat():`, note: `定义整个对话流程：一直聊，直到你说"再见"。` },
+      { code: `while True:\n    user_input = input("你：")`, note: `无限循环，每一轮都等你打字。` },
+      { code: `reply = get_reply(user_input)\nprint(f"机器人：{reply}")`, note: `调用刚才那个"挑回复"的函数，把结果打印出来，看起来就像AI在回你话。` },
+      { code: `if "再见" in user_input:\n    break`, note: `检测到"再见"这两个字，跳出循环，结束对话。` },
+      { code: `print("...机器人根本不'理解'你说的话...")`, note: `对话结束后直接揭秘：它没有真的理解你，只是在做关键词匹配。` },
+      { code: `chat()`, note: `真正开始运行整个对话，前面都只是定义。` },
+    ],
   },
   {
     id: 3,
@@ -160,6 +189,21 @@ def play():
 
 play()`,
     hint: `前3局AI是瞎猜的，从第4局开始才会用你的历史记录来预测。想让AI稳赢你，就连续出好几次同一个招数试试。`,
+    walkthrough: [
+      { code: `CHOICES = ["石头", "剪刀", "布"]`, note: `所有合法的出拳选项。` },
+      { code: `BEATS = {"石头": "剪刀", ...}`, note: `记录"谁克制谁"的规则——"石头"这个键对应的值是"剪刀"，意思是石头能赢剪刀。` },
+      { code: `def counter_move(predicted):\n    for move, loses_to in BEATS.items():\n        if loses_to == predicted:\n            return move`, note: `"反推"逻辑：如果预测你会出剪刀，就要找"谁能赢剪刀"——遍历BEATS字典，找到"值等于剪刀"的那一项，它的键（石头）就是答案。` },
+      { code: `history = {"石头": 0, "剪刀": 0, "布": 0}`, note: `记录你到目前为止分别出过几次石头/剪刀/布——这就是AI用来"学习"的数据。` },
+      { code: `while True:\n    user_move = input(...)`, note: `每一轮先问你出什么。` },
+      { code: `if user_move == "退出":\n    break`, note: `想结束游戏的出口。` },
+      { code: `if user_move not in CHOICES:\n    continue`, note: `容错：打错字了就重新问一遍，不往下走。` },
+      { code: `rounds += 1`, note: `记一下打了第几轮，后面要用这个数字判断AI"是不是已经攒够数据"。` },
+      { code: `if rounds <= 3:\n    ai_move = random.choice(CHOICES)`, note: `前3轮数据太少，AI还没法预测，就随便出。` },
+      { code: `else:\n    predicted = max(history, key=history.get)\n    ai_move = counter_move(predicted)`, note: `4轮以后：找出你出得最多的招数（这就是"预测"你接下来最可能出的），再用counter_move算出能克制它的招数。` },
+      { code: `history[user_move] += 1`, note: `把这一轮你出的招数记进历史统计里，下一轮的预测会用到这次更新后的数据。` },
+      { code: `if user_move == ai_move:\n    ...\nelif BEATS[user_move] == ai_move:\n    ...\nelse:\n    ...`, note: `用最开始定义的BEATS规则判断这一轮到底是谁赢，更新比分。` },
+      { code: `print(f"...你出拳的习惯统计：{history}")`, note: `游戏结束后把你的出拳统计亮出来，让你直观看到"AI就是靠数这个数据来赢你的"。` },
+    ],
   },
   {
     id: 4,
@@ -243,5 +287,41 @@ print("\\n提示：这个神经元一开始权重是瞎猜的（随机数），"
 print("每次猜错就往'正确方向'调整一点点权重，猜的次数够多，它就学会规律了。")
 print("真实的AI（比如神经网络）原理类似，只是有几十亿个这样的神经元一起工作。")`,
     hint: `输入 1 训练AND逻辑，输入 2 训练OR逻辑。`,
+    walkthrough: [
+      { code: `TRAINING_DATA_AND / TRAINING_DATA_OR`, note: `训练数据：每一条是"两个输入 -> 正确答案该是什么"。AND逻辑要两个都是1才算1，OR逻辑只要有一个是1就算1。` },
+      { code: `def predict(inputs, weights, bias):\n    total = sum(i * w for i, w in zip(inputs, weights)) + bias`, note: `神经元最核心的计算：把每个输入乘上对应的权重再加起来，再加上一个偏移值bias。` },
+      { code: `return 1 if total > 0 else 0`, note: `这个总和如果大于0就猜"1"，否则猜"0"——这就是神经元做"决策"的方式。` },
+      { code: `weights = [random.uniform(-1, 1) for _ in range(2)]\nbias = random.uniform(-1, 1)`, note: `一开始权重和偏移都是瞎猜的随机数，神经元这时候还什么都不会。` },
+      { code: `for epoch in range(1, epochs + 1):`, note: `反复训练很多轮（默认20轮），每一轮都要看一遍全部训练数据。` },
+      { code: `guess = predict(inputs, weights, bias)\nerror = correct_answer - guess`, note: `用现在的权重猜一下，再算跟正确答案差多少（error）。` },
+      { code: `if error != 0:\n    weights[i] += learning_rate * error * inputs[i]\n    bias += learning_rate * error`, note: `猜错了才调整：往"能减小误差"的方向，小幅度修正权重和偏移——这就是"学习"的本质，错了就往对的方向挪一点点，不是一步到位。` },
+      { code: `if total_errors == 0:\n    break`, note: `如果这一整轮全部猜对了，说明学会了，提前结束训练，不用再浪费轮数。` },
+      { code: `def test(data, weights, bias):`, note: `训练完之后，用同样的数据再测一遍，看看学得对不对。` },
+      { code: `choice = input(...)\n...\nweights, bias = train(data)\ntest(data, weights, bias)`, note: `真正开始运行：问你训练AND还是OR，训练，再测试——前面全是定义好的工具函数，这里才是真正执行的地方。` },
+    ],
+  },
+  {
+    id: 5,
+    title: "游戏5：自己创造一个游戏",
+    explain: `
+      <p>前面4个游戏都是跟AI相关的例子，现在轮到你了——用Python写一个属于你自己的互动小游戏，
+      题材完全自由：猜谜语、文字冒险选分支、简单的问答测验，甚至自己写一版石头剪刀布，都可以。</p>
+      <p>这里的运行环境跟前面4关一样：<code>input()</code> 会等你在下面的输入框里打字，
+      <code>print()</code> 打印的内容会显示在对话框里。写完点"开始游戏"就能玩自己做的东西了。</p>
+    `,
+    code: `# 在这里写你自己的游戏！下面是一个最简单的例子，可以直接改，也可以全部删掉重写。
+# 记得：input() 会等玩家输入，print() 会把内容显示出来。
+
+name = input("你叫什么名字？")
+print(f"你好，{name}！欢迎来玩我做的游戏。")
+
+# 试试加一个问题，根据玩家的回答走向不同的结局？比如：
+# choice = input("你想选择 A 还是 B？")
+# if choice == "A":
+#     print("你选了A，发生了……")
+# else:
+#     print("你选了B，发生了……")
+`,
+    hint: `没思路的话可以从"猜数字"、"文字冒险选分支"、"简单问答测验"这几个方向想。写游戏最重要的是先想清楚：玩家会输入什么、根据输入你要打印什么。`,
   },
 ];

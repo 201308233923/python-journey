@@ -990,6 +990,42 @@ button:disabled {
   color: var(--text);
 }
 
+/* AI小游戏"逐行解读"：每一段是一小截代码原文 + 这段代码在这个游戏里干了什么，
+   用引用块的样式跟旁边真正的代码编辑器区分开，不会让人以为这个是能编辑的代码。 */
+.walkthrough-box {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.walkthrough-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.walkthrough-code {
+  display: block;
+  background: var(--code-bg);
+  color: var(--code-text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-family: "SF Mono", Menlo, monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 8px;
+}
+
+.walkthrough-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
 .output-box {
   min-height: 220px;
   background: var(--code-bg);

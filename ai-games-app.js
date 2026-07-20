@@ -1,3 +1,9 @@
+function escapeHtml(s) {
+  const div = document.createElement("div");
+  div.textContent = s;
+  return div.innerHTML;
+}
+
 let pyodide = null;
 let currentLevelId = null;
 let session = null; // { code, seed, inputList } while a game is in progress
@@ -112,6 +118,23 @@ function setCodeSectionOpen(open) {
   document.getElementById("code-toggle-btn").textContent = open ? "▼ 隐藏代码" : "▶ 查看代码";
 }
 
+// 逐行解读：每一段是一小截代码原文 + 这段代码在这个游戏里具体干了什么。
+// 代码原文用<pre>展示，不是真的从code-editor里抠出来的——那样editor被改过之后
+// 解读和实际代码就对不上了；这里存的是"原版代码"该长什么样，讲的是设计意图，
+// 跟玩家改没改代码没关系。
+function renderWalkthrough(items) {
+  return items
+    .map(
+      (item) => `
+        <div class="walkthrough-item">
+          <pre class="walkthrough-code">${escapeHtml(item.code)}</pre>
+          <p class="walkthrough-note">${escapeHtml(item.note)}</p>
+        </div>
+      `
+    )
+    .join("");
+}
+
 function selectLevel(id) {
   currentLevelId = id;
   session = null;
@@ -128,6 +151,18 @@ function selectLevel(id) {
   setCodeSectionOpen(false);
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("hint-box").textContent = level.hint || "";
+
+  const walkthroughBox = document.getElementById("walkthrough-box");
+  const walkthroughBtn = document.getElementById("walkthrough-btn");
+  const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
+  if (walkthroughBox) {
+    walkthroughBox.classList.add("hidden");
+    walkthroughBox.innerHTML = hasWalkthrough ? renderWalkthrough(level.walkthrough) : "";
+  }
+  if (walkthroughBtn) {
+    walkthroughBtn.classList.toggle("hidden", !hasWalkthrough);
+    walkthroughBtn.textContent = "🔍 逐行解读";
+  }
 
   document.getElementById("terminal-box").textContent = "";
   document.getElementById("turn-input-row").classList.add("hidden");
@@ -271,6 +306,13 @@ function setupButtons() {
   document.getElementById("hint-btn").addEventListener("click", () => {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
+
+  const walkthroughBtn = document.getElementById("walkthrough-btn");
+  if (walkthroughBtn) {
+    walkthroughBtn.addEventListener("click", () => {
+      document.getElementById("walkthrough-box").classList.toggle("hidden");
+    });
+  }
 
   document.getElementById("reset-code-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
