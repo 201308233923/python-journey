@@ -933,6 +933,34 @@ button:disabled {
   transform: none;
 }
 
+/* 反馈"这道题我还是不懂"——跟提示/参考答案的nudge同一个触发时机（连错3次），
+   但目的不一样（不是帮ta过关，是收集卡点信号），颜色故意用中性灰不用强调色，
+   不跟"这个能帮到你"的两个按钮抢注意力。 */
+.stuck-btn {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px dashed var(--muted);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: none;
+}
+
+.stuck-btn:hover:not(:disabled) {
+  opacity: 0.85;
+  transform: none;
+}
+
+.stuck-btn:disabled {
+  cursor: default;
+}
+
 .answer-box {
   margin: 12px 0 0;
   background: var(--code-bg);

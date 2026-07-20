@@ -10,6 +10,9 @@ const variantKey = (id) => `codecourse_${TRACK_ID}_v2_variant_${id}`;
 // 这个key故意不带v2_，"重置进度"清不到它——记录"这一关的几个样子，已经做过哪些了"，
 // 这样即使反复点重置，也不会立刻抽到刚做过的样子，除非6个样子都做过一轮了。
 const variantSeenKey = (id) => `codecourse_${TRACK_ID}_variantseen_${id}`;
+// 带v2_，重置进度会清掉——"这一关反馈过卡住了"这件事跟这次攻略绑定，
+// 重置之后如果又卡在这一关，应该能再反馈一次，不是永久哑掉。
+const stuckReportedKey = (id) => `codecourse_${TRACK_ID}_v2_stuckreported_${id}`;
 
 function getFailCount(id) {
   const raw = localStorage.getItem(failKey(id));
@@ -247,6 +250,12 @@ function selectLevel(id) {
     whyBox.textContent = level.why || "";
   }
   if (whyBtn) whyBtn.classList.toggle("hidden", !level.why);
+  const stuckBtn = document.getElementById("stuck-btn");
+  if (stuckBtn) {
+    stuckBtn.classList.add("hidden");
+    stuckBtn.disabled = false;
+    stuckBtn.textContent = "🤔 这道题我还是不懂";
+  }
   document.getElementById("next-level-btn").classList.add("hidden");
   const summaryBox = document.getElementById("completion-summary");
   if (summaryBox) summaryBox.classList.add("hidden");
@@ -417,6 +426,18 @@ async function runCurrentLevel() {
       ) {
         answerNudgeBtn.classList.remove("hidden");
       }
+      // 同样3次以上才冒出来——收集"这一关到底卡在哪"的信号，不是帮ta过关的，
+      // 跟提示/参考答案平级但目的不同。已经反馈过的关卡不会再冒出来
+      // （见stuckReportedKey），不用同一关反复提醒。
+      const stuckBtn = document.getElementById("stuck-btn");
+      if (
+        getFailCount(level.id) >= 3 &&
+        stuckBtn &&
+        stuckBtn.classList.contains("hidden") &&
+        !localStorage.getItem(stuckReportedKey(level.id))
+      ) {
+        stuckBtn.classList.remove("hidden");
+      }
     }
   } catch (e) {
     outputBox.textContent = `运行环境出错：${e}`;
@@ -484,6 +505,19 @@ function setupButtons() {
           (currentVariant.answer || "") +
           "\n\n# （这一关需要模拟输入，已经帮你把左边\"模拟输入\"框也换成配合这份答案的内容了）";
       }
+    });
+  }
+
+  const stuckBtn = document.getElementById("stuck-btn");
+  if (stuckBtn) {
+    stuckBtn.addEventListener("click", async () => {
+      stuckBtn.disabled = true;
+      stuckBtn.textContent = "发送中...";
+      const rawVariantIdx = localStorage.getItem(variantKey(currentLevelId));
+      const variantIdx = rawVariantIdx !== null && !Number.isNaN(parseInt(rawVariantIdx, 10)) ? parseInt(rawVariantIdx, 10) : null;
+      const ok = typeof reportStuck === "function" ? await reportStuck(TRACK_ID, currentLevelId, variantIdx) : false;
+      localStorage.setItem(stuckReportedKey(currentLevelId), "1");
+      stuckBtn.textContent = ok ? "✅ 已收到，谢谢反馈" : "没发送成功，不过还是谢谢你的反馈";
     });
   }
 

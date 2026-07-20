@@ -152,6 +152,25 @@ async function pushLeaderboardScore(userId) {
   }
 }
 
+// "这道题我还是不懂"反馈——跟排行榜同样的道理，独立的一张表(stuck_reports)，
+// 不需要登录也能提交（不登录的访客卡住了这个信号一样有价值，不能只收集
+// 登录用户的）。写失败/表还没建都静默跳过，不能因为这个附加功能拖累主流程。
+// 返回true/false给调用方决定要不要展示"已收到反馈"之类的提示。
+async function reportStuck(track, levelId, variantIndex) {
+  if (!supabaseClient) return false;
+  try {
+    const { error } = await supabaseClient.from("stuck_reports").insert({
+      track,
+      level_id: levelId,
+      variant_index: variantIndex === undefined || variantIndex === null || Number.isNaN(variantIndex) ? null : variantIndex,
+    });
+    if (error) return false;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // clearFirst=true 表示这是一次"登录"操作，理论上可能是切换身份，要避免跟上一个
 // 账号/匿名试用留下的本地数据混在一起。但登录表单弹出来，不代表一定是"换了个人"——
 // 也可能就是同一个人，只是session过期了、重新输一遍自己的密码而已。这两种情况

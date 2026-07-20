@@ -56,6 +56,22 @@ function renderStats(stats) {
   `;
 }
 
+const STUCK_TRACK_LABEL = { course: "初级", assessment: "进阶", advanced: "高级", debug: "调试挑战" };
+
+function renderStuckPoints(rows) {
+  if (!rows || rows.length === 0) {
+    return `<p class="admin-chart-empty">还没有人反馈卡住——点关卡页里"🤔 这道题我还是不懂"会记一条到这里。</p>`;
+  }
+  const items = rows
+    .map((r) => {
+      const trackLabel = STUCK_TRACK_LABEL[r.track] || escapeHtml(r.track);
+      const variantLabel = r.variant_index !== null && r.variant_index !== undefined ? `（变体${r.variant_index}）` : "";
+      return `<li><span class="completion-row-title">${trackLabel} 第${r.level_id}关${variantLabel}</span><span class="completion-row-count">${r.report_count} 次</span></li>`;
+    })
+    .join("");
+  return `<ul class="completion-summary-list">${items}</ul>`;
+}
+
 async function render() {
   const root = document.getElementById("admin-root");
   root.innerHTML = `
@@ -84,6 +100,21 @@ async function render() {
     // 统一文案，不区分"函数还没建"和"这个账号不是站长"——避免让非站长账号
     // 通过报错信息的差异反推出"我是不是站长"这种信息。
     contentBox.innerHTML = `<p class="cert-compare-error">看不到数据——要么数据库脚本还没执行，要么这个账号看不了这个页面。</p>`;
+    return;
+  }
+
+  // 卡点排行是独立的一张表+一个RPC，跟上面的admin_stats完全分开——这张表/函数
+  // 可能还没建（需要额外跑一次SQL），这里单独try/catch，失败了不影响上面
+  // 已经显示出来的核心数据。
+  try {
+    const { data: stuckRows, error: stuckError } = await supabaseClient.rpc("admin_stuck_points");
+    if (stuckError) throw stuckError;
+    contentBox.innerHTML += `
+      <h2 class="admin-chart-title">卡点排行（"这道题我还是不懂"反馈）</h2>
+      <div class="admin-chart">${renderStuckPoints(stuckRows)}</div>
+    `;
+  } catch (e) {
+    // 静默跳过——大概率是 admin_stuck_points() 这个函数还没建。
   }
 }
 
