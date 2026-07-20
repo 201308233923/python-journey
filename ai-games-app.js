@@ -118,21 +118,60 @@ function setCodeSectionOpen(open) {
   document.getElementById("code-toggle-btn").textContent = open ? "▼ 隐藏代码" : "▶ 查看代码";
 }
 
-// 逐行解读：每一段是一小截代码原文 + 这段代码在这个游戏里具体干了什么。
-// 代码原文用<pre>展示，不是真的从code-editor里抠出来的——那样editor被改过之后
-// 解读和实际代码就对不上了；这里存的是"原版代码"该长什么样，讲的是设计意图，
-// 跟玩家改没改代码没关系。
-function renderWalkthrough(items) {
-  return items
-    .map(
-      (item) => `
-        <div class="walkthrough-item">
-          <pre class="walkthrough-code">${escapeHtml(item.code)}</pre>
-          <p class="walkthrough-note">${escapeHtml(item.note)}</p>
-        </div>
-      `
-    )
-    .join("");
+// 逐行解读：把整段代码原样显示出来（保留缩进/空行），walkthrough里标注了的
+// 行范围用一个可点击的高亮框框起来，点一下在那一行下面弹出这段代码在这个游戏
+// 里具体干了什么。展示的是关卡自带的"原版代码"该长什么样，不是从code-editor
+// 实时抠出来的——这样即使玩家已经把代码改乱了，解读本身还是对得上原版逻辑。
+function renderAnnotatedCode(level) {
+  const lines = level.code.split("\n");
+  const coveredBy = new Array(lines.length + 1).fill(-1); // 1-indexed
+  (level.walkthrough || []).forEach((item, idx) => {
+    const [start, end] = item.lines;
+    for (let ln = start; ln <= end; ln++) coveredBy[ln] = idx;
+  });
+
+  let html = "";
+  let i = 1;
+  while (i <= lines.length) {
+    const idx = coveredBy[i];
+    if (idx === -1) {
+      html += `${escapeHtml(lines[i - 1])}\n`;
+      i += 1;
+      continue;
+    }
+    const start = i;
+    while (i <= lines.length && coveredBy[i] === idx) i += 1;
+    const chunk = lines.slice(start - 1, i - 1).join("\n");
+    html += `<span class="walkthrough-highlight" data-idx="${idx}" role="button" tabindex="0">${escapeHtml(chunk)}</span>\n`;
+  }
+  return html;
+}
+
+// 点高亮代码块，在它下面插入/收起一个小气泡显示解读文字——同一时间只开一个，
+// 点开新的会先把上一个关掉。用事件委托挂在walkthrough-box上，而不是给每个
+// span单独绑监听器，这样每次重新渲染（切关卡/重新打开代码）都不用担心
+// 监听器重复绑定或者绑到已经被替换掉的旧节点上。
+function setupWalkthroughDelegation() {
+  const container = document.getElementById("walkthrough-box");
+  if (!container) return;
+  container.addEventListener("click", (e) => {
+    const span = e.target.closest ? e.target.closest(".walkthrough-highlight") : null;
+    if (!span || !container.contains(span)) return;
+
+    const openPopup = container.querySelector(".walkthrough-popup");
+    const reopeningSame = openPopup && openPopup.dataset.idx === span.dataset.idx && openPopup.previousElementSibling === span;
+    if (openPopup) openPopup.remove();
+    if (reopeningSame) return;
+
+    const level = LEVELS.find((l) => l.id === currentLevelId);
+    const item = level.walkthrough[parseInt(span.dataset.idx, 10)];
+    if (!item) return;
+    const popup = document.createElement("div");
+    popup.className = "walkthrough-popup";
+    popup.dataset.idx = span.dataset.idx;
+    popup.textContent = item.note;
+    span.insertAdjacentElement ? span.insertAdjacentElement("afterend", popup) : container.appendChild(popup);
+  });
 }
 
 function selectLevel(id) {
@@ -157,12 +196,15 @@ function selectLevel(id) {
   const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
   if (walkthroughBox) {
     walkthroughBox.classList.add("hidden");
-    walkthroughBox.innerHTML = hasWalkthrough ? renderWalkthrough(level.walkthrough) : "";
+    walkthroughBox.innerHTML = hasWalkthrough ? renderAnnotatedCode(level) : "";
   }
   if (walkthroughBtn) {
     walkthroughBtn.classList.toggle("hidden", !hasWalkthrough);
     walkthroughBtn.textContent = "🔍 逐行解读";
   }
+  // 切关卡/重新选关时，代码编辑框永远是默认可见、可编辑的那个——逐行解读
+  // 是主动点开才看的附加视图，不是默认状态。
+  codeEditor.classList.remove("hidden");
 
   document.getElementById("terminal-box").textContent = "";
   document.getElementById("turn-input-row").classList.add("hidden");
@@ -310,9 +352,15 @@ function setupButtons() {
   const walkthroughBtn = document.getElementById("walkthrough-btn");
   if (walkthroughBtn) {
     walkthroughBtn.addEventListener("click", () => {
-      document.getElementById("walkthrough-box").classList.toggle("hidden");
+      const walkthroughBox = document.getElementById("walkthrough-box");
+      const codeEditor = document.getElementById("code-editor");
+      const showingWalkthrough = walkthroughBox.classList.contains("hidden");
+      walkthroughBox.classList.toggle("hidden", !showingWalkthrough);
+      codeEditor.classList.toggle("hidden", showingWalkthrough);
+      walkthroughBtn.textContent = showingWalkthrough ? "✏️ 返回编辑代码" : "🔍 逐行解读";
     });
   }
+  setupWalkthroughDelegation();
 
   document.getElementById("reset-code-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
