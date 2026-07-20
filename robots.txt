@@ -2,3 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /README.md
 Disallow: /start.command
+Disallow: /admin.html
+
+Sitemap: https://may4.uk/sitemap.xml
