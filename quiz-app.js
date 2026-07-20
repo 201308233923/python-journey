@@ -192,6 +192,11 @@ const DAILY_REVIEW_COUNT = 10;
 let dailyReviewQuiz = [];
 let dailyReviewIndex = 0;
 let dailyReviewCorrect = 0;
+// 答错的题不是扣完分就算了——这一轮问完之后，答错的题会自动组成"下一轮"
+// 重新问一遍，一直循环到全部答对为止，确保复习真的巩固到了，不是蒙混过关。
+let dailyReviewWrongQueue = [];
+let dailyReviewRound = 1;
+let dailyReviewTotalQuestions = 0;
 
 function getTodayString() {
   const d = new Date();
@@ -244,6 +249,9 @@ function buildDailyReviewQuiz() {
   dailyReviewQuiz = shuffle(eligible).slice(0, Math.min(DAILY_REVIEW_COUNT, eligible.length)).map(shuffleQuestion);
   dailyReviewIndex = 0;
   dailyReviewCorrect = 0;
+  dailyReviewWrongQueue = [];
+  dailyReviewRound = 1;
+  dailyReviewTotalQuestions = dailyReviewQuiz.length;
 }
 
 function renderDailyReview() {
@@ -267,8 +275,9 @@ function renderDailyReview() {
 
 function renderDailyReviewQuestion() {
   const item = dailyReviewQuiz[dailyReviewIndex];
+  const roundLabel = dailyReviewRound > 1 ? `（第${dailyReviewRound}轮·订正错题）` : "";
   root.innerHTML = `
-    <div class="quiz-progress">今日复习 · 第 ${dailyReviewIndex + 1} / ${dailyReviewQuiz.length} 题</div>
+    <div class="quiz-progress">今日复习${roundLabel} · 第 ${dailyReviewIndex + 1} / ${dailyReviewQuiz.length} 题</div>
     <h2 class="quiz-question">${escapeHtml(item.q).replace(/\n/g, "<br>")}</h2>
     <div class="quiz-options">
       ${item.options
@@ -281,18 +290,32 @@ function renderDailyReviewQuestion() {
       const i = parseInt(btn.dataset.i, 10);
       const correct = i === item.answer;
       if (correct) {
-        dailyReviewCorrect += 1;
+        // 只有第一轮的"答对"才计入最终分数——重新订正轮答对了是"补救"，
+        // 不算"一次就会"，这样最后显示的分数才反映真实的第一次掌握情况。
+        if (dailyReviewRound === 1) dailyReviewCorrect += 1;
         btn.classList.add("correct");
       } else {
         btn.classList.add("wrong");
         const correctBtn = root.querySelector(`.quiz-option[data-i="${item.answer}"]`);
         if (correctBtn) correctBtn.classList.add("correct");
+        dailyReviewWrongQueue.push(item);
       }
       root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
       setTimeout(() => {
         dailyReviewIndex += 1;
-        if (dailyReviewIndex < dailyReviewQuiz.length) renderDailyReviewQuestion();
-        else renderDailyReviewResult();
+        if (dailyReviewIndex < dailyReviewQuiz.length) {
+          renderDailyReviewQuestion();
+        } else if (dailyReviewWrongQueue.length > 0) {
+          // 这一轮问完了，但还有答错的——把这些题重新组成下一轮，打乱顺序
+          // 再问一遍，一直循环到某一轮全部答对为止。
+          dailyReviewQuiz = shuffle(dailyReviewWrongQueue).map(shuffleQuestion);
+          dailyReviewWrongQueue = [];
+          dailyReviewIndex = 0;
+          dailyReviewRound += 1;
+          renderDailyReviewQuestion();
+        } else {
+          renderDailyReviewResult();
+        }
       }, 700);
     });
   });
@@ -300,9 +323,13 @@ function renderDailyReviewQuestion() {
 
 function renderDailyReviewResult() {
   markDailyReviewDone();
+  const scoreText =
+    dailyReviewCorrect === dailyReviewTotalQuestions
+      ? `一次就全部答对！(${dailyReviewCorrect} / ${dailyReviewTotalQuestions} 题)`
+      : `首次答对 ${dailyReviewCorrect} / ${dailyReviewTotalQuestions} 题，订正后全部掌握了`;
   root.innerHTML = `
     <div class="landing-eyebrow">今日复习</div>
-    <p class="quiz-score">答对 ${dailyReviewCorrect} / ${dailyReviewQuiz.length} 题</p>
+    <p class="quiz-score">${scoreText}</p>
     <h1>复习完成！</h1>
     <p class="landing-lede">明天再来看看能不能保持连续复习。</p>
     <button class="quiz-btn-primary" id="continue-after-review-btn">继续学习 →</button>
