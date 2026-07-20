@@ -679,6 +679,12 @@ body {
   padding-bottom: 0;
 }
 
+/* 全部注册用户名单可能会很长，限个高度滚动，不然页面会被拉得很长。 */
+.admin-user-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
 .completion-row-title {
   color: var(--muted);
 }

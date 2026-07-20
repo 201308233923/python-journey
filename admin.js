@@ -1,8 +1,9 @@
 // 站长专用的数据统计页——不在任何侧栏里放入口，真正的保护也不是靠"链接藏起来"，
-// 而是数据库那边的 admin_stats() 函数只认站长自己的账号（见 progress-sync.js 里
+// 而是数据库那边几个 admin_* 函数都只认站长自己的账号（见 progress-sync.js 里
 // SUPABASE_URL 对应项目的 SQL：函数内部校验 auth.uid() 是不是站长的 user_id，
-// 不是的话直接报错，不返回任何数据）。这个页面只是把 RPC 返回的聚合数字画出来，
-// 不直接读任何一张原始数据表。
+// 不是的话直接报错，不返回任何数据）。这个页面只是把这几个 RPC 返回的数据画出来，
+// 不直接读任何一张原始数据表（包括 admin_user_list() 返回的用户名单，也是走
+// 这同一套server端owner校验，不是前端自己拼查询）。
 
 function escapeHtml(s) {
   const div = document.createElement("div");
@@ -72,6 +73,19 @@ function renderStuckPoints(rows) {
   return `<ul class="completion-summary-list">${items}</ul>`;
 }
 
+function renderUserList(rows) {
+  if (!rows || rows.length === 0) {
+    return `<p class="admin-chart-empty">还没有人注册。</p>`;
+  }
+  const items = rows
+    .map((r) => {
+      const date = r.created_at ? new Date(r.created_at).toLocaleDateString("zh-CN") : "";
+      return `<li><span class="completion-row-title">${escapeHtml(r.username)}</span><span class="completion-row-count">${date}</span></li>`;
+    })
+    .join("");
+  return `<ul class="completion-summary-list admin-user-list">${items}</ul>`;
+}
+
 async function render() {
   const root = document.getElementById("admin-root");
   root.innerHTML = `
@@ -115,6 +129,19 @@ async function render() {
     `;
   } catch (e) {
     // 静默跳过——大概率是 admin_stuck_points() 这个函数还没建。
+  }
+
+  // 全部注册用户名单，同样独立try/catch——这个函数读的是auth.users，
+  // 一样只有站长自己能调用，跟admin_stats()的user_id校验是同一套。
+  try {
+    const { data: userRows, error: userListError } = await supabaseClient.rpc("admin_user_list");
+    if (userListError) throw userListError;
+    contentBox.innerHTML += `
+      <h2 class="admin-chart-title">全部注册用户（${userRows.length}）</h2>
+      <div class="admin-chart">${renderUserList(userRows)}</div>
+    `;
+  } catch (e) {
+    // 静默跳过——大概率是 admin_user_list() 这个函数还没建。
   }
 }
 
