@@ -9,6 +9,7 @@
   --accent: #2fb350;
   --accent-shadow: #1f8a3c;
   --accent-text: #ffffff;
+  --accent-glow: rgba(47, 179, 80, 0.32);
   --success-bg: #e6f8ec;
   --success-text: #1a7f4b;
   --fail-bg: #fdecec;
@@ -29,6 +30,7 @@
     --accent: #46d16c;
     --accent-shadow: #22a34a;
     --accent-text: #0b2412;
+    --accent-glow: rgba(70, 209, 108, 0.28);
     --success-bg: #113626;
     --success-text: #6fdf9d;
     --fail-bg: #3a1c1c;
@@ -74,6 +76,12 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* 两个柔和的绿色光斑，固定不动、纯装饰，不会跟着滚动/交互变化，
+     给纯色背景加一点层次，不影响任何功能也不会在小屏幕上出问题
+     （radial-gradient本身没有硬边界，不会被误认成故障）。 */
+  background-image: radial-gradient(circle at 12% -10%, var(--accent-glow), transparent 45%),
+    radial-gradient(circle at 90% 110%, var(--accent-glow), transparent 40%);
+  background-repeat: no-repeat;
 }
 
 /* 首页（水平测试/每日复习）没有侧栏，账号头像固定在右上角，
@@ -98,6 +106,25 @@ body {
   max-width: 720px;
   width: 100%;
   text-align: center;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 只在用户没有主动要求"减少动态效果"的时候才播放，跟app.js里彩纸庆祝
+   动画尊重同一个系统设置是一个道理。 */
+@media (prefers-reduced-motion: no-preference) {
+  .landing-inner {
+    animation: fade-in-up 0.5s ease both;
+  }
 }
 
 /* 首页左上角固定的小logo，跟右上角的账号头像对称，两边视觉重量差不多，
@@ -150,7 +177,7 @@ body {
 
 .quiz-btn-primary {
   display: inline-block;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-shadow));
   color: var(--accent-text);
   border: none;
   text-decoration: none;
@@ -159,7 +186,11 @@ body {
   padding: 14px 32px;
   border-radius: 999px;
   cursor: pointer;
-  transition: transform 0.1s ease;
+  /* 柔和的模糊光晕，跟之前去掉的0模糊硬投影不是一回事——那种在小屏幕上
+     看起来像一条突兀的实色线，这种是大范围羽化的光晕，贴着按钮自然过渡，
+     不会被误认成渲染故障。 */
+  box-shadow: 0 10px 24px var(--accent-glow);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 @media (hover: hover) {
@@ -170,6 +201,20 @@ body {
 
 .quiz-btn-primary:active {
   transform: translateY(1px);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+/* .secondary 组合类（比如"继续学"/"生成分享图"）盖掉主色调的渐变和绿色光晕，
+   换成跟 button.secondary 一致的朴素外观——不然药丸形状是对的，看着还是绿的。 */
+.quiz-btn-primary.secondary {
+  background: var(--panel);
+  color: var(--text);
+  border: 2px solid var(--border);
+  box-shadow: none;
+}
+
+.quiz-btn-primary.secondary:active {
+  box-shadow: none;
 }
 
 .quiz-choice-row {
@@ -208,7 +253,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 20px 22px;
-  box-shadow: 0 3px 0 var(--shadow-soft);
+  box-shadow: 0 8px 24px var(--shadow-soft);
 }
 
 .account-gate-label {
@@ -284,12 +329,13 @@ body {
 }
 
 .quiz-option {
+  position: relative;
   background: var(--panel);
   border: 2px solid var(--border);
   color: var(--text);
   font-size: 15px;
   font-weight: 500;
-  padding: 14px 18px;
+  padding: 14px 44px 14px 18px;
   border-radius: 14px;
   cursor: pointer;
   text-align: left;
@@ -324,6 +370,28 @@ body {
   border-color: var(--fail-text);
   background: var(--fail-bg);
   color: var(--fail-text);
+}
+
+/* 答对/答错不只靠颜色区分——色盲/色弱用户光看颜色可能分不清绿和红，
+   加个对勾/叉号图标双重保险，颜色跟着.correct/.wrong的文字色自动继承，
+   不用额外定义。 */
+.quiz-option.correct::after,
+.quiz-option.wrong::after {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  font-size: 18px;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.quiz-option.correct::after {
+  content: "✓";
+}
+
+.quiz-option.wrong::after {
+  content: "✗";
 }
 
 .sidebar {
@@ -1228,7 +1296,7 @@ a.back-link {
   border-radius: 24px;
   background: var(--panel);
   text-align: center;
-  box-shadow: 0 8px 0 var(--shadow-soft);
+  box-shadow: 0 16px 40px var(--shadow-soft);
 }
 
 .cert-brand {
@@ -1391,7 +1459,7 @@ a.back-link {
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--panel);
-  box-shadow: 0 2px 0 var(--shadow-soft);
+  box-shadow: 0 3px 10px var(--shadow-soft);
 }
 
 .leaderboard-row-me {
@@ -1446,7 +1514,7 @@ a.back-link {
   border-radius: 16px;
   background: var(--panel);
   text-align: center;
-  box-shadow: 0 2px 0 var(--shadow-soft);
+  box-shadow: 0 3px 10px var(--shadow-soft);
 }
 
 .admin-stat-value {
