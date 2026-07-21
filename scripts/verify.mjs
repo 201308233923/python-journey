@@ -213,6 +213,48 @@ function verifyAiGamesSyntax() {
 console.log("\n== ai-games-levels.js Python语法校验 ==");
 verifyAiGamesSyntax();
 
+// ---------- AI小游戏"逐行解读"覆盖率校验 ----------
+// walkthrough是{lines:[起,止], note}的列表，标注代码里哪些行范围配了解读框。
+// 之前出过的问题：新增/改动代码后没同步补walkthrough，导致有些关卡后半段
+// 一大段真代码完全没有解读框，看起来像"代码被删掉了一截"。这里校验：
+// 1) 行号范围没越界、互不重叠；2) 代码里每一行非空白的代码都至少被一个
+// walkthrough条目覆盖（纯空行不需要覆盖，允许拿来分隔）。
+function verifyAiGamesWalkthrough() {
+  const before = failures;
+  const LEVELS = loadInSandbox("ai-games-levels.js", "LEVELS");
+  if (!Array.isArray(LEVELS)) return;
+  LEVELS.forEach((level) => {
+    if (!Array.isArray(level.walkthrough) || level.walkthrough.length === 0) return;
+    const lines = level.code.split("\n");
+    const coveredBy = new Array(lines.length + 1).fill(-1);
+    level.walkthrough.forEach((item, idx) => {
+      checks += 1;
+      const [start, end] = item.lines;
+      if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > lines.length || start > end) {
+        fail(`ai-games-levels.js 第${level.id}关 walkthrough[${idx}]: 行范围越界或非法 -- [${start}, ${end}]`);
+        return;
+      }
+      for (let ln = start; ln <= end; ln++) {
+        if (coveredBy[ln] !== -1) {
+          fail(`ai-games-levels.js 第${level.id}关 walkthrough[${idx}]: 第${ln}行跟 walkthrough[${coveredBy[ln]}] 重叠`);
+        }
+        coveredBy[ln] = idx;
+      }
+    });
+    for (let ln = 1; ln <= lines.length; ln++) {
+      if (lines[ln - 1].trim() === "") continue;
+      checks += 1;
+      if (coveredBy[ln] === -1) {
+        fail(`ai-games-levels.js 第${level.id}关: 第${ln}行代码没有配解读框 -- "${lines[ln - 1].trim()}"`);
+      }
+    }
+  });
+  console.log(`  ai-games-levels.js walkthrough覆盖率: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== AI小游戏逐行解读覆盖率校验 ==");
+verifyAiGamesWalkthrough();
+
 // ---------- HTML内部链接/脚本引用完整性校验 ----------
 // 网站现在11个HTML页面互相跳转，<a href>和<script src>指向的本地文件
 // 全靠人肉核对，很容易在改文件名/加新页面的时候悄悄产生死链接，没人

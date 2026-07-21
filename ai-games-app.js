@@ -195,16 +195,17 @@ function selectLevel(id) {
   const walkthroughBtn = document.getElementById("walkthrough-btn");
   const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
   if (walkthroughBox) {
-    walkthroughBox.classList.add("hidden");
+    walkthroughBox.classList.toggle("hidden", !hasWalkthrough);
     walkthroughBox.innerHTML = hasWalkthrough ? renderAnnotatedCode(level) : "";
   }
   if (walkthroughBtn) {
     walkthroughBtn.classList.toggle("hidden", !hasWalkthrough);
-    walkthroughBtn.textContent = "🔍 逐行解读";
+    walkthroughBtn.textContent = "✏️ 编辑代码";
   }
-  // 切关卡/重新选关时，代码编辑框永远是默认可见、可编辑的那个——逐行解读
-  // 是主动点开才看的附加视图，不是默认状态。
-  codeEditor.classList.remove("hidden");
+  // 切关卡/重新选关时，有讲解的关卡默认直接显示框好的逐行解读版本，不用
+  // 再多点一次"逐行解读"——点"编辑代码"才切到可以改的原始代码框。
+  // 没有讲解的关卡（比如第5关空白画布）没有这个切换，直接给可编辑代码框。
+  codeEditor.classList.toggle("hidden", hasWalkthrough);
 
   document.getElementById("terminal-box").textContent = "";
   document.getElementById("turn-input-row").classList.add("hidden");
