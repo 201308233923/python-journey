@@ -216,7 +216,11 @@ body {
   border-radius: 8px;
   background: var(--bg);
   color: var(--text);
-  font-size: 14px;
+  /* 16px是底线，不是随便挑的——iOS Safari看到input的font-size小于16px，
+     点进去输入的时候会自动把整个页面放大（怕你看不清），松手也不会自动
+     缩回去，效果就是"点一下输入框，整个页面莫名其妙跳大了"。这个站点
+     里所有input/textarea都得遵守这条。 */
+  font-size: 16px;
 }
 
 .account-gate .account-btn-row {
@@ -487,7 +491,8 @@ body {
   border-radius: 6px;
   background: var(--panel);
   color: var(--text);
-  font-size: 12.5px;
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。 */
+  font-size: 16px;
 }
 
 .account-btn-row {
@@ -801,7 +806,8 @@ body {
   border-radius: 8px;
   padding: 10px 14px;
   font-family: "SF Mono", Menlo, monospace;
-  font-size: 14px;
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。 */
+  font-size: 16px;
 }
 
 #turn-input:focus {
@@ -835,7 +841,9 @@ body {
   border-radius: 10px;
   padding: 14px;
   font-family: "SF Mono", Menlo, monospace;
-  font-size: 14px;
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。
+     代码编辑区正好也受益，字号大一点读代码更舒服。 */
+  font-size: 16px;
   line-height: 1.5;
   resize: vertical;
 }
@@ -852,7 +860,7 @@ body {
   border-radius: 10px;
   padding: 10px 14px;
   font-family: "SF Mono", Menlo, monospace;
-  font-size: 13px;
+  font-size: 16px;
   resize: vertical;
 }
 
@@ -1269,7 +1277,8 @@ a.back-link {
   border-radius: 8px;
   background: var(--panel);
   color: var(--text);
-  font-size: 14px;
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。 */
+  font-size: 16px;
 }
 
 .cert-btn-row {
@@ -1327,7 +1336,8 @@ a.back-link {
   border-radius: 8px;
   background: var(--panel);
   color: var(--text);
-  font-size: 12.5px;
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。 */
+  font-size: 16px;
   font-family: monospace;
   resize: vertical;
 }
