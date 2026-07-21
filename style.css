@@ -40,7 +40,14 @@
   }
 }
 
-* { box-sizing: border-box; }
+/* 手机浏览器默认点哪个可点击元素都会自己闪一下一个半透明灰色/蓝色的高亮块
+   （不同浏览器颜色不一样），跟我们自己写的:active反馈叠在一起，看起来就是
+   "点一下冒出一块奇怪颜色的东西"——关掉浏览器这个默认行为，只留我们自己
+   写的:active效果（位移/变色，不是一整块色块）。 */
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
 
 body {
   margin: 0;
@@ -89,8 +96,10 @@ body {
   transition: transform 0.25s ease;
 }
 
-.corner-logo:hover {
-  transform: rotate(-8deg) scale(1.08);
+@media (hover: hover) {
+  .corner-logo:hover {
+    transform: rotate(-8deg) scale(1.08);
+  }
 }
 
 .landing-eyebrow {
@@ -138,8 +147,10 @@ body {
   transition: transform 0.1s ease;
 }
 
-.quiz-btn-primary:hover {
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .quiz-btn-primary:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .quiz-btn-primary:active {
@@ -168,8 +179,10 @@ body {
   text-decoration: underline;
 }
 
-.quiz-skip a:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .quiz-skip a:hover {
+    color: var(--accent);
+  }
 }
 
 .account-gate {
@@ -332,8 +345,10 @@ body {
   color: var(--muted);
 }
 
-.entry-switch a:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .entry-switch a:hover {
+    color: var(--accent);
+  }
 }
 
 .entry-switch-current {
@@ -361,10 +376,12 @@ body {
   box-shadow: none;
 }
 
-.reset-progress-btn:hover {
-  transform: none;
-  color: var(--fail-text);
-  border-color: var(--fail-text);
+@media (hover: hover) {
+  .reset-progress-btn:hover {
+    transform: none;
+    color: var(--fail-text);
+    border-color: var(--fail-text);
+  }
 }
 
 .sync-row {
@@ -512,8 +529,10 @@ body {
   text-decoration: none;
 }
 
-.sidebar-footer a:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .sidebar-footer a:hover {
+    color: var(--accent);
+  }
 }
 
 .site-footer {
@@ -528,8 +547,10 @@ body {
   text-decoration: none;
 }
 
-.site-footer a:hover {
-  color: var(--accent);
+@media (hover: hover) {
+  .site-footer a:hover {
+    color: var(--accent);
+  }
 }
 
 .site-footer-dot {
@@ -576,9 +597,11 @@ body {
   transition: transform 0.1s ease;
 }
 
-.level-item:hover:not(.locked) {
-  background: var(--bg);
-  transform: translateX(2px);
+@media (hover: hover) {
+  .level-item:hover:not(.locked) {
+    background: var(--bg);
+    transform: translateX(2px);
+  }
 }
 
 .level-item.active {
@@ -847,8 +870,10 @@ button {
   transition: transform 0.1s ease;
 }
 
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+@media (hover: hover) {
+  button:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
 }
 
 button:active:not(:disabled) {
@@ -894,9 +919,11 @@ button:disabled {
   box-shadow: none;
 }
 
-.hint-nudge-btn:hover {
-  opacity: 0.85;
-  transform: none;
+@media (hover: hover) {
+  .hint-nudge-btn:hover {
+    opacity: 0.85;
+    transform: none;
+  }
 }
 
 /* 参考答案：连错3次以上才冒出来的按钮，点了才展开完整代码——不是自动摆出来的。
@@ -917,9 +944,11 @@ button:disabled {
   box-shadow: none;
 }
 
-.answer-nudge-btn:hover {
-  opacity: 0.85;
-  transform: none;
+@media (hover: hover) {
+  .answer-nudge-btn:hover {
+    opacity: 0.85;
+    transform: none;
+  }
 }
 
 /* 反馈"这道题我还是不懂"——跟提示/参考答案的nudge同一个触发时机（连错3次），
@@ -941,9 +970,11 @@ button:disabled {
   box-shadow: none;
 }
 
-.stuck-btn:hover:not(:disabled) {
-  opacity: 0.85;
-  transform: none;
+@media (hover: hover) {
+  .stuck-btn:hover:not(:disabled) {
+    opacity: 0.85;
+    transform: none;
+  }
 }
 
 .stuck-btn:disabled {
@@ -1001,10 +1032,15 @@ button:disabled {
   cursor: pointer;
 }
 
-.walkthrough-highlight:hover,
 .walkthrough-highlight:focus {
   background: rgba(79, 109, 245, 0.3);
   outline: none;
+}
+
+@media (hover: hover) {
+  .walkthrough-highlight:hover {
+    background: rgba(79, 109, 245, 0.3);
+  }
 }
 
 .walkthrough-popup {
@@ -1140,8 +1176,10 @@ a.back-link {
   text-decoration: none;
 }
 
-.completion-cert-link:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .completion-cert-link:hover {
+    text-decoration: underline;
+  }
 }
 
 .cert-page {
