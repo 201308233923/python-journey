@@ -931,6 +931,26 @@ body {
   resize: vertical;
 }
 
+/* AI小游戏的code-editor跟course/assessment/advanced/debug四个页面共用同一个
+   #code-editor这个id，但those几个页面用的是原生<textarea>，这里用的是
+   contenteditable的div（为了能在代码里直接嵌入可点的💡讲解图标，textarea
+   没法放这种带样式的行内元素）——用#code-editor.code-editor-box这种更高
+   优先级的选择器单独覆盖，不动前面那条#code-editor规则，保证其它四个
+   页面的textarea外观完全不受影响。 */
+#code-editor.code-editor-box {
+  height: auto;
+  min-height: 220px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px var(--shadow-soft);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  resize: none;
+  outline: none;
+  cursor: text;
+}
+
 .input-row {
   margin-top: 12px;
 }
@@ -1104,29 +1124,10 @@ button:disabled {
   color: var(--text);
 }
 
-/* AI小游戏"逐行解读"：完整代码原样展示（顶替掉可编辑的code-editor，
-   两者互斥显示），讲解过的片段用高亮框标出来，点一下在下面弹出解读文字。
-   整体外观跟code-editor保持一致（同样的等宽字体、code-bg背景），
-   让人一眼看出"这还是那份代码"，只是多了几处可以点的地方。 */
-.walkthrough-box {
-  width: 100%;
-  min-height: 220px;
-  background: var(--code-bg);
-  color: var(--code-text);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 10px var(--shadow-soft);
-  padding: 14px;
-  font-family: "SF Mono", Menlo, monospace;
-  font-size: 14px;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* 高亮框之前用的是改品牌色前遗留的蓝色（rgba(79,109,245,...)），跟全站
-   现在统一的"发芽绿"对不上——这里改用--accent-glow，跟quiz-btn-primary
-   等按钮的柔光是同一套变量，颜色语言保持一致。 */
+/* AI小游戏"逐行解读"：代码本身（在可以直接编辑的code-editor里）讲解过的
+   片段用高亮框标出来，纯视觉、不响应点击——真正能点的是紧跟在后面的💡图标
+   （.walkthrough-icon），这样点代码文字本身还是走正常的"把光标放这里"编辑
+   行为，点💡才是"看讲解"，两者不会互相打架。 */
 .walkthrough-highlight {
   display: inline-block;
   background: var(--accent-glow);
@@ -1135,24 +1136,34 @@ button:disabled {
   padding: 1px 6px;
   margin: 1px 0;
   font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: box-shadow 0.15s ease, transform 0.1s ease;
 }
 
-.walkthrough-highlight:focus {
-  box-shadow: 0 0 0 3px var(--accent-glow);
+.walkthrough-icon {
+  display: inline-block;
+  cursor: pointer;
+  touch-action: manipulation;
+  padding: 0 2px;
+  border-radius: 6px;
+  transition: background 0.15s ease, transform 0.1s ease;
+  /* emoji本身已经是视觉焦点，不需要再叠加下划线之类的文字装饰。 */
+  text-decoration: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.walkthrough-icon:focus {
+  background: var(--accent-glow);
   outline: none;
 }
 
 @media (hover: hover) {
-  .walkthrough-highlight:hover {
-    box-shadow: 0 3px 10px var(--accent-glow);
+  .walkthrough-icon:hover {
+    background: var(--accent-glow);
     transform: translateY(-1px);
   }
 }
 
-.walkthrough-highlight:active {
+.walkthrough-icon:active {
   transform: translateY(0);
 }
 

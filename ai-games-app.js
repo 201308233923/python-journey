@@ -119,9 +119,13 @@ function setCodeSectionOpen(open) {
 }
 
 // 逐行解读：把整段代码原样显示出来（保留缩进/空行），walkthrough里标注了的
-// 行范围用一个可点击的高亮框框起来，点一下在那一行下面弹出这段代码在这个游戏
-// 里具体干了什么。展示的是关卡自带的"原版代码"该长什么样，不是从code-editor
-// 实时抠出来的——这样即使玩家已经把代码改乱了，解读本身还是对得上原版逻辑。
+// 行范围用一个高亮框框起来，紧跟着放一个可以点的💡图标，点一下在下面弹出这段
+// 代码在这个游戏里具体干了什么。展示的是关卡自带的"原版代码"该长什么样，不是
+// 从code-editor实时抠出来的——这样即使玩家已经把代码改乱了，解读本身还是
+// 对得上原版逻辑。💡图标单独用contenteditable="false"隔开、不放进高亮框本身
+// 里面，是因为code-editor现在是可以直接编辑的，如果高亮文字本身就是点击区域，
+// 点一下到底是"想把光标放在这个字中间接着打字"还是"想看解读"就分不清楚了；
+// 图标是一个跟代码文字完全分开的小控件，点它不会跟正常编辑代码打架。
 function renderAnnotatedCode(level) {
   const lines = level.code.split("\n");
   const coveredBy = new Array(lines.length + 1).fill(-1); // 1-indexed
@@ -142,35 +146,78 @@ function renderAnnotatedCode(level) {
     const start = i;
     while (i <= lines.length && coveredBy[i] === idx) i += 1;
     const chunk = lines.slice(start - 1, i - 1).join("\n");
-    html += `<span class="walkthrough-highlight" data-idx="${idx}" role="button" tabindex="0">${escapeHtml(chunk)}</span>\n`;
+    html += `<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" contenteditable="false" role="button" tabindex="0" aria-label="讲解">💡</span>\n`;
   }
   return html;
 }
 
-// 点高亮代码块，在它下面插入/收起一个小气泡显示解读文字——同一时间只开一个，
-// 点开新的会先把上一个关掉。用事件委托挂在walkthrough-box上，而不是给每个
-// span单独绑监听器，这样每次重新渲染（切关卡/重新打开代码）都不用担心
-// 监听器重复绑定或者绑到已经被替换掉的旧节点上。
+// 保存/运行代码之前，要把💡图标和还开着的解读气泡都去掉，只留纯代码文字——
+// 不然图标的emoji字符、气泡里的解读文字会被当成代码的一部分存起来或者拿去跑。
+// 用cloneNode操作副本，不影响用户正在看的实际DOM。
+function getEditorText(container) {
+  const clone = container.cloneNode(true);
+  clone.querySelectorAll(".walkthrough-popup, .walkthrough-icon").forEach((el) => el.remove());
+  return clone.textContent;
+}
+
+// 把关卡代码原样（如果有逐行解读，代码本身还带着高亮框+💡图标）加载进code-editor。
+// 只有"从没动过、还是原版代码"的时候才带解读——玩家自己存过的修改版代码没法
+// 保证行号还跟walkthrough对得上，所以存过的版本一律显示成纯文字，不带解读。
+function loadCodeIntoEditor(level, codeEditor, savedCode) {
+  const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
+  if (savedCode !== null) {
+    codeEditor.textContent = savedCode;
+  } else if (hasWalkthrough) {
+    codeEditor.innerHTML = renderAnnotatedCode(level);
+  } else {
+    codeEditor.textContent = level.code;
+  }
+}
+
+// 点💡图标，在它下面插入/收起一个小气泡显示解读文字——同一时间只开一个，
+// 点开新的会先把上一个关掉。用事件委托挂在code-editor上，而不是给每个
+// 图标单独绑监听器，这样每次重新渲染（切关卡/重置代码）都不用担心监听器
+// 重复绑定或者绑到已经被替换掉的旧节点上。
 function setupWalkthroughDelegation() {
-  const container = document.getElementById("walkthrough-box");
+  const container = document.getElementById("code-editor");
   if (!container) return;
   container.addEventListener("click", (e) => {
-    const span = e.target.closest ? e.target.closest(".walkthrough-highlight") : null;
-    if (!span || !container.contains(span)) return;
+    const icon = e.target.closest ? e.target.closest(".walkthrough-icon") : null;
+    if (!icon || !container.contains(icon)) return;
+    e.preventDefault();
 
     const openPopup = container.querySelector(".walkthrough-popup");
-    const reopeningSame = openPopup && openPopup.dataset.idx === span.dataset.idx && openPopup.previousElementSibling === span;
+    const reopeningSame = openPopup && openPopup.dataset.idx === icon.dataset.idx && openPopup.previousElementSibling === icon;
     if (openPopup) openPopup.remove();
     if (reopeningSame) return;
 
     const level = LEVELS.find((l) => l.id === currentLevelId);
-    const item = level.walkthrough[parseInt(span.dataset.idx, 10)];
+    const item = level.walkthrough[parseInt(icon.dataset.idx, 10)];
     if (!item) return;
     const popup = document.createElement("div");
     popup.className = "walkthrough-popup";
-    popup.dataset.idx = span.dataset.idx;
+    popup.setAttribute("contenteditable", "false");
+    popup.dataset.idx = icon.dataset.idx;
     popup.textContent = item.note;
-    span.insertAdjacentElement ? span.insertAdjacentElement("afterend", popup) : container.appendChild(popup);
+    icon.insertAdjacentElement ? icon.insertAdjacentElement("afterend", popup) : container.appendChild(popup);
+  });
+}
+
+// contenteditable的div默认按回车会插入<div>/<br>这类结构，不同浏览器行为还
+// 不统一，会让"读出来的代码文字"跟"看起来的换行"对不上。手动接管回车/粘贴，
+// 保证代码内容自始至终都是纯文字+真正的\n字符（配合CSS的white-space:pre-wrap
+// 显示换行），这样getEditorText()读到的永远是干净、可以直接拿去跑的代码。
+function setupCodeEditorPlainTextBehavior(codeEditor) {
+  codeEditor.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.isComposing) {
+      e.preventDefault();
+      document.execCommand("insertText", false, "\n");
+    }
+  });
+  codeEditor.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
   });
 }
 
@@ -184,28 +231,12 @@ function selectLevel(id) {
 
   const codeEditor = document.getElementById("code-editor");
   const savedCode = localStorage.getItem(codeKey(id));
-  codeEditor.value = savedCode !== null ? savedCode : level.code;
-  codeEditor.disabled = false;
+  loadCodeIntoEditor(level, codeEditor, savedCode);
+  codeEditor.contentEditable = "true";
 
   setCodeSectionOpen(false);
   document.getElementById("hint-box").classList.add("hidden");
   document.getElementById("hint-box").textContent = level.hint || "";
-
-  const walkthroughBox = document.getElementById("walkthrough-box");
-  const walkthroughBtn = document.getElementById("walkthrough-btn");
-  const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
-  if (walkthroughBox) {
-    walkthroughBox.classList.toggle("hidden", !hasWalkthrough);
-    walkthroughBox.innerHTML = hasWalkthrough ? renderAnnotatedCode(level) : "";
-  }
-  if (walkthroughBtn) {
-    walkthroughBtn.classList.toggle("hidden", !hasWalkthrough);
-    walkthroughBtn.textContent = "✏️ 编辑代码";
-  }
-  // 切关卡/重新选关时，有讲解的关卡默认直接显示框好的逐行解读版本，不用
-  // 再多点一次"逐行解读"——点"编辑代码"才切到可以改的原始代码框。
-  // 没有讲解的关卡（比如第5关空白画布）没有这个切换，直接给可编辑代码框。
-  codeEditor.classList.toggle("hidden", hasWalkthrough);
 
   document.getElementById("terminal-box").textContent = "";
   document.getElementById("turn-input-row").classList.add("hidden");
@@ -284,7 +315,7 @@ async function runTurn() {
     inputRow.classList.add("hidden");
     startBtn.classList.add("hidden");
     restartBtn.classList.remove("hidden");
-    document.getElementById("code-editor").disabled = false;
+    document.getElementById("code-editor").contentEditable = "true";
     feedback.classList.add("fail");
     feedback.textContent = explainError(err);
   } else {
@@ -308,12 +339,13 @@ function runTurnGuarded() {
 function startGame() {
   if (turnInFlight) return;
   const codeEditor = document.getElementById("code-editor");
-  localStorage.setItem(codeKey(currentLevelId), codeEditor.value);
-  codeEditor.disabled = true;
+  const code = getEditorText(codeEditor);
+  localStorage.setItem(codeKey(currentLevelId), code);
+  codeEditor.contentEditable = "false";
   setCodeSectionOpen(false);
 
   session = {
-    code: codeEditor.value,
+    code,
     seed: Math.floor(Math.random() * 2 ** 31),
     inputList: [],
     clearedAt: 0,
@@ -350,28 +382,18 @@ function setupButtons() {
     document.getElementById("hint-box").classList.toggle("hidden");
   });
 
-  const walkthroughBtn = document.getElementById("walkthrough-btn");
-  if (walkthroughBtn) {
-    walkthroughBtn.addEventListener("click", () => {
-      const walkthroughBox = document.getElementById("walkthrough-box");
-      const codeEditor = document.getElementById("code-editor");
-      const showingWalkthrough = walkthroughBox.classList.contains("hidden");
-      walkthroughBox.classList.toggle("hidden", !showingWalkthrough);
-      codeEditor.classList.toggle("hidden", showingWalkthrough);
-      walkthroughBtn.textContent = showingWalkthrough ? "✏️ 返回编辑代码" : "🔍 逐行解读";
-    });
-  }
   setupWalkthroughDelegation();
+  setupCodeEditorPlainTextBehavior(document.getElementById("code-editor"));
 
   document.getElementById("reset-code-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
-    document.getElementById("code-editor").value = level.code;
+    loadCodeIntoEditor(level, document.getElementById("code-editor"), null);
   });
 
   const saveBtn = document.getElementById("save-btn");
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
-      localStorage.setItem(codeKey(currentLevelId), document.getElementById("code-editor").value);
+      localStorage.setItem(codeKey(currentLevelId), getEditorText(document.getElementById("code-editor")));
 
       const originalText = saveBtn.textContent;
       saveBtn.disabled = true;

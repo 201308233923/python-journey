@@ -68,12 +68,10 @@
 
         <button id="code-toggle-btn" class="secondary code-toggle-btn">▶ 查看代码</button>
         <div id="code-section" class="code-section hidden">
-          <textarea id="code-editor" spellcheck="false"></textarea>
+          <div id="code-editor" class="code-editor-box" contenteditable="true" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off"></div>
           <div id="hint-box" class="hint-box hidden"></div>
-          <div id="walkthrough-box" class="walkthrough-box hidden"></div>
           <div class="button-row">
             <button id="hint-btn" class="secondary">💡 提示</button>
-            <button id="walkthrough-btn" class="secondary hidden">🔍 逐行解读</button>
             <button id="reset-code-btn" class="secondary">重置代码</button>
             <button id="save-btn" class="secondary">💾 保存</button>
           </div>
