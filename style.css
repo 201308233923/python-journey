@@ -262,7 +262,6 @@ body {
   cursor: pointer;
   text-align: left;
   font-family: "SF Mono", Menlo, monospace;
-  box-shadow: 0 2px 0 var(--border);
 }
 
 /* 只在真的有鼠标/触控板的设备上生效——手机/平板没有"悬停"这个概念，
@@ -277,7 +276,6 @@ body {
 
 .quiz-option:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 1px 0 var(--border);
 }
 
 .quiz-option:disabled {
@@ -288,14 +286,12 @@ body {
   border-color: var(--success-text);
   background: var(--success-bg);
   color: var(--success-text);
-  box-shadow: 0 2px 0 var(--success-text);
 }
 
 .quiz-option.wrong {
   border-color: var(--fail-text);
   background: var(--fail-bg);
   color: var(--fail-text);
-  box-shadow: 0 2px 0 var(--fail-text);
 }
 
 .sidebar {
