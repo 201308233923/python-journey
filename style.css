@@ -1114,48 +1114,71 @@ button:disabled {
   background: var(--code-bg);
   color: var(--code-text);
   border-radius: 10px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px var(--shadow-soft);
   padding: 14px;
   font-family: "SF Mono", Menlo, monospace;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
+/* 高亮框之前用的是改品牌色前遗留的蓝色（rgba(79,109,245,...)），跟全站
+   现在统一的"发芽绿"对不上——这里改用--accent-glow，跟quiz-btn-primary
+   等按钮的柔光是同一套变量，颜色语言保持一致。 */
 .walkthrough-highlight {
   display: inline-block;
-  background: rgba(79, 109, 245, 0.18);
+  background: var(--accent-glow);
   border: 1px solid var(--accent);
   border-radius: 6px;
-  padding: 0 4px;
+  padding: 1px 6px;
+  margin: 1px 0;
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
 }
 
 .walkthrough-highlight:focus {
-  background: rgba(79, 109, 245, 0.3);
+  box-shadow: 0 0 0 3px var(--accent-glow);
   outline: none;
 }
 
 @media (hover: hover) {
   .walkthrough-highlight:hover {
-    background: rgba(79, 109, 245, 0.3);
+    box-shadow: 0 3px 10px var(--accent-glow);
+    transform: translateY(-1px);
   }
+}
+
+.walkthrough-highlight:active {
+  transform: translateY(0);
 }
 
 .walkthrough-popup {
   display: block;
   margin: 6px 0 10px;
-  padding: 8px 12px;
-  border-radius: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   background: var(--panel);
   border: 1px dashed var(--accent);
+  box-shadow: 0 2px 10px var(--shadow-soft);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
   line-height: 1.6;
   white-space: normal;
+}
+
+.walkthrough-popup::before {
+  content: "💡 ";
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .walkthrough-popup {
+    animation: fade-in-up 0.18s ease;
+  }
 }
 
 .output-box {
