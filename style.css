@@ -135,8 +135,7 @@ body {
   padding: 14px 32px;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 4px 0 var(--accent-shadow);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.1s ease;
 }
 
 .quiz-btn-primary:hover {
@@ -144,18 +143,7 @@ body {
 }
 
 .quiz-btn-primary:active {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--accent-shadow);
-}
-
-/* .secondary 组合类（比如"继续学"/"生成分享图"）要盖掉主色调的厚投影，
-   换成跟 button.secondary 一致的中性灰投影，不然药丸形状是对的，颜色还是绿的。 */
-.quiz-btn-primary.secondary {
-  box-shadow: 0 4px 0 var(--border);
-}
-
-.quiz-btn-primary.secondary:active {
-  box-shadow: 0 1px 0 var(--border);
+  transform: translateY(1px);
 }
 
 .quiz-choice-row {
@@ -277,9 +265,14 @@ body {
   box-shadow: 0 2px 0 var(--border);
 }
 
-.quiz-option:hover:not(:disabled) {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+/* 只在真的有鼠标/触控板的设备上生效——手机/平板没有"悬停"这个概念，
+   触屏点一下之后:hover状态会一直卡住不消失，直到点别的地方，看起来
+   就像这个选项莫名其妙冒出一个绿框、还赖着不走。 */
+@media (hover: hover) {
+  .quiz-option:hover:not(:disabled) {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
 }
 
 .quiz-option:active:not(:disabled) {
@@ -397,10 +390,12 @@ body {
   box-shadow: none;
 }
 
-.sync-btn:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: none;
+@media (hover: hover) {
+  .sync-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+    transform: none;
+  }
 }
 
 .account-box {
@@ -424,9 +419,11 @@ body {
   box-shadow: none;
 }
 
-.account-avatar-btn:hover {
-  border-color: var(--accent);
-  transform: none;
+@media (hover: hover) {
+  .account-avatar-btn:hover {
+    border-color: var(--accent);
+    transform: none;
+  }
 }
 
 .account-avatar {
@@ -842,8 +839,6 @@ body {
   margin-top: 12px;
 }
 
-/* 卡通/游戏风的"厚实按钮"：底部一条实色偏移当立体投影，按下去偏移量变小、
-   按钮跟着往下挪一点，模拟"真的被按下"的手感。*/
 button {
   border: none;
   border-radius: 14px;
@@ -853,8 +848,7 @@ button {
   cursor: pointer;
   background: var(--accent);
   color: var(--accent-text);
-  box-shadow: 0 3px 0 var(--accent-shadow);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition: transform 0.1s ease;
 }
 
 button:hover:not(:disabled) {
@@ -862,25 +856,18 @@ button:hover:not(:disabled) {
 }
 
 button:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: 0 1px 0 var(--accent-shadow);
+  transform: translateY(1px);
 }
 
 button.secondary {
   background: var(--panel);
   color: var(--text);
   border: 2px solid var(--border);
-  box-shadow: 0 3px 0 var(--border);
-}
-
-button.secondary:active:not(:disabled) {
-  box-shadow: 0 1px 0 var(--border);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  box-shadow: none;
   transform: none;
 }
 
