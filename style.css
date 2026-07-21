@@ -77,6 +77,11 @@ body {
   right: 16px;
   width: 190px;
   z-index: 20;
+  /* 账号面板展开（登录表单）之后可能比较高——固定定位的元素没有自己的滚动，
+     矮屏幕/横屏手机上如果不限高，登录/注册按钮可能被推到屏幕外面，
+     完全够不到。限个最大高度，超出了自己滚动，而不是被截断摸不到。 */
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
 }
 
 .landing-inner {
@@ -1145,6 +1150,7 @@ button:disabled {
     top: 10px;
     right: 10px;
     width: 168px;
+    max-height: calc(100vh - 20px);
   }
 
   .corner-account .account-avatar-label {
