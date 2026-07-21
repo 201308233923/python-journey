@@ -1,7 +1,8 @@
 # 码芽（网页版）
 
 一个能在浏览器里点点鼠标、写写代码就能学 Python 的网页应用。
-打开后先做一个水平测试，再进入正好适合的起点：初级 → 进阶 → 高级 → 调试挑战，最后去玩 `ai-games.html` 里的4个AI小游戏。
+`index.html` 是官网介绍页，点"免费开始"进 `test.html` 做水平测试，
+再进入正好适合的起点：初级 → 进阶 → 高级 → 调试挑战，最后去玩 `ai-games.html` 里的4个AI小游戏。
 
 ## 怎么打开
 
@@ -20,9 +21,11 @@ python3 -m http.server 8765
 第一次加载会花几秒钟（要下载浏览器里的Python运行环境），之后会快很多；
 如果加载失败或者超时，会自动显示错误提示和"重新加载"按钮。
 
-## 入口：水平测试
+## 入口：官网介绍页 + 水平测试
 
-打开 `index.html` 会先做选择题（题库44道，每次随机抽10道，不用等Python环境加载，秒开），
+`index.html` 是官网介绍页（纯静态，介绍网站有什么），点"免费开始"跳到 `test.html`。
+
+打开 `test.html` 会先做选择题（题库110道，每次随机抽10道，不用等Python环境加载，秒开），
 覆盖 print、变量、运算、字符串、input、if判断、for/while循环、列表、字典、函数这些概念。
 
 - 全部答对 → 推荐直接去 `assessment.html` 做进阶题目
@@ -66,7 +69,8 @@ python3 -m http.server 8765
 
 ## 文件说明（给你未来的自己看）
 
-- `index.html` + `quiz.js` + `quiz-app.js` — 入口的水平测试
+- `index.html` — 官网介绍页（纯静态HTML+内联CSS，无外部依赖），"免费开始"按钮跳到 `test.html`
+- `test.html` + `quiz.js` + `quiz-app.js` — 水平测试 / 每日复习 / "欢迎回来"续学入口
 - `course.html` + `levels/`（`level-01.js`..`level-12.js` + `index.js` 汇总） — 初级12关，每关6个变体
 - `assessment.html` + `assessment-levels.js` — 进阶6题
 - `advanced.html` + `advanced-levels.js` — 高级6关
