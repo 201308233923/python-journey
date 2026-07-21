@@ -56,6 +56,16 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: var(--bg);
   color: var(--text);
+  /* 两个柔和的绿色光斑，固定不动、纯装饰。放在body上用fixed定位（不是
+     .landing上），是因为如果内容比一屏高（比如水平测试题+底部"关于/
+     隐私政策"链接加起来超过一屏），光斑之前只画在.landing这个区块的
+     范围内，页面往下滚到footer的时候就露出下面纯色背景，看起来像是
+     背景没铺满。fixed让光斑始终贴着视口（可视区域）本身，不管页面多高、
+     滚到哪，背景观感都是一致的。 */
+  background-image: radial-gradient(circle at 12% -10%, var(--accent-glow), transparent 45%),
+    radial-gradient(circle at 90% 110%, var(--accent-glow), transparent 40%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 .app {
@@ -76,12 +86,6 @@ body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  /* 两个柔和的绿色光斑，固定不动、纯装饰，不会跟着滚动/交互变化，
-     给纯色背景加一点层次，不影响任何功能也不会在小屏幕上出问题
-     （radial-gradient本身没有硬边界，不会被误认成故障）。 */
-  background-image: radial-gradient(circle at 12% -10%, var(--accent-glow), transparent 45%),
-    radial-gradient(circle at 90% 110%, var(--accent-glow), transparent 40%);
-  background-repeat: no-repeat;
 }
 
 /* 首页（水平测试/每日复习）没有侧栏，账号头像固定在右上角，
