@@ -63,11 +63,14 @@ function goToResumePoint() {
 
 function renderIntro() {
   root.innerHTML = `
-    <div class="landing-eyebrow">水平测试</div>
+    <div class="landing-eyebrow">🌱 码芽 · 免费学Python</div>
     <h1>先做几道小题，看看你现在的水平</h1>
-    <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。</p>
-    <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
-    <p class="quiz-skip">不想测？<a href="course.html">直接当初级学</a> · <a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a> · <a href="debug.html">直接做调试挑战</a></p>
+    <p class="landing-lede">题库里有${QUIZ.length}道题，每次随机抽${QUESTIONS_PER_QUIZ}道，大概2分钟，题目和选项顺序每次都不一样。做完之后，会帮你推荐一个正好适合你的起点。全程免费，不用注册也能用。</p>
+    <div class="quiz-choice-row">
+      <button class="quiz-btn-primary" id="start-quiz-btn">开始测试</button>
+      <button class="quiz-btn-primary secondary" id="skip-to-beginner-btn">🌱 我是新手，直接开始</button>
+    </div>
+    <p class="quiz-skip">已经有基础？<a href="assessment.html">直接做进阶</a> · <a href="advanced.html">直接做高级</a> · <a href="debug.html">直接做调试挑战</a></p>
   `;
   document.getElementById("start-quiz-btn").addEventListener("click", () => {
     sessionQuiz = shuffle(QUIZ).slice(0, QUESTIONS_PER_QUIZ).map(shuffleQuestion);
@@ -75,6 +78,27 @@ function renderIntro() {
     wrongTargets = [];
     renderQuestion();
   });
+  document.getElementById("skip-to-beginner-btn").addEventListener("click", () => {
+    location.href = "course.html";
+  });
+}
+
+// 老用户回访：有过真实进度（不管是不是登录状态——本地存的档、导入过进度码，
+// 都算），但又不是"今天该复习"的那个时机（今天复习过了，或者压根没有可复习的
+// 内容），这种情况下不该再把人拖回"先做水平测试"这个新手流程——之前就是这样
+// 处理的，等于每次回来都要再看一遍测试首页，对已经有进度的人来说很不合理。
+function renderWelcomeBack() {
+  root.innerHTML = `
+    <div class="landing-eyebrow">欢迎回来</div>
+    <h1>要继续上次的学习吗？</h1>
+    <p class="landing-lede">检测到你之前学过一些内容，点"继续学"直接回到上次的进度，或者重新测一次水平。</p>
+    <div class="quiz-choice-row">
+      <button class="quiz-btn-primary" id="welcome-continue-btn">📚 继续学</button>
+      <button class="quiz-btn-primary secondary" id="welcome-retest-btn">🔄 重新测试</button>
+    </div>
+  `;
+  document.getElementById("welcome-continue-btn").addEventListener("click", goToResumePoint);
+  document.getElementById("welcome-retest-btn").addEventListener("click", renderIntro);
 }
 
 function renderQuestion() {
@@ -371,20 +395,32 @@ function renderResult() {
 async function initQuizPage() {
   // 如果之前登录过账号，先把云端的真实进度拉下来，这样"今日复习"看的是账号里的进度，
   // 而不是这台设备本地可能是空的/过时的缓存（progress-sync.js 里定义的共享逻辑）。
-  // isLoggedIn 记录这次是不是真的检测到了登录状态——只有真登录了，才允许首页自动跳过
-  // 水平测试；单纯本地有进度（没登录，比如用导入进度码恢复的）不算，得让用户自己点
-  // "直接当初级学"之类的链接，不做静默跳转。
   const loggedInUser = window.cloudProgressReady ? await window.cloudProgressReady : null;
   const isLoggedIn = !!loggedInUser;
 
   // 侧栏"📝 复习"是用户主动点的，即使今天已经复习过、或者本来还没到弹出的时候，
   // 只要还有可复习的内容就直接进题，不用再经过"复习/继续学"这一步选择。
   const wantsReview = new URLSearchParams(location.search).get("review") === "1";
+  // 这四条赛道只要有任意一条真的解锁到第1关以后，就说明是老用户——不管登没登录
+  // （没登录也可能是本地存档、或者用导入进度码恢复的）。之前的逻辑只给"登录+今天
+  // 该复习"这一种情况开快速通道，老用户如果今天已经复习过、或者压根没有可复习的
+  // 内容（比如刚导入进度码，还没登录去同步），就会被扔回"先做水平测试"的新手
+  // 流程——对一个已经有进度的人来说很不合理。这里改成主动检测"有没有真实进度"，
+  // 有就给一个"继续学/重新测试"的选择页（不是静默跳转，还是要用户自己点）。
+  const hasResumableProgress = !!(
+    getResumePoint("course", COURSE_LEVEL_COUNT) ||
+    getResumePoint("assessment", ASSESSMENT_LEVEL_COUNT) ||
+    getResumePoint("advanced", ADVANCED_LEVEL_COUNT) ||
+    getResumePoint("debug", DEBUG_LEVEL_COUNT)
+  );
+
   if (wantsReview && getEligibleReviewPool().length > 0) {
     buildDailyReviewQuiz();
     renderDailyReviewQuestion();
   } else if (isLoggedIn && shouldShowDailyReview()) {
     renderDailyReview();
+  } else if (hasResumableProgress) {
+    renderWelcomeBack();
   } else {
     renderIntro();
   }
