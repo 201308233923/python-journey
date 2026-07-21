@@ -59,10 +59,17 @@ body {
 .app {
   display: flex;
   min-height: 100vh;
+  /* 手机浏览器的100vh是把地址栏/工具条也算进去的"最大可能高度"，不是真的
+     随时看得见的高度——工具条收起/展开的时候100vh的实际像素值会跟着跳，
+     内容跟着抖一下。100dvh是"动态视口高度"，会跟着工具条实时更新，没这个
+     问题。写在vh后面一行，不支持dvh单位的浏览器会整行当无效样式忽略掉，
+     继续用上一行的vh，支持的会用这行覆盖，两边都安全。 */
+  min-height: 100dvh;
 }
 
 .landing {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,8 +86,11 @@ body {
   z-index: 20;
   /* 账号面板展开（登录表单）之后可能比较高——固定定位的元素没有自己的滚动，
      矮屏幕/横屏手机上如果不限高，登录/注册按钮可能被推到屏幕外面，
-     完全够不到。限个最大高度，超出了自己滚动，而不是被截断摸不到。 */
+     完全够不到。限个最大高度，超出了自己滚动，而不是被截断摸不到。
+     用dvh（见上面.app的注释）而不是vh，保证算的是真实可见高度，
+     不会因为地址栏收起/展开导致算出来的上限时大时小。 */
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   overflow-y: auto;
 }
 
@@ -605,6 +615,7 @@ body {
   font-size: 14px;
   color: var(--text);
   transition: transform 0.1s ease;
+  touch-action: manipulation;
 }
 
 @media (hover: hover) {
@@ -881,6 +892,10 @@ button {
   background: var(--accent);
   color: var(--accent-text);
   transition: transform 0.1s ease;
+  /* 去掉手机浏览器点击后~300ms的延迟判断（等你是不是要双击缩放），
+     顺便禁掉在按钮上双击触发的缩放——按钮不需要能缩放，双击应该被
+     当成两次单击处理，不是意外放大页面。 */
+  touch-action: manipulation;
 }
 
 @media (hover: hover) {
@@ -1043,6 +1058,7 @@ button:disabled {
   padding: 0 4px;
   font-weight: 700;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .walkthrough-highlight:focus {
@@ -1159,6 +1175,7 @@ button:disabled {
     right: 10px;
     width: 168px;
     max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
   }
 
   .corner-account .account-avatar-label {
