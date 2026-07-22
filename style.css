@@ -871,10 +871,11 @@ body {
   max-width: 640px;
 }
 
-/* 就加一圈边框+柔光投影，跟代码框的质感对上，别的不加。 */
+/* 之前加了1px实边框，浅色边框贴着深色代码底色，反而显得像一条突兀的
+   描边。去掉硬边框，只留柔光投影做"这是个独立区块"的暗示，跟页面背景
+   之间的过渡更软。 */
 .terminal-box {
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 10px var(--shadow-soft);
+  box-shadow: 0 2px 12px var(--shadow-soft);
   min-height: 260px;
 }
 
@@ -1144,21 +1145,26 @@ button:disabled {
 /* 之前图标只是贴着代码文字的一个小标记，太不显眼，容易被当成代码的一部分
    忽略掉——现在做成一个实心圆底的徽章，跟代码文字有明显的视觉差异，一眼
    就能看出"这是个按钮"，不是代码的一部分。margin-left顶开一点距离，
-   不跟前面高亮框贴在一起。 */
+   不跟前面高亮框贴在一起。图标内容从💡emoji换成纯文字"?"——emoji在小尺寸
+   圆徽章里因为自带留白，视觉上容易显得歪/不居中，纯文字用系统字体渲染，
+   大小粗细都能精确控制，看起来更干净、跟徽章本身更搭。 */
 .walkthrough-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   margin-left: 4px;
   vertical-align: middle;
   cursor: pointer;
   touch-action: manipulation;
   border-radius: 50%;
   background: var(--accent);
+  color: var(--accent-text);
   box-shadow: 0 2px 6px var(--accent-glow);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 12px;
+  font-weight: 800;
   line-height: 1;
   transition: box-shadow 0.15s ease, transform 0.1s ease;
   text-decoration: none;
@@ -1195,10 +1201,6 @@ button:disabled {
   font-size: 13px;
   line-height: 1.6;
   white-space: normal;
-}
-
-.walkthrough-popup::before {
-  content: "💡 ";
 }
 
 @media (prefers-reduced-motion: no-preference) {

@@ -156,7 +156,7 @@ function renderAnnotatedCode(level) {
     const start = i;
     while (i <= lines.length && coveredBy[i] === idx) i += 1;
     const chunk = lines.slice(start - 1, i - 1).join("\n");
-    segments.push(`<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" aria-label="讲解">💡</span>`);
+    segments.push(`<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" aria-label="讲解">?</span>`);
   }
   return segments.join("\n");
 }
