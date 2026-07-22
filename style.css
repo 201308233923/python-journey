@@ -871,13 +871,14 @@ body {
   max-width: 640px;
 }
 
-/* 深色代码框反馈说"太黑了"，改成浅色——跟很多主流代码编辑器（GitHub、
-   VS Code浅色主题）的配色思路一样：浅灰白背景+深灰文字，不是纯黑配纯白
-   那种硬对比，看起来更柔和。不用--code-bg/--code-text这两个全站共用的
-   变量（改那两个会影响course/assessment/advanced/debug四个页面的代码框，
-   范围太大了），只在这几个AI小游戏专属的选择器上单独写死浅色。 */
+/* 深色代码框反馈说"太黑了"，先改成纯浅灰白，后来又反馈想要绿色渐变——
+   跟品牌"发芽绿"的思路对上，用一个很浅的白到浅绿对角渐变，文字对比度
+   还是够（深灰文字），不是纯黑配纯白那种硬对比。不用--code-bg/--code-text
+   这两个全站共用的变量（改那两个会影响course/assessment/advanced/debug
+   四个页面的代码框，范围太大了），只在这几个AI小游戏专属的选择器上
+   单独写死这套浅色渐变。 */
 .terminal-box {
-  background: #f6f8fa;
+  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
   color: #24292f;
   box-shadow: 0 2px 12px var(--shadow-soft);
   min-height: 260px;
@@ -891,7 +892,7 @@ body {
 
 #turn-input {
   flex: 1;
-  background: #f6f8fa;
+  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
   color: #24292f;
   border: none;
   border-radius: 8px;
@@ -948,7 +949,7 @@ body {
 #code-editor.code-editor-box {
   height: auto;
   min-height: 220px;
-  background: #f6f8fa;
+  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
   color: #24292f;
   box-shadow: 0 2px 10px var(--shadow-soft);
   line-height: 1.7;
