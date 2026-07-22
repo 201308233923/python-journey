@@ -1398,28 +1398,58 @@ a.back-link {
   margin-bottom: 20px;
 }
 
-/* 证书卡片之前是纯色背景，加个跟品牌绿呼应的柔和渐变，不是纯白/纯色块，
-   更有质感一点。角度跟quiz-btn-primary等按钮的渐变一致，视觉语言统一。 */
+/* 证书是"成就感"这件事本身，值得比其他卡片更隆重一点，不只是浅色渐变
+   点缀。双层描边（border+outline，中间留个缝）是传统证书/奖状常见的
+   装饰手法；径向光斑+对角渐变叠加，让背景比单一渐变更有层次；中间一个
+   很淡的🌱水印，凑近了才看得出来，不抢文字的注意力。position:relative +
+   overflow:hidden保证水印不会溢出圆角边框外面。 */
 .cert-card {
-  padding: 40px 32px;
+  position: relative;
+  overflow: hidden;
+  padding: 44px 36px;
   border: 3px solid var(--accent);
+  outline: 1px solid var(--accent);
+  outline-offset: 6px;
   border-radius: 24px;
-  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
+  background: radial-gradient(circle at 25% 15%, var(--accent-glow), transparent 55%),
+    linear-gradient(135deg, var(--panel), var(--accent-tint));
   text-align: center;
-  box-shadow: 0 16px 40px var(--shadow-soft);
+  box-shadow: 0 24px 60px var(--shadow-soft);
+}
+
+.cert-card::before {
+  content: "🌱";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  font-size: 220px;
+  line-height: 1;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cert-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cert-brand {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--accent);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .cert-title {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 800;
   margin: 10px 0 20px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-shadow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .cert-name {
@@ -1705,6 +1735,21 @@ a.back-link {
 
   .cert-card {
     border-width: 3px;
+  }
+
+  /* 很多浏览器打印默认不打印"背景图形"（除非用户自己勾选），标题文字用了
+     background-clip:text+color:transparent做渐变字——如果背景graphics被
+     关掉，文字会变成完全看不见的空白。打印时强制退回纯色文字，保证证书
+     打印/存PDF的时候标题不会消失。 */
+  .cert-title {
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    color: var(--accent);
+  }
+
+  .cert-card::before {
+    display: none;
   }
 }
 
