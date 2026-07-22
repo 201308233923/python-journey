@@ -871,10 +871,14 @@ body {
   max-width: 640px;
 }
 
-/* 之前加了1px实边框，浅色边框贴着深色代码底色，反而显得像一条突兀的
-   描边。去掉硬边框，只留柔光投影做"这是个独立区块"的暗示，跟页面背景
-   之间的过渡更软。 */
+/* 深色代码框反馈说"太黑了"，改成浅色——跟很多主流代码编辑器（GitHub、
+   VS Code浅色主题）的配色思路一样：浅灰白背景+深灰文字，不是纯黑配纯白
+   那种硬对比，看起来更柔和。不用--code-bg/--code-text这两个全站共用的
+   变量（改那两个会影响course/assessment/advanced/debug四个页面的代码框，
+   范围太大了），只在这几个AI小游戏专属的选择器上单独写死浅色。 */
 .terminal-box {
+  background: #f6f8fa;
+  color: #24292f;
   box-shadow: 0 2px 12px var(--shadow-soft);
   min-height: 260px;
 }
@@ -887,8 +891,8 @@ body {
 
 #turn-input {
   flex: 1;
-  background: var(--code-bg);
-  color: var(--code-text);
+  background: #f6f8fa;
+  color: #24292f;
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
@@ -944,7 +948,8 @@ body {
 #code-editor.code-editor-box {
   height: auto;
   min-height: 220px;
-  border: 1px solid var(--border);
+  background: #f6f8fa;
+  color: #24292f;
   box-shadow: 0 2px 10px var(--shadow-soft);
   line-height: 1.7;
   white-space: pre-wrap;
@@ -1132,13 +1137,14 @@ button:disabled {
    片段用高亮框标出来，纯视觉、不响应点击——真正能点的是紧跟在后面的💡图标
    （.walkthrough-icon），这样点代码文字本身还是走正常的"把光标放这里"编辑
    行为，点💡才是"看讲解"，两者不会互相打架。 */
-/* 边框之前用饱和度很高的品牌绿（var(--accent)），贴着深色代码底色显得太扎眼。
-   代码框背景不管站点是浅色还是深色主题都是固定的深色（--code-bg两个主题
-   都是深色调），所以这里直接写死一组浅薄荷绿，不用像别处那样跟着主题切换。 */
+/* 代码框背景改成浅色之后，高亮框的绿色要跟着重新调深一点透明度——同一个
+   色相在浅色底上比在深色底上更容易"糊掉"，看不清哪里被框住了。代码框
+   背景不管站点是浅色还是深色主题都写死同一个浅灰白（见上面.terminal-box
+   的注释），所以这里也直接写死一组固定颜色，不跟主题切换。 */
 .walkthrough-highlight {
   display: inline-block;
-  background: rgba(167, 235, 185, 0.16);
-  border: 1px solid rgba(167, 235, 185, 0.45);
+  background: rgba(47, 179, 80, 0.12);
+  border: 1px solid rgba(47, 179, 80, 0.4);
   border-radius: 6px;
   padding: 1px 6px;
   margin: 1px 0;
@@ -1191,15 +1197,18 @@ button:disabled {
   transform: translateY(0) scale(1);
 }
 
+/* 用固定的浅色而不是跟着主题切换的var(--panel)/var(--text)——代码框现在
+   固定是浅色的，如果站点是深色主题，气泡跟着主题变深色会跟紧挨着的浅色
+   代码框顶牛，一块浅一块深很突兀。 */
 .walkthrough-popup {
   display: block;
   margin: 6px 0 10px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: var(--panel);
-  border: 1px dashed var(--accent);
+  background: #ffffff;
+  border: 1px dashed rgba(47, 179, 80, 0.5);
   box-shadow: 0 2px 10px var(--shadow-soft);
-  color: var(--text);
+  color: #24292f;
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 13px;
   line-height: 1.6;
