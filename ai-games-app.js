@@ -461,12 +461,28 @@ async function loadPyodideWithFallback() {
     return null;
   }
 
+  // 纯文字提示挂太久容易让人怀疑"是不是卡住了/坏了"，尤其是网络慢的时候
+  // 一等就是十几秒。根据等的时长分阶段换文案，配合CSS里的转圈动画一起
+  // 给持续的进度反馈。
+  const stageTimers = [
+    setTimeout(() => {
+      loadingText.textContent = "还在加载中，网络慢的时候要多等一会儿，正常现象...";
+    }, 6000),
+    setTimeout(() => {
+      loadingText.textContent = "有点慢，不过确实还在加载，马上就好...";
+    }, 15000),
+  ];
+  const clearStageTimers = () => stageTimers.forEach(clearTimeout);
+
   try {
-    return await Promise.race([
+    const result = await Promise.race([
       loadPyodide(),
       new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), PYODIDE_TIMEOUT_MS)),
     ]);
+    clearStageTimers();
+    return result;
   } catch (e) {
+    clearStageTimers();
     showError("加载失败或者超时了，可能是网络不稳定。点击下面的按钮重试一次。");
     return null;
   }

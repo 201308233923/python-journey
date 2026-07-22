@@ -725,6 +725,31 @@ body {
   padding: 40px 0;
 }
 
+/* Python运行环境（Pyodide）第一次加载要下载好几MB，纯文字提示容易让人
+   以为"卡住了/坏了"，尤其是网慢的时候。加个转圈动画给"确实在加载"的
+   实时反馈；不喜欢动效的用户（prefers-reduced-motion）改成一个静态的
+   圆点，不放动画。 */
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loading-spinner {
+    animation: loading-spin 0.8s linear infinite;
+  }
+}
+
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .loading-retry-btn {
   margin-top: 14px;
   background: var(--accent);
