@@ -107,7 +107,7 @@ function renderSidebar() {
     const isActive = level.id === currentLevelId;
     const item = document.createElement("div");
     item.className = "level-item" + (isActive ? " active" : "");
-    item.innerHTML = `<span class="badge">🎮</span><span>${level.title}</span>`;
+    item.innerHTML = `<span class="badge">${level.icon || "🎮"}</span><span>${level.title}</span>`;
     item.addEventListener("click", () => selectLevel(level.id));
     list.appendChild(item);
   });

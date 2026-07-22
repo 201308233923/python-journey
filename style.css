@@ -867,12 +867,52 @@ body {
   margin-top: 10px;
 }
 
+/* AI小游戏的互动区——之前就是几个按钮加一个纯色输出框，没有任何"这是个
+   完整功能区"的视觉包裹，跟旁边的代码区（有边框+投影）比显得很单薄。
+   包一层浅色卡片，把"游戏"这个标签、终端屏幕、输入框、按钮都装在一起，
+   看起来是一个整体，而不是几个零散元素堆在页面上。 */
 .game-panel {
   max-width: 640px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 8px 24px var(--shadow-soft);
 }
 
+.game-panel .editor-label {
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+/* 深色屏幕上模拟macOS窗口的三个圆点，暗示"这是个正在运行的程序"，
+   跟旁边浅色卡片形成对比，一眼能分清"控制面板"和"程序输出"两个区域。
+   用box-shadow复制两份圆点，不用另外加DOM节点。 */
 .terminal-box {
+  position: relative;
   min-height: 260px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px var(--shadow-soft);
+}
+
+/* padding-top单独用.output-box.terminal-box这种双class选择器（优先级比
+   下面.output-box的单class规则高），保证不管两条规则谁写在文件前面，
+   这里加的顶部留白（给圆点让位置）都不会被.output-box的padding:14px
+   覆盖掉。 */
+.output-box.terminal-box {
+  padding-top: 34px;
+}
+
+.terminal-box::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 18px 0 0 #febc2e, 36px 0 0 #28c840;
 }
 
 .turn-input-row {
