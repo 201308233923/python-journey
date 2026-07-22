@@ -293,10 +293,12 @@ function showCompletionSummary() {
   if (!localStorage.getItem(completedAtKey)) {
     localStorage.setItem(completedAtKey, new Date().toISOString());
   }
+  // 每一关标题现在是个链接，点了带着?resume=N跳回去回顾——通关之后这一关
+  // 肯定已经解锁过了，resume不会改动解锁状态，纯粹跳过去看一眼。
   const rows = LEVELS.map((l) => {
     const fails = getFailCount(l.id);
     const status = fails === 0 ? "一次通过 ✓" : `错了 ${fails} 次`;
-    return `<li><span class="completion-row-title">${l.title}</span><span class="completion-row-count">${status}</span></li>`;
+    return `<li><a class="completion-row-title" href="?resume=${l.id}">${l.title}</a><span class="completion-row-count">${status}</span></li>`;
   });
   const realWorldUse = TRACK_REAL_WORLD_USE[TRACK_ID];
   summaryBox.innerHTML = `

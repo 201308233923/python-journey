@@ -794,8 +794,19 @@ body {
   overflow-y: auto;
 }
 
+/* 之前是纯文字<span>，现在改成链接（点了跳回去回顾这一关），补上链接该有的
+   基础样式——默认不带下划线，鼠标能用的设备上hover才提示"这是能点的"，
+   跟其他跳转链接（比如.entry-switch a）视觉语言一致。 */
 .completion-row-title {
   color: var(--muted);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .completion-row-title:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
 }
 
 .completion-row-count {

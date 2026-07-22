@@ -26,6 +26,7 @@ function shuffleQuestion(q) {
     targetLevel: q.targetLevel,
     options: order.map((i) => q.options[i]),
     answer: order.indexOf(q.answer),
+    _bank: q._bank,
   };
 }
 
@@ -242,21 +243,47 @@ function getAdvancedUnlocked() {
   return raw ? parseInt(raw, 10) : 1;
 }
 
+// QUIZ_BANKS_BY_NAME：给答错重做换变体用的——targetLevel这个数字在三个题库里
+// 各自独立编号（QUIZ里的3和QUIZ_INTERMEDIATE里的3是完全不同的知识点），
+// 光凭targetLevel搜不知道该去哪个题库里找同类题，所以每道题池子里的题都会
+// 标一个_bank字段记住自己是从哪个题库来的（见下面.map里的Object.assign）。
+const QUIZ_BANKS_BY_NAME = {
+  course: () => QUIZ,
+  assessment: () => (typeof QUIZ_INTERMEDIATE !== "undefined" ? QUIZ_INTERMEDIATE : []),
+  advanced: () => (typeof QUIZ_ADVANCED !== "undefined" ? QUIZ_ADVANCED : []),
+};
+
 function getEligibleReviewPool() {
   const courseUnlocked = getCourseUnlocked();
   const assessmentUnlocked = getAssessmentUnlocked();
   const advancedUnlocked = getAdvancedUnlocked();
   let pool = [];
   if (courseUnlocked > 1) {
-    pool = pool.concat(QUIZ.filter((q) => q.targetLevel < courseUnlocked));
+    pool = pool.concat(QUIZ.filter((q) => q.targetLevel < courseUnlocked).map((q) => Object.assign({ _bank: "course" }, q)));
   }
   if (assessmentUnlocked > 1 && typeof QUIZ_INTERMEDIATE !== "undefined") {
-    pool = pool.concat(QUIZ_INTERMEDIATE.filter((q) => q.targetLevel < assessmentUnlocked));
+    pool = pool.concat(
+      QUIZ_INTERMEDIATE.filter((q) => q.targetLevel < assessmentUnlocked).map((q) => Object.assign({ _bank: "assessment" }, q))
+    );
   }
   if (advancedUnlocked > 1 && typeof QUIZ_ADVANCED !== "undefined") {
-    pool = pool.concat(QUIZ_ADVANCED.filter((q) => q.targetLevel < advancedUnlocked));
+    pool = pool.concat(
+      QUIZ_ADVANCED.filter((q) => q.targetLevel < advancedUnlocked).map((q) => Object.assign({ _bank: "advanced" }, q))
+    );
   }
   return pool;
+}
+
+// 答错一道题，订正轮不想还是问一模一样那道题（选项顺序打乱了，但题干和正确
+// 答案没变，其实就是"背下正确答案"而不是真的懂）。同一个targetLevel（同一个
+// 知识点）在题库里通常还有好几道别的题，优先换一道没问过的来考同一个知识点；
+// 实在没有别的题（比如这个知识点题库里就只有一道）才退回问原题。
+function pickRetryVariant(item) {
+  const bank = QUIZ_BANKS_BY_NAME[item._bank] ? QUIZ_BANKS_BY_NAME[item._bank]() : [];
+  const alternatives = bank.filter((q) => q.targetLevel === item.targetLevel && q.q !== item.q);
+  if (alternatives.length === 0) return item;
+  const pick = alternatives[Math.floor(Math.random() * alternatives.length)];
+  return Object.assign({ _bank: item._bank }, pick);
 }
 
 function shouldShowDailyReview() {
@@ -322,7 +349,7 @@ function renderDailyReviewQuestion() {
         btn.classList.add("wrong");
         const correctBtn = root.querySelector(`.quiz-option[data-i="${item.answer}"]`);
         if (correctBtn) correctBtn.classList.add("correct");
-        dailyReviewWrongQueue.push(item);
+        dailyReviewWrongQueue.push(pickRetryVariant(item));
       }
       root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
       setTimeout(() => {
