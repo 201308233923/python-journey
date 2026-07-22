@@ -122,10 +122,14 @@ function setCodeSectionOpen(open) {
 // 行范围用一个高亮框框起来，紧跟着放一个可以点的💡图标，点一下在下面弹出这段
 // 代码在这个游戏里具体干了什么。展示的是关卡自带的"原版代码"该长什么样，不是
 // 从code-editor实时抠出来的——这样即使玩家已经把代码改乱了，解读本身还是
-// 对得上原版逻辑。💡图标单独用contenteditable="false"隔开、不放进高亮框本身
-// 里面，是因为code-editor现在是可以直接编辑的，如果高亮文字本身就是点击区域，
-// 点一下到底是"想把光标放在这个字中间接着打字"还是"想看解读"就分不清楚了；
-// 图标是一个跟代码文字完全分开的小控件，点它不会跟正常编辑代码打架。
+// 对得上原版逻辑。💡图标不放进高亮框本身里面，是因为code-editor现在是可以
+// 直接编辑的，如果高亮文字本身就是点击区域，点一下到底是"想把光标放在这个字
+// 中间接着打字"还是"想看解读"就分不清楚了；图标是一个跟代码文字完全分开的
+// 小控件，点它不会跟正常编辑代码打架。（这里故意不给图标加
+// contenteditable="false"——同一个可编辑区域里塞十几个"不可编辑孤岛"，
+// 部分浏览器渲染这么多个的时候表现不一致，有的会把中间的吞掉，去掉这个属性
+// 换成普通可编辑span更稳，代价只是图标理论上可能被误删，删了点"重置代码"
+// 就好了。）
 function renderAnnotatedCode(level) {
   const lines = level.code.split("\n");
   const coveredBy = new Array(lines.length + 1).fill(-1); // 1-indexed
@@ -146,7 +150,7 @@ function renderAnnotatedCode(level) {
     const start = i;
     while (i <= lines.length && coveredBy[i] === idx) i += 1;
     const chunk = lines.slice(start - 1, i - 1).join("\n");
-    html += `<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" contenteditable="false" role="button" tabindex="0" aria-label="讲解">💡</span>\n`;
+    html += `<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" aria-label="讲解">💡</span>\n`;
   }
   return html;
 }

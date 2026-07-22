@@ -1138,33 +1138,45 @@ button:disabled {
   font-weight: 700;
 }
 
+/* 之前图标只是贴着代码文字的一个小标记，太不显眼，容易被当成代码的一部分
+   忽略掉——现在做成一个实心圆底的徽章，跟代码文字有明显的视觉差异，一眼
+   就能看出"这是个按钮"，不是代码的一部分。margin-left顶开一点距离，
+   不跟前面高亮框贴在一起。 */
 .walkthrough-icon {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  vertical-align: middle;
   cursor: pointer;
   touch-action: manipulation;
-  padding: 0 2px;
-  border-radius: 6px;
-  transition: background 0.15s ease, transform 0.1s ease;
-  /* emoji本身已经是视觉焦点，不需要再叠加下划线之类的文字装饰。 */
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 2px 6px var(--accent-glow);
+  font-size: 12px;
+  line-height: 1;
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
   text-decoration: none;
   -webkit-user-select: none;
   user-select: none;
 }
 
 .walkthrough-icon:focus {
-  background: var(--accent-glow);
+  box-shadow: 0 0 0 3px var(--accent-glow);
   outline: none;
 }
 
 @media (hover: hover) {
   .walkthrough-icon:hover {
-    background: var(--accent-glow);
-    transform: translateY(-1px);
+    box-shadow: 0 3px 10px var(--accent-glow);
+    transform: translateY(-1px) scale(1.08);
   }
 }
 
 .walkthrough-icon:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .walkthrough-popup {
