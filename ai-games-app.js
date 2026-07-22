@@ -138,21 +138,27 @@ function renderAnnotatedCode(level) {
     for (let ln = start; ln <= end; ln++) coveredBy[ln] = idx;
   });
 
-  let html = "";
+  // segments.join("\n")而不是每段后面手动拼"\n"——手动拼的话最后一段后面也会
+  // 多一个"\n"，跟level.code本身（如果不以\n结尾）的换行数对不上，导致
+  // getEditorText()读出来的"干净代码"永远比level.code多一行空行。这个多出来的
+  // 空行本身对Python运行没影响，但会导致"存过一次档、其实没真的改字"的代码
+  // 跟level.code逐字比较时被误判成"改过"，进而永远显示不带解读的纯文字版——
+  // 这正是这次要修的bug。
+  const segments = [];
   let i = 1;
   while (i <= lines.length) {
     const idx = coveredBy[i];
     if (idx === -1) {
-      html += `${escapeHtml(lines[i - 1])}\n`;
+      segments.push(escapeHtml(lines[i - 1]));
       i += 1;
       continue;
     }
     const start = i;
     while (i <= lines.length && coveredBy[i] === idx) i += 1;
     const chunk = lines.slice(start - 1, i - 1).join("\n");
-    html += `<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" aria-label="讲解">💡</span>\n`;
+    segments.push(`<span class="walkthrough-highlight">${escapeHtml(chunk)}</span><span class="walkthrough-icon" data-idx="${idx}" aria-label="讲解">💡</span>`);
   }
-  return html;
+  return segments.join("\n");
 }
 
 // 保存/运行代码之前，要把💡图标和还开着的解读气泡都去掉，只留纯代码文字——
@@ -165,11 +171,14 @@ function getEditorText(container) {
 }
 
 // 把关卡代码原样（如果有逐行解读，代码本身还带着高亮框+💡图标）加载进code-editor。
-// 只有"从没动过、还是原版代码"的时候才带解读——玩家自己存过的修改版代码没法
-// 保证行号还跟walkthrough对得上，所以存过的版本一律显示成纯文字，不带解读。
+// 只有"真的动过、内容跟原版不一样"的存档才显示成纯文字——玩家自己改过的代码
+// 没法保证行号还跟walkthrough对得上，带着解读展示会文不对题。但如果存档内容
+// 跟原版逐字一样（比如以前测试时点过一次"保存"但其实没改字），那还是应该走
+// 带解读的版本，不然这个存档就变成一个"沉默的开关"，一直悄悄把解读关掉，
+// 玩家根本不知道为什么突然看不到解读了。
 function loadCodeIntoEditor(level, codeEditor, savedCode) {
   const hasWalkthrough = Array.isArray(level.walkthrough) && level.walkthrough.length > 0;
-  if (savedCode !== null) {
+  if (savedCode !== null && savedCode !== level.code) {
     codeEditor.textContent = savedCode;
   } else if (hasWalkthrough) {
     codeEditor.innerHTML = renderAnnotatedCode(level);
