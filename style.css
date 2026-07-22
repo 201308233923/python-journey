@@ -10,6 +10,9 @@
   --accent-shadow: #1f8a3c;
   --accent-text: #ffffff;
   --accent-glow: rgba(47, 179, 80, 0.32);
+  /* 比--accent-glow淡很多的绿色调，专门给卡片背景渐变用——--accent-glow
+     本来是给投影/柔光设计的，透明度对一整块背景来说太重，会糊成一片。 */
+  --accent-tint: rgba(47, 179, 80, 0.07);
   --success-bg: #e6f8ec;
   --success-text: #1a7f4b;
   --fail-bg: #fdecec;
@@ -31,6 +34,7 @@
     --accent-shadow: #22a34a;
     --accent-text: #0b2412;
     --accent-glow: rgba(70, 209, 108, 0.28);
+    --accent-tint: rgba(70, 209, 108, 0.09);
     --success-bg: #113626;
     --success-text: #6fdf9d;
     --fail-bg: #3a1c1c;
@@ -253,7 +257,7 @@ body {
   max-width: 360px;
   margin: 0 auto;
   text-align: left;
-  background: var(--panel);
+  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 20px 22px;
@@ -1394,11 +1398,13 @@ a.back-link {
   margin-bottom: 20px;
 }
 
+/* 证书卡片之前是纯色背景，加个跟品牌绿呼应的柔和渐变，不是纯白/纯色块，
+   更有质感一点。角度跟quiz-btn-primary等按钮的渐变一致，视觉语言统一。 */
 .cert-card {
   padding: 40px 32px;
   border: 3px solid var(--accent);
   border-radius: 24px;
-  background: var(--panel);
+  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
   text-align: center;
   box-shadow: 0 16px 40px var(--shadow-soft);
 }
@@ -1562,7 +1568,7 @@ a.back-link {
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: var(--panel);
+  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
   box-shadow: 0 3px 10px var(--shadow-soft);
 }
 
@@ -1616,7 +1622,7 @@ a.back-link {
   padding: 18px 16px;
   border: 1px solid var(--border);
   border-radius: 16px;
-  background: var(--panel);
+  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
   text-align: center;
   box-shadow: 0 3px 10px var(--shadow-soft);
 }
@@ -1643,7 +1649,7 @@ a.back-link {
 .admin-chart {
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--panel);
+  background: linear-gradient(135deg, var(--panel), var(--accent-tint));
   padding: 16px 12px 8px;
 }
 
