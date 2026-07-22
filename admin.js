@@ -59,6 +59,43 @@ function renderStats(stats) {
 
 const STUCK_TRACK_LABEL = { course: "初级", assessment: "进阶", advanced: "高级", debug: "调试挑战" };
 
+// 流失漏斗：每条赛道分别画一个柱状图，第N关的柱子高度是"至少走到第N关"的
+// 人数——理论上应该是一路不涨的阶梯（越往后人越少），哪一关掉得特别多，
+// 就是那一关卡住人最多，比"平均通关关卡数"这种单一数字有用得多。
+// admin_track_funnel()返回的是[{track, level_num, users_reached}, ...]
+// 摊平的数组，这里先按track分组再各画各的。
+function renderFunnel(rows) {
+  if (!rows || rows.length === 0) {
+    return `<p class="admin-chart-empty">还没有数据。</p>`;
+  }
+  const byTrack = {};
+  rows.forEach((r) => {
+    (byTrack[r.track] = byTrack[r.track] || []).push(r);
+  });
+  return Object.keys(byTrack)
+    .map((track) => {
+      const levels = byTrack[track].slice().sort((a, b) => a.level_num - b.level_num);
+      const max = Math.max(...levels.map((l) => l.users_reached), 1);
+      const bars = levels
+        .map((l) => {
+          const pct = max > 0 ? Math.max((l.users_reached / max) * 100, 4) : 4;
+          return `<div class="admin-chart-bar" style="height:${pct}%" title="第${l.level_num}关：${l.users_reached} 人走到过这一关">
+            <span class="admin-chart-bar-value">${l.users_reached}</span>
+          </div>`;
+        })
+        .join("");
+      const trackLabel = STUCK_TRACK_LABEL[track] || escapeHtml(track);
+      return `
+        <p class="completion-row-title" style="margin:16px 0 6px;">${trackLabel}</p>
+        <div class="admin-chart">
+          <div class="admin-chart-bars">${bars}</div>
+          <div class="admin-chart-axis"><span>第1关</span><span>第${levels[levels.length - 1].level_num}关</span></div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function renderStuckPoints(rows) {
   if (!rows || rows.length === 0) {
     return `<p class="admin-chart-empty">还没有人反馈卡住——点关卡页里"🤔 这道题我还是不懂"会记一条到这里。</p>`;
@@ -129,6 +166,18 @@ async function render() {
     `;
   } catch (e) {
     // 静默跳过——大概率是 admin_stuck_points() 这个函数还没建。
+  }
+
+  // 留存/流失漏斗，同样独立try/catch——函数可能还没建。
+  try {
+    const { data: funnelRows, error: funnelError } = await supabaseClient.rpc("admin_track_funnel");
+    if (funnelError) throw funnelError;
+    contentBox.innerHTML += `
+      <h2 class="admin-chart-title">各赛道流失漏斗（每一关还有多少人走到过）</h2>
+      ${renderFunnel(funnelRows)}
+    `;
+  } catch (e) {
+    // 静默跳过——大概率是 admin_track_funnel() 这个函数还没建。
   }
 
   // 全部注册用户名单，同样独立try/catch——这个函数读的是auth.users，
