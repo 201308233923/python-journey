@@ -988,11 +988,43 @@ body {
   margin-bottom: 6px;
 }
 
-#code-editor {
-  width: 100%;
-  height: 220px;
+/* 语法高亮的实现方式：真正能打字的还是原生<textarea>（保留所有原生行为——
+   光标、选区、撤销重做、手机键盘、粘贴，一个都不用自己重新实现），只是把
+   文字颜色设成透明，叠在下面一层.code-highlight（用真实DOM结构渲染高亮后
+   的HTML）上面，两者内容、字体、内边距、行高必须完全一致，才能像素级对齐。
+   textarea本身禁用了手动拖拽改高度(resize)和内部滚动条(overflow:hidden)，
+   改成JS在输入时自动把高度撑开到刚好容纳所有内容（app.js里的
+   autoGrowCodeEditor），这样就不需要再单独处理"两层各自滚动、还要互相
+   同步scrollTop"这类更容易出错的情况。 */
+.code-editor-wrap {
+  position: relative;
+}
+
+.code-highlight {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 14px;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 10px;
   background: var(--code-bg);
   color: var(--code-text);
+}
+
+#code-editor {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  min-height: 220px;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--code-text);
   border: none;
   border-radius: 10px;
   padding: 14px;
@@ -1001,7 +1033,38 @@ body {
      代码编辑区正好也受益，字号大一点读代码更舒服。 */
   font-size: 16px;
   line-height: 1.5;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
+}
+
+#code-editor::selection {
+  background: var(--accent-glow);
+}
+
+/* 语法高亮的配色——代码框背景(--code-bg)不管站点是浅色还是深色主题都固定
+   是深色调（见前面.terminal-box的注释），所以这几个token颜色也直接写死，
+   不用跟着主题切换，保证在深色背景上始终读得清楚。挑的是柔和、饱和度
+   不过分刺眼的色调，不是那种对比强烈的"荧光配色"。 */
+.tok-keyword {
+  color: #7dd3fc;
+  font-weight: 700;
+}
+
+.tok-builtin {
+  color: #5eead4;
+}
+
+.tok-string {
+  color: #fbbf87;
+}
+
+.tok-number {
+  color: #c4b5fd;
+}
+
+.tok-comment {
+  color: #8b93a7;
+  font-style: italic;
 }
 
 /* AI小游戏的code-editor跟course/assessment/advanced/debug四个页面共用同一个

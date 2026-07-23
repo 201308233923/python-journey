@@ -72,7 +72,10 @@
         <div class="editor-row">
           <div class="editor-col">
             <div class="editor-label">这段代码有bug，找到并修好它</div>
-            <textarea id="code-editor" spellcheck="false"></textarea>
+            <div class="code-editor-wrap">
+              <pre id="code-highlight" class="code-highlight" aria-hidden="true"></pre>
+              <textarea id="code-editor" spellcheck="false"></textarea>
+            </div>
             <div id="input-row" class="input-row hidden">
               <label class="editor-label">模拟输入（每行一个，对应一次 input()）</label>
               <textarea id="input-editor" rows="3" spellcheck="false"></textarea>
@@ -107,6 +110,7 @@
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
   <script>const TRACK = "debug";</script>
   <script src="debug-levels.js"></script>
+  <script src="syntax-highlight.js"></script>
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="progress-sync.js"></script>

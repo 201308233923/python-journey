@@ -14,6 +14,23 @@ const variantSeenKey = (id) => `codecourse_${TRACK_ID}_variantseen_${id}`;
 // 重置之后如果又卡在这一关，应该能再反馈一次，不是永久哑掉。
 const stuckReportedKey = (id) => `codecourse_${TRACK_ID}_v2_stuckreported_${id}`;
 
+// 语法高亮：把.code-highlight这层背景装饰的内容，跟真正的#code-editor
+// textarea当前的文字、高度都同步一遍。每次程序改了textarea.value（选关卡/
+// 重置代码/载入存档）之后，和每次用户自己打字（input事件）之后，都要调用。
+// textarea本身没有内部滚动条（style.css里设了overflow:hidden），改成这里
+// 自动撑高到刚好能放下所有内容——这样就不用另外处理"两层各自滚动，还要
+// 互相同步scrollTop"这种更容易出岔子的情况。
+function syncCodeHighlight() {
+  const editor = document.getElementById("code-editor");
+  const highlight = document.getElementById("code-highlight");
+  if (!editor || !highlight) return;
+  highlight.innerHTML = highlightPython(editor.value);
+  editor.style.height = "auto";
+  const newHeight = Math.max(editor.scrollHeight, 220);
+  editor.style.height = newHeight + "px";
+  highlight.style.height = newHeight + "px";
+}
+
 function getFailCount(id) {
   const raw = localStorage.getItem(failKey(id));
   return raw ? parseInt(raw, 10) : 0;
@@ -218,6 +235,7 @@ function selectLevel(id) {
 
   const savedCode = localStorage.getItem(codeKey(id));
   document.getElementById("code-editor").value = savedCode !== null ? savedCode : currentVariant.starter;
+  syncCodeHighlight();
 
   const inputRow = document.getElementById("input-row");
   const inputEditor = document.getElementById("input-editor");
@@ -240,7 +258,7 @@ function selectLevel(id) {
   const answerNudgeBtn = document.getElementById("answer-nudge-btn");
   if (answerBox) {
     answerBox.classList.add("hidden");
-    answerBox.textContent = currentVariant.answer || "";
+    answerBox.innerHTML = highlightPython(currentVariant.answer || "");
   }
   if (answerNudgeBtn) answerNudgeBtn.classList.add("hidden");
   const whyBtn = document.getElementById("why-btn");
@@ -462,6 +480,7 @@ function setupButtons() {
     }
   };
   document.getElementById("code-editor").addEventListener("keydown", runShortcutHandler);
+  document.getElementById("code-editor").addEventListener("input", syncCodeHighlight);
   const inputEditor = document.getElementById("input-editor");
   if (inputEditor) inputEditor.addEventListener("keydown", runShortcutHandler);
 
@@ -469,6 +488,7 @@ function setupButtons() {
     const level = LEVELS.find((l) => l.id === currentLevelId);
     const variant = currentVariant || resolveVariant(level);
     document.getElementById("code-editor").value = variant.starter;
+    syncCodeHighlight();
     // 需要模拟输入的关卡，"重置代码"/"恢复原样"也得把输入框一起复位——
     // 不然代码恢复原样了，输入框还留着之前乱试的内容，跑出来的结果对不上，
     // 看起来像是"恢复"没生效。
@@ -503,9 +523,10 @@ function setupButtons() {
       if (currentVariant && currentVariant.needsInput) {
         const inputEditor = document.getElementById("input-editor");
         if (inputEditor) inputEditor.value = currentVariant.defaultInput || "";
-        answerBox.textContent =
+        answerBox.innerHTML = highlightPython(
           (currentVariant.answer || "") +
-          "\n\n# （这一关需要模拟输入，已经帮你把左边\"模拟输入\"框也换成配合这份答案的内容了）";
+            "\n\n# （这一关需要模拟输入，已经帮你把左边\"模拟输入\"框也换成配合这份答案的内容了）"
+        );
       }
     });
   }

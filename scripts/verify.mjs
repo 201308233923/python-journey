@@ -255,6 +255,73 @@ function verifyAiGamesWalkthrough() {
 console.log("\n== AI小游戏逐行解读覆盖率校验 ==");
 verifyAiGamesWalkthrough();
 
+// ---------- 语法高亮round-trip不变量校验 ----------
+// syntax-highlight.js里highlightPython()生成的HTML，只是叠在真实<textarea>
+// 后面的一层背景装饰——去掉所有<span>标签、转义字符换回来，必须能精确复原
+// 出原始代码字符串，一个字都不能差。这个不变量对整个网站目前所有关卡的
+// starter/answer代码，以及ai-games的code字段，全部验证一遍，防止以后
+// 改了正则表达式，某种代码写法（比如某种字符串转义、某种注释位置）被
+// 吃掉或者重复。
+function unescapeHtmlForCheck(s) {
+  return s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+}
+
+function stripHighlightSpans(html) {
+  return unescapeHtmlForCheck(html.replace(/<span class="[^"]+">/g, "").replace(/<\/span>/g, ""));
+}
+
+function verifySyntaxHighlightRoundTrip() {
+  const before = failures;
+  const hlSrc = fs.readFileSync(path.join(ROOT, "syntax-highlight.js"), "utf8");
+  const sandbox = {};
+  vm.createContext(sandbox);
+  vm.runInContext(hlSrc + "\nthis.highlightPython = highlightPython;", sandbox);
+  const highlightPython = sandbox.highlightPython;
+
+  const samples = [];
+  const courseLevels = loadLevelsDirInSandbox("levels", "LEVELS");
+  (courseLevels || []).forEach((level) => {
+    (level.variants || []).forEach((variant, vi) => {
+      if (variant.starter) samples.push([`levels/ 第${level.id}关 变体${vi} starter`, variant.starter]);
+      if (variant.answer) samples.push([`levels/ 第${level.id}关 变体${vi} answer`, variant.answer]);
+    });
+  });
+  [
+    ["assessment-levels.js", "LEVELS"],
+    ["advanced-levels.js", "LEVELS"],
+    ["debug-levels.js", "LEVELS"],
+  ].forEach(([file, globalName]) => {
+    const levels = loadInSandbox(file, globalName);
+    (levels || []).forEach((level) => {
+      if (level.starter) samples.push([`${file} 第${level.id}关 starter`, level.starter]);
+      if (level.answer) samples.push([`${file} 第${level.id}关 answer`, level.answer]);
+    });
+  });
+  const aiGamesLevels = loadInSandbox("ai-games-levels.js", "LEVELS");
+  (aiGamesLevels || []).forEach((level) => {
+    if (level.code) samples.push([`ai-games-levels.js 第${level.id}关 code`, level.code]);
+  });
+
+  samples.forEach(([label, code]) => {
+    checks += 1;
+    let html;
+    try {
+      html = highlightPython(code);
+    } catch (e) {
+      fail(`${label}: highlightPython()抛出异常 -- ${e.message}`);
+      return;
+    }
+    const reconstructed = stripHighlightSpans(html);
+    if (reconstructed !== code) {
+      fail(`${label}: 高亮后去掉标签跟原始代码对不上`);
+    }
+  });
+  console.log(`  ${samples.length} 段代码校验完毕: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== 语法高亮round-trip不变量校验 ==");
+verifySyntaxHighlightRoundTrip();
+
 // ---------- HTML内部链接/脚本引用完整性校验 ----------
 // 网站现在11个HTML页面互相跳转，<a href>和<script src>指向的本地文件
 // 全靠人肉核对，很容易在改文件名/加新页面的时候悄悄产生死链接，没人
