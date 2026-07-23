@@ -66,6 +66,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 1,
   },
+  {
+    q: "print(\"a\" + \"b\") 会输出什么？",
+    options: ["ab", "a b", "a+b", "报错"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "print() 括号里什么都不写，直接运行会怎样？",
+    options: ["输出一个空行", "报错", "什么都不会发生", "输出None这个词"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "print(\"你好\\n世界\") 会输出几行内容？",
+    options: ["2行", "1行", "3行", "会报错"],
+    answer: 0,
+    targetLevel: 1,
+  },
 
   // ---- 变量（对应第2关）----
   {
@@ -138,6 +156,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 2,
   },
+  {
+    q: "a = 1\nb = 2\na, b = b, a\n执行后 a 和 b 分别是多少？",
+    options: ["a=2, b=1", "a=1, b=2（没变）", "报错", "a=2, b=2"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "x = 10\nx = x * 2\nx = x - 5\n最终 x 是多少？",
+    options: ["15", "20", "5", "10"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "下面哪一个不能用作变量名？",
+    options: ["if（Python的关键字）", "name", "age", "score2"],
+    answer: 0,
+    targetLevel: 2,
+  },
 
   // ---- 数字运算（对应第3关）----
   {
@@ -202,6 +238,24 @@ const QUIZ = [
       "括号在Python里不能改变运算顺序",
       "+ 的优先级比 * 高",
     ],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "2 ** 4 的结果是？",
+    options: ["16", "8", "6", "报错"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "10 % 4 的结果是？",
+    options: ["2", "2.5", "0", "1"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "(10 + 2) // 3 的结果是？",
+    options: ["4", "4.0", "3", "12"],
     answer: 0,
     targetLevel: 3,
   },
@@ -277,6 +331,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 4,
   },
+  {
+    q: "age = 13，print(f\"我{age}岁了\") 会输出什么？",
+    options: ["我13岁了", "我age岁了", "我{age}岁了", "报错"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "x = 3; y = 4，print(f\"{x}+{y}={x+y}\") 会输出什么？",
+    options: ["3+4=7", "x+y=x+y", "{x}+{y}={x+y}", "报错"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "想在 f-string 里显示真正的花括号 {}（而不是当成变量占位符），应该怎么写？",
+    options: ["用两个花括号 {{ }}", "用反斜杠 \\{ \\}", "没办法显示花括号", "用中括号 [ ] 代替"],
+    answer: 0,
+    targetLevel: 4,
+  },
 
   // ---- input（对应第5关）----
   {
@@ -344,6 +416,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 5,
   },
+  {
+    q: "age = input(\"你几岁？\")，用户输入13后按回车，age 的值和类型是？",
+    options: ["字符串 \"13\"，不是数字13", "数字13", "None", "报错"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "想让程序先问名字，再问年龄，需要调用几次 input()？",
+    options: ["两次，分开写两行", "一次就够，input()能同时问两个问题", "不需要调用input()", "三次"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "n = int(input())，如果用户输入的不是数字（比如输入\"abc\"），会发生什么？",
+    options: ["报错（无法把\"abc\"转换成整数）", "n会变成0", "n会变成None", "程序会自动忽略这次输入"],
+    answer: 0,
+    targetLevel: 5,
+  },
 
   // ---- if 判断（对应第6关）----
   {
@@ -406,6 +496,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 6,
   },
+  {
+    q: "x = 5\nif x > 10:\n    print(\"大\")\nelif x > 3:\n    print(\"中\")\nelse:\n    print(\"小\")\n会打印什么？",
+    options: ["中", "大", "小", "什么都不打印"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "if 5 > 3 and 2 > 4:\n    print(\"yes\")\nelse:\n    print(\"no\")\n会打印什么？",
+    options: ["no", "yes", "报错", "什么都不打印"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "一个数既要大于0又要小于100才算合法，应该用 and 还是 or 连接这两个条件？",
+    options: ["and（两个条件都要满足）", "or（满足一个就行）", "两者效果一样", "都不对，需要用not"],
+    answer: 0,
+    targetLevel: 6,
+  },
 
   // ---- for 循环（对应第7关）----
   {
@@ -465,6 +573,24 @@ const QUIZ = [
   {
     q: "下面哪个循环会打印5次？",
     options: ["for i in range(5)", "for i in range(1,5)", "for i in range(0,5,2)", "for i in range(4)"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)\n会输出什么？",
+    options: ["10", "9", "15", "4"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "for i in range(3):\n    print(\"Hi\")\n会打印几次\"Hi\"？",
+    options: ["3次", "2次", "4次", "0次"],
+    answer: 0,
+    targetLevel: 7,
+  },
+  {
+    q: "想遍历列表 fruits 里的每一个元素并打印出来，应该怎么写？",
+    options: ["for f in fruits:\n    print(f)", "for fruits in f:\n    print(f)", "while fruits: print(f)", "print(fruits[all])"],
     answer: 0,
     targetLevel: 7,
   },
@@ -540,6 +666,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 8,
   },
+  {
+    q: "n = 5\nwhile n > 0:\n    n -= 1\nprint(n)\n最终会打印什么？",
+    options: ["0", "5", "1", "死循环"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "i = 0\nwhile i < 3:\n    print(i)\n    i += 1\n会依次打印哪些数字？",
+    options: ["0, 1, 2", "1, 2, 3", "0, 1, 2, 3", "只打印0"],
+    answer: 0,
+    targetLevel: 8,
+  },
+  {
+    q: "写 while 循环时，循环体里通常需要做什么，才能避免死循环？",
+    options: ["让循环条件相关的变量发生变化", "多写几个print", "把条件写成True", "什么都不用做"],
+    answer: 0,
+    targetLevel: 8,
+  },
 
   // ---- 列表（对应第9关）----
   {
@@ -599,6 +743,24 @@ const QUIZ = [
   {
     q: "列表是有序的吗（元素的顺序会保留吗）？",
     options: ["是的，顺序和添加时一致", "不是，会自动排序", "不是，顺序随机", "取决于元素类型"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "nums = [1, 2, 3]，nums[-1] 的结果是？",
+    options: ["3", "1", "报错", "None"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "nums = [1, 2, 3]\nnums.remove(2)\nprint(nums)\n会输出什么？",
+    options: ["[1, 3]", "[1, 2, 3]", "[2]", "报错"],
+    answer: 0,
+    targetLevel: 9,
+  },
+  {
+    q: "nums = [5, 3, 8, 1]\nnums.sort()\nprint(nums)\n会输出什么？",
+    options: ["[1, 3, 5, 8]", "[5, 3, 8, 1]", "[8, 5, 3, 1]", "报错"],
     answer: 0,
     targetLevel: 9,
   },
@@ -669,6 +831,24 @@ const QUIZ = [
     answer: 0,
     targetLevel: 10,
   },
+  {
+    q: "d = {\"a\": 1, \"b\": 2}\ndel d[\"a\"]\nprint(d)\n会输出什么？",
+    options: ["{'b': 2}", "{'a': 1}", "{}", "报错"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "d = {}\nd[\"x\"] = 10\nprint(d[\"x\"])\n会输出什么？",
+    options: ["10", "\"x\"", "None", "报错，d是空字典不能赋值"],
+    answer: 0,
+    targetLevel: 10,
+  },
+  {
+    q: "想遍历字典 d 的所有键，应该怎么写？",
+    options: ["for key in d:", "for key in d.values():", "for d in key:", "while d:"],
+    answer: 0,
+    targetLevel: 10,
+  },
 
   // ---- 函数（对应第11关）----
   {
@@ -733,6 +913,24 @@ const QUIZ = [
   {
     q: "def add(a, b): return a + b，调用 add(3, 5) 的结果是？",
     options: ["8", "35", "报错", "None"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "def square(x):\n    return x * x\nprint(square(4))\n会输出什么？",
+    options: ["16", "8", "4", "报错"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "def greet(name):\n    print(f\"你好，{name}\")\ngreet(\"小明\")\n会输出什么？",
+    options: ["你好，小明", "你好，name", "greet(小明)", "报错"],
+    answer: 0,
+    targetLevel: 11,
+  },
+  {
+    q: "一个函数可以同时接收多个参数吗？",
+    options: ["可以，用逗号隔开多个参数", "不可以，只能有一个参数", "最多只能有两个参数", "取决于返回值类型"],
     answer: 0,
     targetLevel: 11,
   },

@@ -25,7 +25,7 @@ python3 -m http.server 8765
 
 `index.html` 是官网介绍页（纯静态，介绍网站有什么），点"免费开始"跳到 `test.html`。
 
-打开 `test.html` 会先做选择题（题库110道，每次随机抽10道，不用等Python环境加载，秒开），
+打开 `test.html` 会先做选择题（题库143道，每次随机抽10道，不用等Python环境加载，秒开），
 覆盖 print、变量、运算、字符串、input、if判断、for/while循环、列表、字典、函数这些概念。
 
 - 全部答对 → 推荐直接去 `assessment.html` 做进阶题目

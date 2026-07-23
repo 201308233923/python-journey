@@ -110,6 +110,24 @@ const QUIZ_INTERMEDIATE = [
     answer: 0,
     targetLevel: 1,
   },
+  {
+    q: "n = 20，n % 4 == 0 的结果是？",
+    options: ["True", "False", "4", "5"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "想判断一个数能不能同时被2和3整除，条件应该怎么写？",
+    options: ["n % 2 == 0 and n % 3 == 0", "n % 2 == 0 or n % 3 == 0", "n % 6", "n / 2 == n / 3"],
+    answer: 0,
+    targetLevel: 1,
+  },
+  {
+    q: "18 % 4 的结果是？",
+    options: ["2", "4.5", "4", "0"],
+    answer: 0,
+    targetLevel: 1,
+  },
 
   // ---- 测试2相关：sum/max/列表统计 ----
   {
@@ -223,6 +241,24 @@ const QUIZ_INTERMEDIATE = [
     answer: 0,
     targetLevel: 2,
   },
+  {
+    q: "nums = [2, 4, 6]，sum(nums) / len(nums)（平均数）的结果是？",
+    options: ["4.0", "12", "3", "2"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "scores = [70, 85, 90]，max(scores) - min(scores) 的结果是？",
+    options: ["20", "90", "70", "15"],
+    answer: 0,
+    targetLevel: 2,
+  },
+  {
+    q: "想知道一个列表里一共有多少个元素，用哪个函数？",
+    options: ["len()", "sum()", "max()", "count()"],
+    answer: 0,
+    targetLevel: 2,
+  },
 
   // ---- 测试3相关：字符串处理/.count() ----
   {
@@ -317,6 +353,24 @@ const QUIZ_INTERMEDIATE = [
   {
     q: "自己写循环统计字符时，需要在循环外先做什么？",
     options: ["把计数器初始化为0", "先打印字符串", "先把字符串转成列表", "先调用.count()"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "\"mississippi\".count(\"s\") 的结果是？",
+    options: ["4", "2", "3", "0"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "\"hello world\".count(\" \")（统计空格）的结果是？",
+    options: ["1", "0", "2", "11"],
+    answer: 0,
+    targetLevel: 3,
+  },
+  {
+    q: "想知道一个字符串总共有多少个字符（包括空格），用什么函数？",
+    options: ["len()", "count()", "sum()", "size()"],
     answer: 0,
     targetLevel: 3,
   },
@@ -424,6 +478,24 @@ const QUIZ_INTERMEDIATE = [
   {
     q: "写一个函数判断质数并复用它，比 3 次单独写判断逻辑的好处是？",
     options: ["避免重复代码，逻辑只需要改一处", "运行速度更快", "占用内存更少", "没有任何好处"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "is_prime(1) 和 is_prime(4) 分别应该返回什么？",
+    options: ["False 和 False", "True 和 True", "False 和 True", "True 和 False"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "23 是质数吗？",
+    options: ["是，23只能被1和23整除", "不是，23能被3整除", "不是，23是奇数", "不确定"],
+    answer: 0,
+    targetLevel: 4,
+  },
+  {
+    q: "判断质数时，为什么要从2开始试，而不是从1开始？",
+    options: ["因为所有数字都能被1整除，从1试没有意义", "因为Python不允许从1开始的循环", "因为1是最大的质数", "从1开始会导致死循环"],
     answer: 0,
     targetLevel: 4,
   },
@@ -539,6 +611,24 @@ const QUIZ_INTERMEDIATE = [
     answer: 0,
     targetLevel: 5,
   },
+  {
+    q: "words = [\"a\",\"b\",\"c\",\"a\",\"a\",\"b\"]，统计后 counts[\"a\"] 最终应该是？",
+    options: ["3", "2", "1", "6"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "统计好词频后，想知道一共出现过多少个不同的词，可以用？",
+    options: ["len(counts)", "sum(counts)", "max(counts)", "counts[0]"],
+    answer: 0,
+    targetLevel: 5,
+  },
+  {
+    q: "counts = {}\ncounts[\"x\"] = counts.get(\"x\", 0) + 1\n执行一次后，counts 是？",
+    options: ["{\"x\": 1}", "{\"x\": 0}", "{}", "报错"],
+    answer: 0,
+    targetLevel: 5,
+  },
 
   // ---- 测试6相关：统计最多+预测（max配合key）----
   {
@@ -648,6 +738,24 @@ const QUIZ_INTERMEDIATE = [
   {
     q: "counts.get(\"布\", 0) 在统计不存在的键\"布\"时会返回什么？",
     options: ["0（默认值）", "报错", "None", "布"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "counts = {\"a\": 2, \"b\": 5, \"c\": 1}，max(counts, key=counts.get) 的结果是？",
+    options: ["b", "5", "a", "c"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "如果历史记录里只出现过一种选择，比如全都是\"布\"，用统计次数的方法预测下一步会是？",
+    options: ["布", "石头", "剪刀", "无法预测"],
+    answer: 0,
+    targetLevel: 6,
+  },
+  {
+    q: "max(counts, key=counts.get) 返回的是字典的键还是值？",
+    options: ["键（次数最多对应的那个键）", "值（最大的次数本身）", "键值对组成的元组", "报错"],
     answer: 0,
     targetLevel: 6,
   },
