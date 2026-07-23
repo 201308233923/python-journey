@@ -27,6 +27,7 @@ function shuffleQuestion(q) {
     options: order.map((i) => q.options[i]),
     answer: order.indexOf(q.answer),
     _bank: q._bank,
+    _idx: q._idx,
   };
 }
 
@@ -253,25 +254,121 @@ const QUIZ_BANKS_BY_NAME = {
   advanced: () => (typeof QUIZ_ADVANCED !== "undefined" ? QUIZ_ADVANCED : []),
 };
 
+// 给每道题标上_bank（来自哪个题库）和_idx（在原始题库数组里的下标）——
+// 下标必须在过滤(filter)之前打上，不然过滤完的新数组里的下标就跟原始题库
+// 对不上了。_idx跟_bank组合起来是这道题稳定不变的身份，用来记"做过没做过"。
+function tagWithOrigIndex(arr, bank) {
+  return arr.map((q, i) => Object.assign({ _bank: bank, _idx: i }, q));
+}
+
 function getEligibleReviewPool() {
   const courseUnlocked = getCourseUnlocked();
   const assessmentUnlocked = getAssessmentUnlocked();
   const advancedUnlocked = getAdvancedUnlocked();
   let pool = [];
   if (courseUnlocked > 1) {
-    pool = pool.concat(QUIZ.filter((q) => q.targetLevel < courseUnlocked).map((q) => Object.assign({ _bank: "course" }, q)));
+    pool = pool.concat(tagWithOrigIndex(QUIZ, "course").filter((q) => q.targetLevel < courseUnlocked));
   }
   if (assessmentUnlocked > 1 && typeof QUIZ_INTERMEDIATE !== "undefined") {
-    pool = pool.concat(
-      QUIZ_INTERMEDIATE.filter((q) => q.targetLevel < assessmentUnlocked).map((q) => Object.assign({ _bank: "assessment" }, q))
-    );
+    pool = pool.concat(tagWithOrigIndex(QUIZ_INTERMEDIATE, "assessment").filter((q) => q.targetLevel < assessmentUnlocked));
   }
   if (advancedUnlocked > 1 && typeof QUIZ_ADVANCED !== "undefined") {
-    pool = pool.concat(
-      QUIZ_ADVANCED.filter((q) => q.targetLevel < advancedUnlocked).map((q) => Object.assign({ _bank: "advanced" }, q))
-    );
+    pool = pool.concat(tagWithOrigIndex(QUIZ_ADVANCED, "advanced").filter((q) => q.targetLevel < advancedUnlocked));
   }
   return pool;
+}
+
+// ---------- 额外练习：复习没做过的题 ----------
+// 三个题库现在都扩到200+题，每日复习一次只抽10道，大部分题其实从来没被
+// 抽到过。这里单独记一下"这道题这个人做过没有"（按_bank+_idx这个稳定身份，
+// 不是题目文字，避免万一以后改了措辞导致记录对不上），复习完之后可以选择
+// 专门再练一组"没做过的"，把攒下的题库真正利用起来，而不是每次都在小范围
+// 里抽来抽去。
+function getSeenIndices(bank) {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(`quiz_seen_${bank}`) || "[]"));
+  } catch (e) {
+    return new Set();
+  }
+}
+
+function markSeen(bank, idx) {
+  if (!bank || typeof idx !== "number") return;
+  const seen = getSeenIndices(bank);
+  seen.add(idx);
+  localStorage.setItem(`quiz_seen_${bank}`, JSON.stringify([...seen]));
+}
+
+let practiceQuiz = [];
+let practiceIndex = 0;
+let practiceCorrect = 0;
+let practiceAllSeen = false;
+
+// 优先从"当前水平范围内、还没做过"的题里抽一组；如果这个范围内的题已经
+// 全部刷过一遍了（practiceAllSeen=true），就从头再来一轮（允许重复），
+// 而不是直接没题可练。
+function buildUnseenPracticeQuiz() {
+  const eligible = getEligibleReviewPool();
+  const unseen = eligible.filter((q) => !getSeenIndices(q._bank).has(q._idx));
+  practiceAllSeen = eligible.length > 0 && unseen.length === 0;
+  const pool = unseen.length > 0 ? unseen : eligible;
+  practiceQuiz = shuffle(pool).slice(0, Math.min(QUESTIONS_PER_QUIZ, pool.length)).map(shuffleQuestion);
+  practiceIndex = 0;
+  practiceCorrect = 0;
+}
+
+function renderPracticeQuestion() {
+  const item = practiceQuiz[practiceIndex];
+  markSeen(item._bank, item._idx);
+  const roundLabel = practiceAllSeen ? "（这个范围的题都刷过一遍了，重新来一轮）" : "";
+  root.innerHTML = `
+    <div class="quiz-progress">复习没做过的题${roundLabel} · 第 ${practiceIndex + 1} / ${practiceQuiz.length} 题</div>
+    <h2 class="quiz-question">${escapeHtml(item.q).replace(/\n/g, "<br>")}</h2>
+    <div class="quiz-options">
+      ${item.options.map((opt, i) => `<button class="quiz-option" data-i="${i}">${escapeHtml(opt)}</button>`).join("")}
+    </div>
+  `;
+  root.querySelectorAll(".quiz-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = parseInt(btn.dataset.i, 10);
+      const correct = i === item.answer;
+      if (correct) {
+        practiceCorrect += 1;
+        btn.classList.add("correct");
+      } else {
+        btn.classList.add("wrong");
+        const correctBtn = root.querySelector(`.quiz-option[data-i="${item.answer}"]`);
+        if (correctBtn) correctBtn.classList.add("correct");
+      }
+      root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
+      setTimeout(() => {
+        practiceIndex += 1;
+        if (practiceIndex < practiceQuiz.length) {
+          renderPracticeQuestion();
+        } else {
+          renderPracticeResult();
+        }
+      }, 700);
+    });
+  });
+}
+
+function renderPracticeResult() {
+  root.innerHTML = `
+    <div class="landing-eyebrow">额外练习</div>
+    <p class="quiz-score">答对 ${practiceCorrect} / ${practiceQuiz.length} 题</p>
+    <h1>这组做完了！</h1>
+    <p class="landing-lede">题库里还有很多题，可以继续挑没做过的接着练，或者先回去学习。</p>
+    <div class="quiz-choice-row">
+      <button class="quiz-btn-primary" id="practice-more-btn">📚 再来一组没做过的题</button>
+      <button class="quiz-btn-primary secondary" id="practice-done-btn">继续学习 →</button>
+    </div>
+  `;
+  document.getElementById("practice-more-btn").addEventListener("click", () => {
+    buildUnseenPracticeQuiz();
+    renderPracticeQuestion();
+  });
+  document.getElementById("practice-done-btn").addEventListener("click", goToResumePoint);
 }
 
 // 答错一道题，订正轮不想还是问一模一样那道题（选项顺序打乱了，但题干和正确
@@ -280,10 +377,9 @@ function getEligibleReviewPool() {
 // 实在没有别的题（比如这个知识点题库里就只有一道）才退回问原题。
 function pickRetryVariant(item) {
   const bank = QUIZ_BANKS_BY_NAME[item._bank] ? QUIZ_BANKS_BY_NAME[item._bank]() : [];
-  const alternatives = bank.filter((q) => q.targetLevel === item.targetLevel && q.q !== item.q);
+  const alternatives = tagWithOrigIndex(bank, item._bank).filter((q) => q.targetLevel === item.targetLevel && q.q !== item.q);
   if (alternatives.length === 0) return item;
-  const pick = alternatives[Math.floor(Math.random() * alternatives.length)];
-  return Object.assign({ _bank: item._bank }, pick);
+  return alternatives[Math.floor(Math.random() * alternatives.length)];
 }
 
 function shouldShowDailyReview() {
@@ -326,6 +422,7 @@ function renderDailyReview() {
 
 function renderDailyReviewQuestion() {
   const item = dailyReviewQuiz[dailyReviewIndex];
+  markSeen(item._bank, item._idx);
   const roundLabel = dailyReviewRound > 1 ? `（第${dailyReviewRound}轮·订正错题）` : "";
   root.innerHTML = `
     <div class="quiz-progress">今日复习${roundLabel} · 第 ${dailyReviewIndex + 1} / ${dailyReviewQuiz.length} 题</div>
@@ -382,9 +479,16 @@ function renderDailyReviewResult() {
     <div class="landing-eyebrow">今日复习</div>
     <p class="quiz-score">${scoreText}</p>
     <h1>复习完成！</h1>
-    <p class="landing-lede">明天再来看看能不能保持连续复习。</p>
-    <button class="quiz-btn-primary" id="continue-after-review-btn">继续学习 →</button>
+    <p class="landing-lede">明天再来看看能不能保持连续复习。题库里还有很多没做过的题，也可以现在多练一组。</p>
+    <div class="quiz-choice-row">
+      <button class="quiz-btn-primary" id="practice-unseen-btn">📚 复习没做过的题</button>
+      <button class="quiz-btn-primary secondary" id="continue-after-review-btn">继续学习 →</button>
+    </div>
   `;
+  document.getElementById("practice-unseen-btn").addEventListener("click", () => {
+    buildUnseenPracticeQuiz();
+    renderPracticeQuestion();
+  });
   document.getElementById("continue-after-review-btn").addEventListener("click", goToResumePoint);
 }
 
