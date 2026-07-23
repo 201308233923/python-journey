@@ -44,6 +44,10 @@ function renderStats(stats) {
         <div class="admin-stat-label">同步过进度的人数</div>
       </div>
       <div class="admin-stat-card">
+        <div class="admin-stat-value">${stats.active_last_7_days ?? "?"}</div>
+        <div class="admin-stat-label">最近7天登录过的人数</div>
+      </div>
+      <div class="admin-stat-card">
         <div class="admin-stat-value">${stats.total_levels_completed}</div>
         <div class="admin-stat-label">全站累计通关关卡数</div>
       </div>
@@ -73,17 +77,40 @@ function renderStuckPoints(rows) {
   return `<ul class="completion-summary-list">${items}</ul>`;
 }
 
+// last_sign_in_at是Supabase Auth本来就会自动记录的标准字段（每次登录都会
+// 更新），不是额外加的埋点/行为分析——跟隐私政策里说的"不做用户行为跟踪"
+// 不冲突，只是把认证系统本来就有的这条信息，在站长自己才能看到的后台
+// 展示出来。没登录过的老账号（比如刚注册还没login过一次的极少数情况）
+// 这个字段可能是null，显示"从没登录过"。
 function renderUserList(rows) {
   if (!rows || rows.length === 0) {
     return `<p class="admin-chart-empty">还没有人注册。</p>`;
   }
   const items = rows
     .map((r) => {
-      const date = r.created_at ? new Date(r.created_at).toLocaleDateString("zh-CN") : "";
-      return `<li><span class="completion-row-title">${escapeHtml(r.username)}</span><span class="completion-row-count">${date}</span></li>`;
+      const registered = r.created_at ? new Date(r.created_at).toLocaleDateString("zh-CN") : "";
+      const lastLogin = r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("zh-CN") : "从没登录过";
+      return `<li data-username="${escapeHtml(r.username.toLowerCase())}">
+        <span class="completion-row-title">${escapeHtml(r.username)}</span>
+        <span class="completion-row-count">注册 ${registered} · 最近登录 ${lastLogin}</span>
+      </li>`;
     })
     .join("");
-  return `<ul class="completion-summary-list admin-user-list">${items}</ul>`;
+  return `<ul class="completion-summary-list admin-user-list" id="admin-user-list-ul">${items}</ul>`;
+}
+
+// 纯前端过滤，不用另外查数据库——用户名单已经整个拉下来了，在浏览器里
+// 直接按用户名子串匹配就行，不需要为了这个再加一个RPC。
+function wireUserSearch() {
+  const input = document.getElementById("admin-user-search");
+  if (!input) return;
+  input.addEventListener("input", () => {
+    const keyword = input.value.trim().toLowerCase();
+    document.querySelectorAll("#admin-user-list-ul li").forEach((li) => {
+      const match = !keyword || li.dataset.username.includes(keyword);
+      li.classList.toggle("hidden", !match);
+    });
+  });
 }
 
 async function render() {
@@ -138,8 +165,10 @@ async function render() {
     if (userListError) throw userListError;
     contentBox.innerHTML += `
       <h2 class="admin-chart-title">全部注册用户（${userRows.length}）</h2>
+      <input id="admin-user-search" class="admin-user-search" type="text" placeholder="按用户名搜索..." autocomplete="off" />
       <div class="admin-chart">${renderUserList(userRows)}</div>
     `;
+    wireUserSearch();
   } catch (e) {
     // 静默跳过——大概率是 admin_user_list() 这个函数还没建。
   }

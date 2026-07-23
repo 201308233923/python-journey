@@ -847,6 +847,19 @@ body {
   overflow-y: auto;
 }
 
+.admin-user-search {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--text);
+  /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。 */
+  font-size: 16px;
+}
+
 /* 之前是纯文字<span>，现在改成链接（点了跳回去回顾这一关），补上链接该有的
    基础样式——默认不带下划线，鼠标能用的设备上hover才提示"这是能点的"，
    跟其他跳转链接（比如.entry-switch a）视觉语言一致。 */
