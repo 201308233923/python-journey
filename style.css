@@ -672,13 +672,37 @@ body {
   margin-bottom: 32px;
 }
 
+/* 关于/隐私政策这两个纯文字页面之前完全没有视觉层次——标题、正文都是
+   同一种朴素排版。h2加个品牌绿的左侧竖线，做一点视觉分段的提示；
+   about.html的功能列表把默认的实心圆点换成✓，跟quiz-option答对时的
+   ✓图标是同一套视觉语言，看起来更像"这些都是能用的功能"而不是随便
+   列的一串条目。 */
 .doc-page h2 {
   font-size: 17px;
-  margin-top: 32px;
+  margin-top: 36px;
+  margin-bottom: 4px;
+  padding-left: 12px;
+  border-left: 3px solid var(--accent);
 }
 
 .doc-page ul {
-  padding-left: 20px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.doc-page ul li {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 12px;
+}
+
+.doc-page ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: var(--accent);
+  font-weight: 800;
 }
 
 .level-item {
@@ -1605,6 +1629,30 @@ a.back-link {
 .leaderboard-row-me {
   border-color: var(--accent) !important;
   background: var(--success-bg) !important;
+}
+
+/* 前三名（渲染顺序就是排名顺序，用nth-child直接选，不用改JS/HTML）配一点
+   金银铜的颜色暗示，奖牌本身已经有🥇🥈🥉了，这里再给行本身加一点点同色调的
+   底色，让前三名在一整条列表里更跳出来一点，不只是那一个小小的emoji。
+   如果排到前三的刚好是"你"，.leaderboard-row-me的!important规则优先级
+   更高，会盖掉这里的颜色——先看到"这是你"比先看到"这是第几名"更重要。 */
+.leaderboard-list li:nth-child(1) {
+  border-color: #e8b93f;
+  background: linear-gradient(135deg, var(--panel), rgba(232, 185, 63, 0.14));
+}
+
+.leaderboard-list li:nth-child(2) {
+  border-color: #adb5bd;
+  background: linear-gradient(135deg, var(--panel), rgba(173, 181, 189, 0.16));
+}
+
+.leaderboard-list li:nth-child(3) {
+  border-color: #c8895a;
+  background: linear-gradient(135deg, var(--panel), rgba(200, 137, 90, 0.14));
+}
+
+.leaderboard-list li:nth-child(-n + 3) .leaderboard-rank {
+  font-size: 22px;
 }
 
 .leaderboard-rank {
