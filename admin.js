@@ -48,6 +48,10 @@ function renderStats(stats) {
         <div class="admin-stat-label">最近7天登录过的人数</div>
       </div>
       <div class="admin-stat-card">
+        <div class="admin-stat-value">${stats.visits_today ?? "?"}</div>
+        <div class="admin-stat-label">今天访问人数</div>
+      </div>
+      <div class="admin-stat-card">
         <div class="admin-stat-value">${stats.total_levels_completed}</div>
         <div class="admin-stat-label">全站累计通关关卡数</div>
       </div>

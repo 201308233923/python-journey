@@ -13,6 +13,29 @@ const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
+// 每天一条匿名访问记录，纯粹为了在后台看"今天有多少人来过"这一个数字。
+// 不记录IP、User-Agent、页面路径或者任何能定位到具体是谁的信息，插入的是
+// 一个空行（只有数据库自动生成的时间戳）。用localStorage记"今天是否已经
+// 记过一次"来去重——不然同一个人在几个学习页面之间跳来跳去，会被算成
+// 好几次访问。不需要登录也会记（游客也算），跟reportStuck()一样是纯写入、
+// 不开放查询权限的表，读取只能通过admin_stats()这个只对站长开放的函数。
+const VISIT_LOGGED_KEY = "codecourse_visit_logged_day";
+
+async function logVisitOncePerDay() {
+  if (!supabaseClient) return;
+  const today = new Date().toDateString();
+  if (localStorage.getItem(VISIT_LOGGED_KEY) === today) return;
+  try {
+    const { error } = await supabaseClient.from("page_visits").insert({});
+    if (error) return;
+    localStorage.setItem(VISIT_LOGGED_KEY, today);
+  } catch (e) {
+    // 表还没建、网络问题等——静默失败，不影响主流程。
+  }
+}
+
+logVisitOncePerDay();
+
 // ---------- 本地导出/导入进度码 ----------
 
 function exportProgressCode() {
