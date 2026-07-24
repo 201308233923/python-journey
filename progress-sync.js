@@ -13,12 +13,18 @@ const supabaseClient = window.supabase
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   : null;
 
-// 每天一条匿名访问记录，纯粹为了在后台看"今天有多少人来过"这一个数字。
-// 不记录IP、User-Agent、页面路径或者任何能定位到具体是谁的信息，插入的是
-// 一个空行（只有数据库自动生成的时间戳）。用localStorage记"今天是否已经
-// 记过一次"来去重——不然同一个人在几个学习页面之间跳来跳去，会被算成
-// 好几次访问。不需要登录也会记（游客也算），跟reportStuck()一样是纯写入、
-// 不开放查询权限的表，读取只能通过admin_stats()这个只对站长开放的函数。
+// 每天一条访问记录，纯粹为了在后台看"今天有多少人来过"这一个数字。游客
+// （没登录）插入的是一个空行（只有数据库自动生成的时间戳），不记录IP、
+// User-Agent、页面路径或者任何能定位到具体是谁的信息。已登录的用户会
+// 附带自己的user_id——这不算新增隐私信息，用户名本来注册的时候就收集过了，
+// 只是让站长能在后台看到"这个已注册用户名今天来过"，不涉及游客。用
+// localStorage记"今天是否已经记过一次"来去重——不然同一个人在几个学习
+// 页面之间跳来跳去，会被算成好几次访问。跟reportStuck()一样是纯写入、
+// 不开放查询权限的表，读取只能通过admin_stats()/admin_user_list()这些
+// 只对站长开放的函数。
+//
+// 放在文件最下面调用（而不是定义完立刻调用）是因为要用到 window.cloudProgressReady，
+// 这个全局Promise要等这个文件后面的代码跑到才会赋值。
 const VISIT_LOGGED_KEY = "codecourse_visit_logged_day";
 
 async function logVisitOncePerDay() {
@@ -26,15 +32,15 @@ async function logVisitOncePerDay() {
   const today = new Date().toDateString();
   if (localStorage.getItem(VISIT_LOGGED_KEY) === today) return;
   try {
-    const { error } = await supabaseClient.from("page_visits").insert({});
+    const user = window.cloudProgressReady ? await window.cloudProgressReady : null;
+    const row = user ? { user_id: user.id } : {};
+    const { error } = await supabaseClient.from("page_visits").insert(row);
     if (error) return;
     localStorage.setItem(VISIT_LOGGED_KEY, today);
   } catch (e) {
     // 表还没建、网络问题等——静默失败，不影响主流程。
   }
 }
-
-logVisitOncePerDay();
 
 // ---------- 本地导出/导入进度码 ----------
 
@@ -475,3 +481,4 @@ async function bumpStreakAndRender() {
 }
 
 bumpStreakAndRender();
+logVisitOncePerDay();

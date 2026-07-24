@@ -108,8 +108,9 @@ function renderUserList(rows) {
     .map((r) => {
       const registered = r.created_at ? new Date(r.created_at).toLocaleDateString("zh-CN") : "";
       const lastLogin = r.last_sign_in_at ? new Date(r.last_sign_in_at).toLocaleDateString("zh-CN") : "从没登录过";
+      const visitedTodayBadge = r.visited_today ? `<span class="admin-visited-today-badge">🟢 今天来过</span>` : "";
       return `<li data-username="${escapeHtml(r.username.toLowerCase())}">
-        <span class="completion-row-title">${escapeHtml(r.username)}</span>
+        <span class="completion-row-title">${escapeHtml(r.username)}${visitedTodayBadge}</span>
         <span class="completion-row-count">注册 ${registered} · 最近登录 ${lastLogin}</span>
       </li>`;
     })
