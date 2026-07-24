@@ -32,6 +32,20 @@ function renderChart(signupsByDay) {
   `;
 }
 
+function formatDateLabel(date) {
+  return date.toLocaleDateString("zh-CN", { month: "long", day: "numeric" });
+}
+
+function todayLabel() {
+  return formatDateLabel(new Date());
+}
+
+function sevenDaysAgoLabel() {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  return formatDateLabel(d);
+}
+
 function renderStats(stats) {
   return `
     <div class="admin-stats-grid">
@@ -45,11 +59,11 @@ function renderStats(stats) {
       </div>
       <div class="admin-stat-card">
         <div class="admin-stat-value">${stats.active_last_7_days ?? "?"}</div>
-        <div class="admin-stat-label">最近7天登录过的人数</div>
+        <div class="admin-stat-label">最近7天（${sevenDaysAgoLabel()}～${todayLabel()}）登录过的人数</div>
       </div>
       <div class="admin-stat-card">
         <div class="admin-stat-value">${stats.visits_today ?? "?"}</div>
-        <div class="admin-stat-label">今天访问人数</div>
+        <div class="admin-stat-label">今天（${todayLabel()}）访问人数</div>
       </div>
       <div class="admin-stat-card">
         <div class="admin-stat-value">${stats.total_levels_completed}</div>
