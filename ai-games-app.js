@@ -352,6 +352,21 @@ async function runTurn() {
       feedback.textContent = "玩完了！点'重新开始'可以再来一局。";
       celebrate();
     }
+    markLevelPlayed(currentLevelId);
+  }
+}
+
+// 代码从头到尾干净跑完（不管这一局是赢是输，第2/6/7关这种没有"赢/输"概念的
+// 关卡也算）就记一下"这关真的玩过了"——证书页用这份记录判断AI小游戏这条
+// 赛道是不是"全部7关都玩过"，跟其他赛道靠"解锁到第几关"判断通关不是同一套
+// 机制（AI小游戏7关从一开始就全部开放，没有先后解锁顺序）。
+function markLevelPlayed(id) {
+  const key = `aigames_v1_played_${id}`;
+  if (localStorage.getItem(key) === "1") return;
+  localStorage.setItem(key, "1");
+  const allPlayed = LEVELS.every((level) => localStorage.getItem(`aigames_v1_played_${level.id}`) === "1");
+  if (allPlayed && !localStorage.getItem("aigames_v1_completed_at")) {
+    localStorage.setItem("aigames_v1_completed_at", new Date().toISOString());
   }
 }
 

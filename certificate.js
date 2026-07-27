@@ -7,6 +7,7 @@ const TRACKS = [
   { id: "assessment", emoji: "⚡", label: "进阶", count: 6 },
   { id: "advanced", emoji: "🚀", label: "高级", count: 6 },
   { id: "debug", emoji: "🐛", label: "调试挑战", count: 8 },
+  { id: "ai-games", emoji: "🎮", label: "AI小游戏", count: 7 },
 ];
 
 const NAME_KEY = "codecourse_certificate_name";
@@ -17,7 +18,29 @@ function getUnlocked(trackId) {
 }
 
 function getCompletedAt(trackId) {
+  if (trackId === "ai-games") return localStorage.getItem("aigames_v1_completed_at");
   return localStorage.getItem(`codecourse_${trackId}_v2_completed_at`);
+}
+
+// AI小游戏没有"解锁到第几关"这个概念——7关从一开始就全部开放，不像其他
+// 四条赛道要按顺序解锁。判断"过了几关"看的是 ai-games-app.js 记的
+// aigames_v1_played_{id}（这一关的代码有没有真的从头到尾跑完过一次）。
+function getAiGamesPassedCount(count) {
+  let played = 0;
+  for (let id = 1; id <= count; id++) {
+    if (localStorage.getItem(`aigames_v1_played_${id}`) === "1") played++;
+  }
+  return played;
+}
+
+function getTrackPassedCount(t) {
+  if (t.id === "ai-games") return getAiGamesPassedCount(t.count);
+  return passedCount(getUnlocked(t.id), t.count);
+}
+
+function isTrackComplete(t) {
+  if (t.id === "ai-games") return getAiGamesPassedCount(t.count) >= t.count;
+  return getUnlocked(t.id) > t.count;
 }
 
 function formatDate(iso) {
@@ -267,12 +290,21 @@ function wireCompareSection() {
     try {
       const friendData = decodeProgressCode(code);
       const rows = TRACKS.map((t) => {
-        const mine = passedCount(getUnlocked(t.id), t.count);
-        const theirsRaw = friendData[`codecourse_${t.id}_v2_unlocked`];
-        // parseInt 解析不出数字（码被手动改坏了之类）就当1处理，而不是让 NaN
-        // 一路传下去，最后在页面上显示"TA NaN/12关"这种东西。
-        const theirsUnlocked = theirsRaw ? parseInt(theirsRaw, 10) || 1 : 1;
-        const theirs = passedCount(theirsUnlocked, t.count);
+        const mine = getTrackPassedCount(t);
+        let theirs;
+        if (t.id === "ai-games") {
+          // 朋友的进度码里，AI小游戏是一堆 aigames_v1_played_{id} 键，数一下有几个是"1"。
+          theirs = 0;
+          for (let id = 1; id <= t.count; id++) {
+            if (friendData[`aigames_v1_played_${id}`] === "1") theirs++;
+          }
+        } else {
+          const theirsRaw = friendData[`codecourse_${t.id}_v2_unlocked`];
+          // parseInt 解析不出数字（码被手动改坏了之类）就当1处理，而不是让 NaN
+          // 一路传下去，最后在页面上显示"TA NaN/12关"这种东西。
+          const theirsUnlocked = theirsRaw ? parseInt(theirsRaw, 10) || 1 : 1;
+          theirs = passedCount(theirsUnlocked, t.count);
+        }
         return `<li>${t.emoji} ${t.label}：你 ${mine}/${t.count} 关　·　TA ${theirs}/${t.count} 关</li>`;
       });
       resultBox.innerHTML = `<ul class="cert-track-list">${rows.join("")}</ul>`;
@@ -284,7 +316,7 @@ function wireCompareSection() {
 
 function render() {
   const root = document.getElementById("cert-root");
-  const completed = TRACKS.filter((t) => getUnlocked(t.id) > t.count);
+  const completed = TRACKS.filter(isTrackComplete);
 
   root.innerHTML = renderCertificateSection(completed) + renderWeakPointsSection() + renderCompareSection();
 
