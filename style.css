@@ -1408,6 +1408,19 @@ button:disabled {
   white-space: nowrap;
 }
 
+/* 640px以下侧栏会整个折叠成顶部横条，那个断点之上、平板宽度这段
+   （比如641-767px）侧栏还是固定260px不折叠——.editor-row虽然有
+   flex-wrap兜底，但两栏min-width加起来660px+侧栏260px+内容区左右
+   padding 72px，在这段宽度里意味着"就算换行成单栏"也可能窄于320px
+   最小宽度，逼出横向滚动。单独加这一档，宽度不够就提前让编辑区/
+   输出区各自占满一整行，不指望flex-wrap自然换行那点余量。 */
+@media (max-width: 900px) {
+  .editor-col,
+  .output-col {
+    min-width: 100%;
+  }
+}
+
 @media (max-width: 640px) {
   .app {
     flex-direction: column;

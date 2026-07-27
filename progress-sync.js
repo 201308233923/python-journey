@@ -324,6 +324,9 @@ function setupAccountUI() {
   const usernameInput = document.getElementById("account-username");
   const passwordInput = document.getElementById("account-password");
 
+  // 注册/登录按钮点了之后先禁用，等这次请求真正结束（不管成功失败）才恢复能点——
+  // 不禁用的话，网络慢的时候手抖多点几下，会同时发出好几个signUp/signInWithPassword
+  // 请求，谁先谁后回来不确定，容易出奇怪的状态。
   document.getElementById("account-signup-btn").addEventListener("click", async () => {
     const username = usernameInput.value.trim();
     const password = passwordInput.value;
@@ -331,18 +334,24 @@ function setupAccountUI() {
       setAccountMessage("用户名不能为空，密码至少6位。", true);
       return;
     }
+    const btn = document.getElementById("account-signup-btn");
+    btn.disabled = true;
     setAccountMessage("注册中...");
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: usernameToEmail(username),
-      password,
-    });
-    if (error) {
-      setAccountMessage("注册失败：" + (error.message.includes("already") ? "这个用户名已经被用过了，换一个或者直接登录。" : error.message), true);
-      return;
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: usernameToEmail(username),
+        password,
+      });
+      if (error) {
+        setAccountMessage("注册失败：" + (error.message.includes("already") ? "这个用户名已经被用过了，换一个或者直接登录。" : error.message), true);
+        return;
+      }
+      await pushProgressToCloud(data.user.id);
+      setAccountMessage("注册成功，已经把当前进度同步上去了！");
+      showLoggedInUI(data.user.email);
+    } finally {
+      btn.disabled = false;
     }
-    await pushProgressToCloud(data.user.id);
-    setAccountMessage("注册成功，已经把当前进度同步上去了！");
-    showLoggedInUI(data.user.email);
   });
 
   document.getElementById("account-login-btn").addEventListener("click", async () => {
@@ -352,19 +361,28 @@ function setupAccountUI() {
       setAccountMessage("请输入用户名和密码。", true);
       return;
     }
+    const btn = document.getElementById("account-login-btn");
+    btn.disabled = true;
     setAccountMessage("登录中...");
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    if (error) {
-      setAccountMessage("登录失败：用户名或密码不对。", true);
-      return;
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: usernameToEmail(username),
+        password,
+      });
+      if (error) {
+        setAccountMessage("登录失败：用户名或密码不对。", true);
+        return;
+      }
+      await pullProgressFromCloud(data.user.id, true);
+      // 登录会把本地进度换成云端的，页面上正在显示的关卡/题目状态可能已经跟
+      // 换过的数据对不上了，最简单可靠的办法就是刷新整个页面重新走一遍初始化。
+      // 这里不再额外弹alert()——inline的提示文字已经说清楚了，弹窗只是多此一举，
+      // 而且刷新前用户根本来不及看，之前那个alert反而挡住了下面这行文字。
+      setAccountMessage("登录成功，进度已经恢复，页面即将刷新...");
+      setTimeout(() => location.reload(), 600);
+    } finally {
+      btn.disabled = false;
     }
-    await pullProgressFromCloud(data.user.id, true);
-    setAccountMessage("登录成功，进度已经恢复！点确定后会刷新页面。");
-    alert("登录成功！点确定刷新页面查看恢复的进度。");
-    location.reload();
   });
 
   document.getElementById("account-sync-btn").addEventListener("click", async () => {

@@ -76,6 +76,10 @@ print(nums)`,
       if (r.code.includes("sorted(") || r.code.includes(".sort(")) {
         return { pass: false, message: "这一关不能用内置的 sorted() 或 .sort()，要自己写双层循环比较、交换来实现排序。" };
       }
+      const forLoopCount = (r.code.match(/\bfor\b/g) || []).length;
+      if (forLoopCount < 2) {
+        return { pass: false, message: "冒泡排序要用双层循环：外层控制轮数，内层两两比较相邻元素——代码里看起来只有一层循环，检查一下是不是漏了嵌套的内层for。" };
+      }
       if (!/nums\s*\[[^\]]*\]\s*>=?\s*nums\s*\[/.test(r.code)) {
         return { pass: false, message: "代码里好像没看到两个 nums[...] 元素直接比较大小，检查一下是不是真的在两两比较元素，而不是直接把排好的结果写死。" };
       }
