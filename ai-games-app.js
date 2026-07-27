@@ -332,13 +332,26 @@ async function runTurn() {
     feedback.classList.add("fail");
     feedback.textContent = explainError(err);
   } else {
-    terminalBox.textContent = visible;
+    // 有明确输赢的关卡（比如石头剪刀布）会在代码最后一行专门打印这个标记，
+    // 报告这一局到底是赢是输——不是所有关卡都会打印（比如聊天机器人、
+    // 创造游戏这种没有"赢/输"概念的关卡），没打印就按"正常完成"处理，
+    // 照常放礼花；打印了"LOSE"就不放礼花，换一句不带庆祝感的提示。
+    const outcomeMatch = visible.match(/\n?__GAME_OUTCOME__:(WIN|LOSE)\s*$/);
+    const displayText = outcomeMatch ? visible.slice(0, outcomeMatch.index) : visible;
+    const outcome = outcomeMatch ? outcomeMatch[1] : null;
+
+    terminalBox.textContent = displayText;
     inputRow.classList.add("hidden");
     startBtn.classList.add("hidden");
     restartBtn.classList.remove("hidden");
-    feedback.classList.add("success");
-    feedback.textContent = "玩完了！点'重新开始'可以再来一局。";
-    celebrate();
+    if (outcome === "LOSE") {
+      feedback.classList.add("fail");
+      feedback.textContent = "这局没赢——点'重新开始'再来一局，试试能不能翻盘。";
+    } else {
+      feedback.classList.add("success");
+      feedback.textContent = "玩完了！点'重新开始'可以再来一局。";
+      celebrate();
+    }
   }
 }
 

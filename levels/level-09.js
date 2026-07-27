@@ -21,6 +21,12 @@ print(favorites[1])
 print(favorites[2])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          if (!/=\s*\[.*\]/.test(r.code)) {
+            return { pass: false, message: "这一关要先创建一个列表（用方括号[]），检查一下代码里有没有类似 favorites = [...] 这样的写法。" };
+          }
+          if (!/\[\s*\d+\s*\]/.test(r.code)) {
+            return { pass: false, message: "这一关要用下标（比如 favorites[0]）取出列表里的每一项，检查一下代码里有没有用方括号+数字。" };
+          }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length >= 3) return { pass: true, message: "列表学会了，这是存一堆数据最常用的方式。" };
           return { pass: false, message: `目前只打印了${lines.length}行，列表里至少放3个东西，然后都打印出来。` };
