@@ -9,6 +9,38 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <svg class="corner-logo no-print" width="36" height="36" viewBox="0 0 56 56" fill="none" role="img" aria-label="码芽">
+    <circle cx="28" cy="28" r="27" fill="var(--panel)" stroke="var(--border)" stroke-width="1" />
+    <path d="M28 40 L28 24" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" />
+    <path d="M28 26 C20 26, 16 20, 18 14 C24 14, 28 20, 28 26 Z" fill="var(--accent)" />
+    <path d="M28 26 C36 26, 40 20, 38 14 C32 14, 28 20, 28 26 Z" fill="var(--accent)" />
+  </svg>
+
+  <div class="corner-account account-box no-print">
+    <button id="account-toggle-btn" class="account-avatar-btn">
+      <span id="account-avatar" class="account-avatar">👤</span>
+      <span id="account-avatar-label" class="account-avatar-label">登录 / 注册</span>
+    </button>
+    <div id="account-panel" class="account-panel hidden">
+      <div id="account-logged-out">
+        <input id="account-username" type="text" placeholder="用户名（随便起）" autocomplete="off" />
+        <input id="account-password" type="password" placeholder="密码（至少6位）" autocomplete="off" />
+        <div class="account-btn-row">
+          <button id="account-signup-btn">注册</button>
+          <button id="account-login-btn" class="secondary">登录</button>
+        </div>
+      </div>
+      <div id="account-logged-in" class="hidden">
+        <p id="account-status" class="account-status"></p>
+        <div class="account-btn-row">
+          <button id="account-sync-btn">☁️ 立即同步</button>
+          <button id="account-logout-btn" class="secondary">退出登录</button>
+        </div>
+      </div>
+      <div id="account-message" class="account-message"></div>
+    </div>
+  </div>
+
   <div class="landing">
     <div class="landing-inner cert-page">
       <a class="back-link no-print" href="index.html" id="back-link">← 返回</a>
