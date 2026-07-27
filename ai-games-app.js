@@ -6,7 +6,10 @@ let session = null; // { code, seed, inputList } while a game is in progress
 // 界面显示的内容可能跟真实游戏状态对不上。这个标志位保证同一时间只有一次在跑。
 let turnInFlight = false;
 
-const codeKey = (id) => `aigames_v1_code_${id}`;
+// v2：游戏5/6等关卡的代码内容后续改过好几版（比如水果分类器从2种水果的
+// 简单示例改成9种真实水果+排除法），旧版本存下来的代码不再匹配最新的关卡
+// 说明文字，换个key名让这些旧存档自动失效，重新从最新的官方代码开始。
+const codeKey = (id) => `aigames_v2_code_${id}`;
 
 function explainError(err) {
   if (!err) return "";
