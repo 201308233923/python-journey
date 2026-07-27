@@ -5,6 +5,7 @@
 //    我们不会存储、也看不到明文密码。
 
 const PROGRESS_SYNC_PREFIXES = ["codecourse_", "aigames_"];
+const isProgressKey = (k) => PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p));
 const SUPABASE_URL = "https://gitdlqnkwtblhplrphsv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpdGRscW5rd3RibGhwbHJwaHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NzIwNTIsImV4cCI6MjA5OTA0ODA1Mn0.Hv-Q5geUc5-f-UvEtigAl2684JrLMdxrYCPs_MRnfc8";
 const FAKE_EMAIL_DOMAIN = "mayaa-users.app";
@@ -47,7 +48,7 @@ async function logVisitOncePerDay() {
 function exportProgressCode() {
   const data = {};
   Object.keys(localStorage).forEach((k) => {
-    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+    if (isProgressKey(k)) {
       data[k] = localStorage.getItem(k);
     }
   });
@@ -61,7 +62,7 @@ function importProgressCode(code) {
   const keys = Object.keys(data);
   if (keys.length === 0) throw new Error("empty");
   keys.forEach((k) => {
-    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+    if (isProgressKey(k)) {
       localStorage.setItem(k, data[k]);
     }
   });
@@ -86,7 +87,7 @@ function usernameToEmail(username) {
 function gatherLocalData() {
   const data = {};
   Object.keys(localStorage).forEach((k) => {
-    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+    if (isProgressKey(k)) {
       data[k] = localStorage.getItem(k);
     }
   });
@@ -95,7 +96,7 @@ function gatherLocalData() {
 
 function restoreLocalData(data) {
   Object.keys(data).forEach((k) => {
-    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+    if (isProgressKey(k)) {
       localStorage.setItem(k, data[k]);
     }
   });
@@ -108,7 +109,7 @@ function restoreLocalData(data) {
 // "初级解锁到第6关"这条数据，B一旦触发自动同步，就会把A的进度当成自己的推上云端。
 function clearLocalProgressData() {
   Object.keys(localStorage).forEach((k) => {
-    if (PROGRESS_SYNC_PREFIXES.some((p) => k.startsWith(p))) {
+    if (isProgressKey(k)) {
       localStorage.removeItem(k);
     }
   });
