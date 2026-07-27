@@ -355,7 +355,29 @@ except Exception as e:
 json.dumps([_buf.getvalue(), _err])
 `;
 
+// Pyodide（几MB的Python运行环境）现在改成懒加载——点第一次"运行"才真的去下载，
+// 不是一打开学习页面就自动下载，省得孩子只是看看题目说明、根本没打算运行代码，
+// 也在偷偷消耗流量。#loading这个全屏遮罩原来是"打开页面"时用的，现在复用成
+// "点运行但环境还没就绪"时用——加载失败一样会走到showError()那套重试逻辑，
+// 只是触发时机从"打开页面"变成了"点运行"。
+async function ensurePyodideReady() {
+  if (pyodide) return true;
+  document.getElementById("level-view").classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
+  document.getElementById("loading-text").textContent = "Python 运行环境加载中，第一次运行会花几秒钟...";
+  pyodide = await loadPyodideWithFallback();
+  if (!pyodide) return false; // 失败了留在这个屏幕上，让人看到错误信息和"重新加载"按钮
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("level-view").classList.remove("hidden");
+  return true;
+}
+
 async function runCurrentLevel() {
+  if (!pyodide) {
+    const ready = await ensurePyodideReady();
+    if (!ready) return;
+  }
+
   const level = LEVELS.find((l) => l.id === currentLevelId);
   const variant = currentVariant || resolveVariant(level);
   const code = document.getElementById("code-editor").value;
@@ -649,9 +671,6 @@ async function loadPyodideWithFallback() {
 async function init() {
   setupButtons();
   renderSidebar();
-
-  pyodide = await loadPyodideWithFallback();
-  if (!pyodide) return;
 
   // 如果之前登录过账号（Supabase会话是持久化的），先把云端的真实进度拉下来盖掉本地缓存，
   // 这样已经登录过的设备/浏览器直接打开这个学习页面，看到的也是最新进度——不用非得先去

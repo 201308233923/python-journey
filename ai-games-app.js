@@ -291,7 +291,27 @@ except Exception as e:
 json.dumps([_buf.getvalue(), _err])
 `;
 
+// Pyodide（几MB的Python运行环境）现在改成懒加载——点第一次"开始游戏"才真的去
+// 下载，不是一打开AI小游戏页面就自动下载。#loading这个全屏遮罩原来是"打开页面"
+// 时用的，现在复用成"点开始游戏但环境还没就绪"时用。
+async function ensurePyodideReady() {
+  if (pyodide) return true;
+  document.getElementById("level-view").classList.add("hidden");
+  document.getElementById("loading").classList.remove("hidden");
+  document.getElementById("loading-text").textContent = "Python 运行环境加载中，第一次运行会花几秒钟...";
+  pyodide = await loadPyodideWithFallback();
+  if (!pyodide) return false;
+  document.getElementById("loading").classList.add("hidden");
+  document.getElementById("level-view").classList.remove("hidden");
+  return true;
+}
+
 async function runTurn() {
+  if (!pyodide) {
+    const ready = await ensurePyodideReady();
+    if (!ready) return;
+  }
+
   const terminalBox = document.getElementById("terminal-box");
   const inputRow = document.getElementById("turn-input-row");
   const startBtn = document.getElementById("start-game-btn");
@@ -518,9 +538,6 @@ async function loadPyodideWithFallback() {
 
 async function init() {
   setupButtons();
-
-  pyodide = await loadPyodideWithFallback();
-  if (!pyodide) return;
 
   // 跟 app.js 同一个道理：登录过账号的话，先把云端进度拉下来盖掉本地缓存，
   // 这个promise是 progress-sync.js 定义的，只能在这里（已经过了第一个await）之后引用它。
