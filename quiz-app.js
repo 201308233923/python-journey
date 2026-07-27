@@ -112,7 +112,13 @@ function renderQuestion() {
         .map((opt, i) => `<button class="quiz-option" data-i="${i}">${escapeHtml(opt)}</button>`)
         .join("")}
     </div>
+    <div id="quiz-answer-explain" class="quiz-answer-explain hidden"></div>
   `;
+  const goNext = () => {
+    currentQ += 1;
+    if (currentQ < sessionQuiz.length) renderQuestion();
+    else renderResult();
+  };
   root.querySelectorAll(".quiz-option").forEach((btn) => {
     btn.addEventListener("click", () => {
       const i = parseInt(btn.dataset.i, 10);
@@ -126,13 +132,30 @@ function renderQuestion() {
         btn.classList.add("correct");
       }
       root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
-      setTimeout(() => {
-        currentQ += 1;
-        if (currentQ < sessionQuiz.length) renderQuestion();
-        else renderResult();
-      }, 700);
+      if (correct) {
+        setTimeout(goNext, 700);
+      } else {
+        // 答错了不自动跳走——答对的绿色高亮+700ms一晃就过去了，答错的时候
+        // 至少得让人有机会看清楚"正确答案到底是哪个"，所以这里换成手动点
+        // "下一题"才继续，不设自动计时器。
+        showWrongAnswerExplain(item.options[item.answer], goNext);
+      }
     });
   });
+}
+
+// 答错时补一句"正确答案是：xxx"，并且换成手动点"下一题"才继续——
+// 光靠选项变绿/变红一晃而过（700ms自动跳下一题），很容易根本没看清就
+// 翻过去了，尤其是要跟好几个选项对比着看的时候。
+function showWrongAnswerExplain(correctText, onNext) {
+  const box = document.getElementById("quiz-answer-explain");
+  if (!box) return onNext();
+  box.classList.remove("hidden");
+  box.innerHTML = `
+    <p>✅ 正确答案：${escapeHtml(correctText)}</p>
+    <button class="quiz-btn-primary" id="quiz-next-btn">下一题 →</button>
+  `;
+  document.getElementById("quiz-next-btn").addEventListener("click", onNext);
 }
 
 function renderAccountGate(destinationUrl) {
@@ -335,7 +358,24 @@ function renderDailyReviewQuestion() {
         .map((opt, i) => `<button class="quiz-option" data-i="${i}">${escapeHtml(opt)}</button>`)
         .join("")}
     </div>
+    <div id="quiz-answer-explain" class="quiz-answer-explain hidden"></div>
   `;
+  const goNext = () => {
+    dailyReviewIndex += 1;
+    if (dailyReviewIndex < dailyReviewQuiz.length) {
+      renderDailyReviewQuestion();
+    } else if (dailyReviewWrongQueue.length > 0) {
+      // 这一轮问完了，但还有答错的——把这些题重新组成下一轮，打乱顺序
+      // 再问一遍，一直循环到某一轮全部答对为止。
+      dailyReviewQuiz = shuffle(dailyReviewWrongQueue).map(shuffleQuestion);
+      dailyReviewWrongQueue = [];
+      dailyReviewIndex = 0;
+      dailyReviewRound += 1;
+      renderDailyReviewQuestion();
+    } else {
+      renderDailyReviewResult();
+    }
+  };
   root.querySelectorAll(".quiz-option").forEach((btn) => {
     btn.addEventListener("click", () => {
       const i = parseInt(btn.dataset.i, 10);
@@ -352,22 +392,14 @@ function renderDailyReviewQuestion() {
         dailyReviewWrongQueue.push(pickRetryVariant(item));
       }
       root.querySelectorAll(".quiz-option").forEach((b) => (b.disabled = true));
-      setTimeout(() => {
-        dailyReviewIndex += 1;
-        if (dailyReviewIndex < dailyReviewQuiz.length) {
-          renderDailyReviewQuestion();
-        } else if (dailyReviewWrongQueue.length > 0) {
-          // 这一轮问完了，但还有答错的——把这些题重新组成下一轮，打乱顺序
-          // 再问一遍，一直循环到某一轮全部答对为止。
-          dailyReviewQuiz = shuffle(dailyReviewWrongQueue).map(shuffleQuestion);
-          dailyReviewWrongQueue = [];
-          dailyReviewIndex = 0;
-          dailyReviewRound += 1;
-          renderDailyReviewQuestion();
-        } else {
-          renderDailyReviewResult();
-        }
-      }, 700);
+      if (correct) {
+        setTimeout(goNext, 700);
+      } else {
+        // 同一个知识点答错了会在这一轮结束后马上重考一次变体题——但如果每次
+        // 重考都不给任何新信息，就只是在"猜到对为止"，这里补一句正确答案，
+        // 至少这一轮结束前能看到一次"为什么"。
+        showWrongAnswerExplain(item.options[item.answer], goNext);
+      }
     });
   });
 }

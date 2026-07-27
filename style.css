@@ -402,6 +402,25 @@ body {
   content: "✗";
 }
 
+.quiz-answer-explain {
+  max-width: 480px;
+  margin: 14px auto 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  text-align: left;
+}
+
+.quiz-answer-explain p {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.quiz-answer-explain .quiz-btn-primary {
+  width: 100%;
+}
+
 .sidebar {
   width: 260px;
   flex-shrink: 0;
