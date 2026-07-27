@@ -3,12 +3,6 @@ let currentQ = 0;
 let sessionQuiz = [];
 let wrongTargets = [];
 
-function escapeHtml(s) {
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
-
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {

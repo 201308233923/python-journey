@@ -5,12 +5,6 @@
 
 const TOTAL_LEVELS_MAX = 12 + 6 + 6 + 8; // 初级+进阶+高级+调试挑战
 
-function escapeHtml(s) {
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
-
 function medalFor(rank) {
   if (rank === 1) return "🥇";
   if (rank === 2) return "🥈";

@@ -1,9 +1,3 @@
-function escapeHtml(s) {
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
-
 let pyodide = null;
 let currentLevelId = null;
 let session = null; // { code, seed, inputList } while a game is in progress
@@ -49,55 +43,6 @@ function explainError(err) {
       : "字典里没有找到对应的键。第一次用某个键之前，要先给它一个初始值，或者用 .get(键, 默认值) 来安全取值。";
   }
   return `程序运行出错了：${err}`;
-}
-
-function celebrate() {
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-  const canvas = document.createElement("canvas");
-  canvas.className = "confetti-canvas";
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  document.body.appendChild(canvas);
-  const ctx = canvas.getContext("2d");
-
-  const colors = ["#4f6df5", "#1a7f4b", "#f5b942", "#e0554f", "#7b93ff", "#6fdf9d"];
-  const particles = Array.from({ length: 90 }, () => ({
-    x: Math.random() * canvas.width,
-    y: -20 - Math.random() * canvas.height * 0.4,
-    w: 5 + Math.random() * 5,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    vx: -2.5 + Math.random() * 5,
-    vy: 2.5 + Math.random() * 2.5,
-    rotation: Math.random() * 360,
-    vr: -8 + Math.random() * 16,
-  }));
-
-  const start = performance.now();
-  const duration = 1600;
-
-  function frame(now) {
-    const elapsed = now - start;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vy += 0.05;
-      p.rotation += p.vr;
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rotation * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.w / 2, -p.w / 2, p.w, p.w * 0.6);
-      ctx.restore();
-    });
-    if (elapsed < duration) {
-      requestAnimationFrame(frame);
-    } else {
-      canvas.remove();
-    }
-  }
-  requestAnimationFrame(frame);
 }
 
 function renderSidebar() {

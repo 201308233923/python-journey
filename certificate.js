@@ -50,12 +50,6 @@ function formatDate(iso) {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
-function escapeHtml(s) {
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
-
 function passedCount(unlocked, count) {
   return Math.min(Math.max(unlocked - 1, 0), count);
 }

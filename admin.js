@@ -5,12 +5,6 @@
 // 不直接读任何一张原始数据表（包括 admin_user_list() 返回的用户名单，也是走
 // 这同一套server端owner校验，不是前端自己拼查询）。
 
-function escapeHtml(s) {
-  const div = document.createElement("div");
-  div.textContent = s;
-  return div.innerHTML;
-}
-
 function renderChart(signupsByDay) {
   if (!signupsByDay || signupsByDay.length === 0) {
     return `<p class="admin-chart-empty">最近30天还没有新注册。</p>`;
