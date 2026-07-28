@@ -454,6 +454,21 @@ function setupButtons() {
   document.getElementById("turn-input").addEventListener("keydown", (e) => {
     if (e.key === "Enter") submitTurn();
   });
+
+  // 其他4条赛道（初级/进阶/高级/调试挑战）侧栏都有"重置进度"，AI小游戏这边
+  // 之前漏掉了——玩家想清空重新玩（包括教过AI的新水果/新规则），没有入口。
+  const resetProgressBtn = document.getElementById("reset-progress-btn");
+  if (resetProgressBtn) {
+    resetProgressBtn.addEventListener("click", () => {
+      const ok = confirm("确定要清空所有游戏的进度和代码，重新开始吗？");
+      if (!ok) return;
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("aigames_"))
+        .forEach((k) => localStorage.removeItem(k));
+      renderSidebar();
+      selectLevel(LEVELS[0].id);
+    });
+  }
 }
 
 const PYODIDE_TIMEOUT_MS = 30000;
