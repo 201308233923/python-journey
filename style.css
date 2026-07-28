@@ -92,12 +92,13 @@ body {
   padding: 24px;
 }
 
-/* 首页（水平测试/每日复习）没有侧栏，账号头像固定在右上角，
-   保证不管当前显示的是测试页还是复习选择页，都有地方能退出登录/换账号。 */
+/* 首页（水平测试/每日复习）没有侧栏，账号头像固定在左上角、logo正下方，
+   保证不管当前显示的是测试页还是复习选择页，都有地方能退出登录/换账号。
+   跟.corner-logo同在左侧上下排列，不会互相遮挡。 */
 .corner-account {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: 64px; /* logo是36px高、从top:16px开始，16+36+12(间距)=64 */
+  left: 16px;
   width: 190px;
   z-index: 20;
   /* 账号面板展开（登录表单）之后可能比较高——固定定位的元素没有自己的滚动，
@@ -105,8 +106,8 @@ body {
      完全够不到。限个最大高度，超出了自己滚动，而不是被截断摸不到。
      用dvh（见上面.app的注释）而不是vh，保证算的是真实可见高度，
      不会因为地址栏收起/展开导致算出来的上限时大时小。 */
-  max-height: calc(100vh - 32px);
-  max-height: calc(100dvh - 32px);
+  max-height: calc(100vh - 80px);
+  max-height: calc(100dvh - 80px);
   overflow-y: auto;
 }
 
@@ -1485,11 +1486,11 @@ button:disabled {
   }
 
   .corner-account {
-    top: 10px;
-    right: 10px;
+    top: 46px; /* logo是28px高、从top:10px开始，10+28+8(间距)=46 */
+    left: 10px;
     width: 168px;
-    max-height: calc(100vh - 20px);
-    max-height: calc(100dvh - 20px);
+    max-height: calc(100vh - 56px);
+    max-height: calc(100dvh - 56px);
   }
 
   .corner-account .account-avatar-label {
