@@ -408,6 +408,12 @@ function setupAccountUI() {
       // 未同步的本地改动——跟直接断网关闭浏览器的效果一样，不是这次改动能解决的。
     }
     await supabaseClient.auth.signOut();
+    // 退出登录不该只是界面上显示"未登录"——本地localStorage里还留着刚才这个账号
+    // 的关卡进度，不清掉的话，共享电脑上退出登录之后随便一个人不登录直接玩，
+    // 看到的还是上一个人的进度，等于退出登录形同虚设。云端数据不会丢
+    // （前面已经补推过一次），下次重新登录同一个账号会再从云端拉回来。
+    clearLocalProgressData();
+    localStorage.removeItem(SYNCED_USER_ID_KEY);
     showLoggedOutUI();
     setAccountMessage("");
     // 首页把"是否显示复习/继续学选择页"跟登录状态绑在一起，退出登录之后光改头像
