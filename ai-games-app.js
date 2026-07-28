@@ -412,6 +412,10 @@ function setupButtons() {
   document.getElementById("reset-code-btn").addEventListener("click", () => {
     const level = LEVELS.find((l) => l.id === currentLevelId);
     loadCodeIntoEditor(level, document.getElementById("code-editor"), null);
+    // 光改编辑框显示的内容还不够——localStorage里存的还是重置前的旧代码，
+    // 不清掉的话，这一关的页面一刷新，selectLevel()又会把这份旧存档读回来，
+    // "重置代码"看起来生效了，其实只是没刷新页面之前的错觉。
+    localStorage.removeItem(codeKey(currentLevelId));
   });
 
   const saveBtn = document.getElementById("save-btn");

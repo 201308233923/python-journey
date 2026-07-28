@@ -473,12 +473,17 @@ function setupButtons() {
     const variant = currentVariant || resolveVariant(level);
     document.getElementById("code-editor").value = variant.starter;
     syncCodeHighlight();
+    // 光改编辑框显示的内容还不够——localStorage里存的还是重置前的旧代码，
+    // 不清掉的话，关卡页面一刷新，selectLevel()又会把这份旧存档读回来，
+    // "重置代码"看起来生效了，其实只是没刷新页面之前的错觉。
+    localStorage.removeItem(codeKey(level.id));
     // 需要模拟输入的关卡，"重置代码"/"恢复原样"也得把输入框一起复位——
     // 不然代码恢复原样了，输入框还留着之前乱试的内容，跑出来的结果对不上，
     // 看起来像是"恢复"没生效。
     if (variant.needsInput) {
       const inputEditor = document.getElementById("input-editor");
       if (inputEditor) inputEditor.value = variant.defaultInput || "";
+      localStorage.removeItem(inputKey(level.id));
     }
   });
 
