@@ -6,10 +6,12 @@ let session = null; // { code, seed, inputList } while a game is in progress
 // 界面显示的内容可能跟真实游戏状态对不上。这个标志位保证同一时间只有一次在跑。
 let turnInFlight = false;
 
-// v2：游戏5/6等关卡的代码内容后续改过好几版（比如水果分类器从2种水果的
-// 简单示例改成9种真实水果+排除法），旧版本存下来的代码不再匹配最新的关卡
-// 说明文字，换个key名让这些旧存档自动失效，重新从最新的官方代码开始。
-const codeKey = (id) => `aigames_v2_code_${id}`;
+// v3：v2那次换key只是treat symptom——根本原因是"开始游戏"/"保存"以前不管
+// 代码有没有真的被改过都会存档，导致刚玩过一次但没手动改代码的人，也会被
+// 那份"没改过的官方代码快照"卡住，官方代码之后再更新也看不到。这次连同
+// saveCodeIfEdited()一起修：只有真的编辑过才存档，配合这次换key把v2期间
+// 已经被误存的快照也一并冲掉，以后关卡代码更新不用再手动换key了。
+const codeKey = (id) => `aigames_v3_code_${id}`;
 
 function explainError(err) {
   if (!err) return "";
@@ -345,11 +347,24 @@ function runTurnGuarded() {
   });
 }
 
+// 只有代码真的跟官方版本不一样才存档，一字不差就把之前可能存过的旧档清掉——
+// 不然哪怕玩家完全没动代码，也会把"这次看到的官方代码"存死成"玩家自己的代码"，
+// 以后官方代码再更新，没手动改过的人也会一直卡在存档那一份旧版本上，
+// 每次关卡代码更新都得手动换一次codeKey才能冲掉，treat symptom不如治本。
+function saveCodeIfEdited(id, code, level) {
+  if (code === level.code) {
+    localStorage.removeItem(codeKey(id));
+  } else {
+    localStorage.setItem(codeKey(id), code);
+  }
+}
+
 function startGame() {
   if (turnInFlight) return;
   const codeEditor = document.getElementById("code-editor");
   const code = getEditorText(codeEditor);
-  localStorage.setItem(codeKey(currentLevelId), code);
+  const level = LEVELS.find((l) => l.id === currentLevelId);
+  saveCodeIfEdited(currentLevelId, code, level);
   codeEditor.contentEditable = "false";
   setCodeSectionOpen(false);
 
@@ -402,7 +417,8 @@ function setupButtons() {
   const saveBtn = document.getElementById("save-btn");
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
-      localStorage.setItem(codeKey(currentLevelId), getEditorText(document.getElementById("code-editor")));
+      const level = LEVELS.find((l) => l.id === currentLevelId);
+      saveCodeIfEdited(currentLevelId, getEditorText(document.getElementById("code-editor")), level);
 
       const originalText = saveBtn.textContent;
       saveBtn.disabled = true;
