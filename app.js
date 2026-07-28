@@ -14,6 +14,18 @@ const variantSeenKey = (id) => `codecourse_${TRACK_ID}_variantseen_${id}`;
 // 重置之后如果又卡在这一关，应该能再反馈一次，不是永久哑掉。
 const stuckReportedKey = (id) => `codecourse_${TRACK_ID}_v2_stuckreported_${id}`;
 
+// 只有内容真的跟这一关的官方骨架/默认模拟输入不一样才存档，一字不差就把之前
+// 可能存过的旧档清掉——不然哪怕玩家完全没编辑过，也会把"这次看到的官方内容"
+// 存死成"玩家自己的内容"，以后关卡骨架/默认输入再更新，没编辑过的人也看不到
+// 最新版本（AI小游戏那边就是这个模式的bug，这里提前用同样的方式修掉）。
+function saveIfEdited(key, value, officialValue) {
+  if (value === officialValue) {
+    localStorage.removeItem(key);
+  } else {
+    localStorage.setItem(key, value);
+  }
+}
+
 // 语法高亮：把.code-highlight这层背景装饰的内容，跟真正的#code-editor
 // textarea当前的文字、高度都同步一遍。每次程序改了textarea.value（选关卡/
 // 重置代码/载入存档）之后，和每次用户自己打字（input事件）之后，都要调用。
@@ -333,8 +345,8 @@ async function runCurrentLevel() {
   const code = document.getElementById("code-editor").value;
   const inputRaw = variant.needsInput ? document.getElementById("input-editor").value : "";
 
-  localStorage.setItem(codeKey(level.id), code);
-  if (variant.needsInput) localStorage.setItem(inputKey(level.id), inputRaw);
+  saveIfEdited(codeKey(level.id), code, variant.starter);
+  if (variant.needsInput) saveIfEdited(inputKey(level.id), inputRaw, variant.defaultInput || "");
 
   const runBtn = document.getElementById("run-btn");
   runBtn.disabled = true;
@@ -528,9 +540,9 @@ function setupButtons() {
     saveBtn.addEventListener("click", async () => {
       const level = LEVELS.find((l) => l.id === currentLevelId);
       const variant = currentVariant || resolveVariant(level);
-      localStorage.setItem(codeKey(level.id), document.getElementById("code-editor").value);
+      saveIfEdited(codeKey(level.id), document.getElementById("code-editor").value, variant.starter);
       if (variant.needsInput) {
-        localStorage.setItem(inputKey(level.id), document.getElementById("input-editor").value);
+        saveIfEdited(inputKey(level.id), document.getElementById("input-editor").value, variant.defaultInput || "");
       }
 
       const originalText = saveBtn.textContent;
