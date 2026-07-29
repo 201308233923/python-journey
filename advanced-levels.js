@@ -73,14 +73,18 @@ print(nums)`,
     why: `为什么不直接用 sorted()？内置的排序函数背后其实也是类似的比较+交换逻辑（只是更高效），自己实现一遍冒泡排序，是为了真正理解"排序"到底是怎么发生的，而不只是会调用一个黑盒函数。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (r.code.includes("sorted(") || r.code.includes(".sort(")) {
+      // 跟第1关一样，先去掉注释再检测——不然把"sorted("之类的关键词随便塞进
+      // 注释里，就能骗过/绕开这些检查（比如靠注释凑够for的次数，代码里其实
+      // 一层循环都没有，nums排好的结果直接写死打印）。
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (codeWithoutComments.includes("sorted(") || codeWithoutComments.includes(".sort(")) {
         return { pass: false, message: "这一关不能用内置的 sorted() 或 .sort()，要自己写双层循环比较、交换来实现排序。" };
       }
-      const forLoopCount = (r.code.match(/\bfor\b/g) || []).length;
+      const forLoopCount = (codeWithoutComments.match(/\bfor\b/g) || []).length;
       if (forLoopCount < 2) {
         return { pass: false, message: "冒泡排序要用双层循环：外层控制轮数，内层两两比较相邻元素——代码里看起来只有一层循环，检查一下是不是漏了嵌套的内层for。" };
       }
-      if (!/nums\s*\[[^\]]*\]\s*>=?\s*nums\s*\[/.test(r.code)) {
+      if (!/nums\s*\[[^\]]*\]\s*>=?\s*nums\s*\[/.test(codeWithoutComments)) {
         return { pass: false, message: "代码里好像没看到两个 nums[...] 元素直接比较大小，检查一下是不是真的在两两比较元素，而不是直接把排好的结果写死。" };
       }
       if (r.stdout.includes("[1, 2, 5, 8, 9]")) {
@@ -123,7 +127,8 @@ print(result)`,
     why: `为什么计算机能这样"移位"加密文字？因为计算机眼里字母本来就是数字（ord值），文字处理本质上都是数字处理——这也是为什么后面能学到的字符串方法，底层都能用数字运算来实现。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!/chr\s*\(\s*ord\s*\(/.test(r.code)) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/chr\s*\(\s*ord\s*\(/.test(codeWithoutComments)) {
         return { pass: false, message: "代码里好像没看到 chr(ord(...)+shift) 这种转换写法，检查一下是不是把'khoor'直接写死了，而不是真的做了字母转换。" };
       }
       if (r.stdout.includes("khoor")) {
@@ -188,7 +193,8 @@ print(account.balance)`,
     why: `为什么不直接用几个变量存余额？类能把"数据"（余额）和"能对这个数据做的操作"（存、取）绑在一起，创建多个账户时，每个账户的余额互不干扰——这是面向对象编程的核心价值：把相关的东西打包成一个"物"。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("class BankAccount") || !r.code.includes(".deposit(") || !r.code.includes(".withdraw(")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("class BankAccount") || !codeWithoutComments.includes(".deposit(") || !codeWithoutComments.includes(".withdraw(")) {
         return { pass: false, message: "代码里好像没有真的定义并用到 BankAccount 类的 deposit/withdraw 方法，检查一下是不是把70直接写死了。" };
       }
       if (r.stdout.includes("70")) {
@@ -242,7 +248,8 @@ binary_guess(42)`,
     why: `为什么二分法比一个个数字试快这么多？每猜一次就排除一半的可能性——100个数字最多猜7次，1亿个数字最多也只要27次左右。这种"每次砍半"的思路（也叫对数复杂度）是很多高效算法的核心。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("while") || !r.code.includes("//")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("//")) {
         return { pass: false, message: "代码里要用 while 循环和 (low+high)//2 算中间值，检查一下是不是把结果直接写死了。" };
       }
       const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -285,10 +292,11 @@ print(best)`,
     why: `为什么"只看最近的"有时候比"看全部历史"更好？因为很多真实场景里，最近的行为更能代表现在的趋势——推荐系统、股票预测、天气预报都更看重近期数据，这叫"时间衰减"，是数据分析里很常见的思路。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("-3:")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("-3:")) {
         return { pass: false, message: "代码里好像没有用切片取最后3个（history[-3:]），检查一下是不是把'布'直接写死了。" };
       }
-      if (!r.code.includes("{") || !(r.code.includes(".get(") || r.code.includes("+= 1") || r.code.includes("+=1"))) {
+      if (!codeWithoutComments.includes("{") || !(codeWithoutComments.includes(".get(") || codeWithoutComments.includes("+= 1") || codeWithoutComments.includes("+=1"))) {
         return { pass: false, message: "这一关要用字典统计次数（比如 counts[x] = counts.get(x, 0) + 1），检查一下代码里有没有真的统计出现次数，而不是直接把'布'写死。" };
       }
       if (r.stdout.includes("布")) {
