@@ -24,7 +24,8 @@ add(3, 5)
 add(10, 20)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bdef\s+\w+\s*\(/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bdef\s+\w+\s*\(/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用 def 定义函数，这一关的重点是把计算逻辑包进函数里，而不是直接打印结果。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -56,7 +57,8 @@ greet()
 greet("小明")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/def\s+\w+\([^)]*=\s*["']/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/def\s+\w+\([^)]*=\s*["']/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要给参数设置默认值（比如 def greet(name=\"朋友\"):），检查一下有没有在括号里写等号。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -94,10 +96,11 @@ check_age(20)
 check_age(10)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bdef\s+\w+\s*\(/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bdef\s+\w+\s*\(/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用 def 定义函数，检查一下写法。" };
           }
-          if (!/\bif\b/.test(r.code)) {
+          if (!/\bif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关函数内部要用 if 判断，检查一下有没有写。" };
           }
           // "未成年"本身就包含"成年"两个字，不能直接用 includes("成年") 判断——
@@ -133,10 +136,11 @@ result = square(4)
 print(result * 2)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("return")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("return")) {
             return { pass: false, message: "这一关要用 return 返回结果，而不是在函数内部print，检查一下代码里有没有 return。" };
           }
-          if (!r.code.includes("*")) {
+          if (!codeWithoutComments.includes("*")) {
             return { pass: false, message: "结果要用乘法算出来，检查一下代码里有没有用到 * 号。" };
           }
           if (r.stdout.includes("32")) {
@@ -170,7 +174,8 @@ print_multiples(2)   # 2, 4, 6</pre>
 print_multiples(3)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bdef\s+\w+\s*\(/.test(r.code) || !/\bfor\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bdef\s+\w+\s*\(/.test(codeWithoutComments) || !/\bfor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关的函数内部要用 for 循环，检查一下代码里有没有同时用到 def 和 for。" };
           }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -210,10 +215,11 @@ def quadruple(n):
 print(quadruple(3))`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if ((r.code.match(/\bdef\b/g) || []).length < 2) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if ((codeWithoutComments.match(/\bdef\b/g) || []).length < 2) {
             return { pass: false, message: "这一关要写两个函数（double 和 quadruple），检查一下是不是只写了一个 def。" };
           }
-          if (!r.code.includes("return")) {
+          if (!codeWithoutComments.includes("return")) {
             return { pass: false, message: "这一关要用 return 返回结果，检查一下两个函数里有没有都用到。" };
           }
           if (r.stdout.includes("12")) {

@@ -23,7 +23,8 @@ while count >= 1:
     count = count - 1`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while")) {
             return { pass: false, message: "代码里好像没有用 while 循环，检查一下是不是把10行结果直接写死了。" };
           }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -61,10 +62,11 @@ while total < 50:
 print(total)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while")) {
             return { pass: false, message: "代码里好像没有用 while 循环，检查一下有没有真的循环累加，而不是直接把答案写死。" };
           }
-          if (!r.code.includes("+=") && !/\w+\s*=\s*\w+\s*\+/.test(r.code)) {
+          if (!codeWithoutComments.includes("+=") && !/\w+\s*=\s*\w+\s*\+/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要在循环里累加 total，检查一下有没有用 total += count 这样的写法。" };
           }
           if (r.stdout.includes("55")) {
@@ -97,10 +99,11 @@ while True:
         break`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("break")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("break")) {
             return { pass: false, message: "这一关要用 break 跳出 while True 循环，检查一下代码里有没有 break。" };
           }
-          if (!/while\s+True/.test(r.code)) {
+          if (!/while\s+True/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 while True: 作为循环条件，检查一下有没有写对。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -138,7 +141,8 @@ while n <= 20:
 print(count)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !/\bif\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !/\bif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要在 while 循环里嵌套 if 判断，检查一下代码里有没有两者都用到。" };
           }
           if (r.stdout.includes("10")) {
@@ -174,7 +178,8 @@ while num > 1:
 print(steps)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("//")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("//")) {
             return { pass: false, message: "这一关要用 while 循环 + 整除（//）不断减半，检查一下代码里有没有都用到。" };
           }
           // 用 \b6\b 而不是 includes("6")：光查子串的话，答案错成16、26、60这些
@@ -203,10 +208,11 @@ while items:
     print(items.pop())`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes(".pop(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes(".pop(")) {
             return { pass: false, message: "这一关要用 .pop() 取出并删除列表最后一项，检查一下代码里有没有用到。" };
           }
-          if (!r.code.includes("while")) {
+          if (!codeWithoutComments.includes("while")) {
             return { pass: false, message: "代码里好像没有用 while 循环，检查一下写法。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);

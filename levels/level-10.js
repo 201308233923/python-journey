@@ -21,7 +21,8 @@ print(me["age"])
 print(me["hobby"])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("{") || !r.code.includes(":")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("{") || !codeWithoutComments.includes(":")) {
             return { pass: false, message: "代码里好像没有真的创建字典（花括号{}加冒号:），检查一下有没有写死输出。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -47,7 +48,8 @@ print(pet.get("type"))
 print(pet.get("age"))`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if ((r.code.match(/\.get\(/g) || []).length < 2) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if ((codeWithoutComments.match(/\.get\(/g) || []).length < 2) {
             return { pass: false, message: "这一关要用 .get() 方法取值，检查一下代码里有没有至少用两次 .get(。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -72,13 +74,14 @@ for key in pet:
     print(pet[key])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("{") || !r.code.includes(":")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("{") || !codeWithoutComments.includes(":")) {
             return { pass: false, message: "代码里好像没有真的创建字典，检查一下有没有用花括号+冒号。" };
           }
-          if (!/for\s+\w+\s+in\s+\w+\s*:/.test(r.code)) {
+          if (!/for\s+\w+\s+in\s+\w+\s*:/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 for 循环遍历字典的键，检查一下有没有写 for key in pet:。" };
           }
-          if ((r.code.match(/print\(/g) || []).length > 2) {
+          if ((codeWithoutComments.match(/print\(/g) || []).length > 2) {
             return { pass: false, message: "看起来像是手动写了好几个print，这一关应该只在循环体里写一次print，让循环帮你重复执行。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -105,7 +108,8 @@ for key, value in pet.items():
     print(f"{key}: {value}")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes(".items(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes(".items(")) {
             return { pass: false, message: "这一关要用 .items() 同时遍历键和值，检查一下代码里有没有用到。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -134,7 +138,8 @@ print(pet["type"])
 print(pet["age"])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\w+\[["'][\w]+["']\]\s*=(?!=)/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\w+\[["'][\w]+["']\]\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 dict[\"新键\"] = 值 的写法动态添加键，检查一下代码里有没有这样写。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -164,6 +169,7 @@ pet["age"] = 2
 print(pet["age"])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length < 2) {
             return { pass: false, message: "这一关要打印两次 age（修改前后各一次），检查一下是不是两次都打印了。" };
@@ -171,7 +177,7 @@ print(pet["age"])`,
           if (lines[0] === lines[lines.length - 1]) {
             return { pass: false, message: "两次打印的值一样，看起来 age 没有被真的修改，检查一下有没有写 pet[\"age\"] = 新值。" };
           }
-          if (!/\w+\[["'][\w]+["']\]\s*=(?!=)/.test(r.code)) {
+          if (!/\w+\[["'][\w]+["']\]\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "检查一下有没有用 pet[\"age\"] = ... 的写法修改已有的键。" };
           }
           return { pass: true, message: "学会了！已有的键也能用方括号赋值的方式直接覆盖修改。" };

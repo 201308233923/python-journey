@@ -24,13 +24,14 @@ future_age = age + years_later
 print(future_age)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!r.stdout.includes("23")) {
             return { pass: false, message: "打印出数字了，但结果不是23，检查一下 age 和 years_later 的值，以及加法有没有写对。" };
           }
-          if (!r.code.includes("+")) {
+          if (!codeWithoutComments.includes("+")) {
             return { pass: false, message: "结果对了，但代码里好像没有用加法（+）——是不是直接把23写死了？改成用 age + years_later 真正算出来。" };
           }
           return { pass: true, message: "运算成功！13岁10年后是23岁，算对了。" };
@@ -57,13 +58,14 @@ remaining_money = total_money - spent_money
 print(remaining_money)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!r.stdout.includes("13")) {
             return { pass: false, message: "打印出数字了，但结果不是13，检查一下 total_money 和 spent_money 的值，以及减法有没有写对。" };
           }
-          if (!r.code.includes("-")) {
+          if (!codeWithoutComments.includes("-")) {
             return { pass: false, message: "结果对了，但代码里好像没有用减法（-）——是不是直接把13写死了？改成用 total_money - spent_money 真正算出来。" };
           }
           return { pass: true, message: "运算成功！20元花掉7元，还剩13元，算对了。" };
@@ -90,13 +92,14 @@ total = price * quantity
 print(total)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!r.stdout.includes("15")) {
             return { pass: false, message: "打印出数字了，但结果不是15，检查一下 price 和 quantity 的值，以及乘法有没有写对。" };
           }
-          if (!r.code.includes("*")) {
+          if (!codeWithoutComments.includes("*")) {
             return { pass: false, message: "结果对了，但代码里好像没有用乘法（*）——是不是直接把15写死了？改成用 price * quantity 真正算出来。" };
           }
           return { pass: true, message: "运算成功！3元一支笔买5支是15元，算对了。" };
@@ -123,13 +126,14 @@ each = total_apples // people
 print(each)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!/\b6\b/.test(r.stdout)) {
             return { pass: false, message: "打印出数字了，但结果不是6，检查一下 total_apples 和 people 的值，以及整除有没有写对。" };
           }
-          if (!r.code.includes("//")) {
+          if (!codeWithoutComments.includes("//")) {
             return { pass: false, message: "结果对了，但代码里好像没有用整除（//）——是不是直接把6写死了？改成用 total_apples // people 真正算出来。" };
           }
           return { pass: true, message: "运算成功！30个苹果分给5人，每人6个，算对了。" };
@@ -153,13 +157,14 @@ result = (a + b) * c
 print(result)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!r.stdout.includes("20")) {
             return { pass: false, message: "打印出数字了，但结果不是20，检查一下有没有先算括号里的加法，再乘以c。" };
           }
-          if (!r.code.includes("+") || !r.code.includes("*")) {
+          if (!codeWithoutComments.includes("+") || !codeWithoutComments.includes("*")) {
             return { pass: false, message: "结果对了，但代码里好像没有同时用到加法和乘法——是不是直接把20写死了？改成用 (a + b) * c 真正算出来。" };
           }
           return { pass: true, message: "运算成功！(2+3)*4 = 20，括号改变了运算顺序，算对了。" };
@@ -188,13 +193,14 @@ total = clothes_total + shipping
 print(total)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (!/\d/.test(r.stdout)) {
             return { pass: false, message: "输出里没有看到数字，检查一下有没有 print() 出计算结果。" };
           }
           if (!r.stdout.includes("85")) {
             return { pass: false, message: "打印出数字了，但结果不是85，检查一下是不是先算了衣服总价(25*3=75)，再加上运费(75+10=85)。" };
           }
-          if (!r.code.includes("+") || !r.code.includes("*")) {
+          if (!codeWithoutComments.includes("+") || !codeWithoutComments.includes("*")) {
             return { pass: false, message: "结果对了，但代码里好像没有同时用到乘法和加法——是不是直接把85写死了？改成两步算出来。" };
           }
           return { pass: true, message: "运算成功！3件衣服75元加10元运费，一共85元，两步计算都对了。" };

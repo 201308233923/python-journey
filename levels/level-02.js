@@ -21,10 +21,11 @@ print(age)</pre>
 print(my_name)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.trim().length === 0) {
             return { pass: false, message: "记得要创建变量并且 print() 出来才能看到结果哦。" };
           }
-          if (!/\w+\s*=(?!=)/.test(r.code)) {
+          if (!/\w+\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "看到输出了，但代码里好像没有真的创建变量（比如 my_name = ...），检查一下有没有用等号赋值。" };
           }
           return { pass: true, message: "很好，你已经学会用变量存东西了。" };
@@ -45,10 +46,11 @@ print(age)</pre>
 print(my_age)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.trim().length === 0) {
             return { pass: false, message: "记得要创建变量并且 print() 出来才能看到结果哦。" };
           }
-          if (!/\w+\s*=(?!=)/.test(r.code)) {
+          if (!/\w+\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "看到输出了，但代码里好像没有真的创建变量（比如 my_age = ...），检查一下有没有用等号赋值。" };
           }
           if (!/^\d+$/.test(r.stdout.trim())) {
@@ -74,11 +76,12 @@ print(my_name)
 print(my_age)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length < 2) {
             return { pass: false, message: "这一关要打印两行（名字和年龄各一行），检查一下是不是两个都print了。" };
           }
-          if (!/\w+\s*,\s*\w+\s*=/.test(r.code)) {
+          if (!/\w+\s*,\s*\w+\s*=/.test(codeWithoutComments)) {
             return { pass: false, message: "检查一下有没有用'一行创建两个变量'的写法，比如 my_name, my_age = \"小明\", 13。" };
           }
           return { pass: true, message: "很好，一行同时创建多个变量的写法学会了。" };
@@ -103,6 +106,7 @@ score = 90
 print(score)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length < 2) {
             return { pass: false, message: "这一关要打印两次（重新赋值前后各一次），检查一下是不是两次都print了。" };
@@ -110,7 +114,7 @@ print(score)`,
           if (lines[0] === lines[lines.length - 1]) {
             return { pass: false, message: "两次打印的值一样，看起来变量没有被真的重新赋值，检查一下有没有写第二次 score = ..." };
           }
-          if ((r.code.match(/\w+\s*=(?!=)/g) || []).length < 2) {
+          if ((codeWithoutComments.match(/\w+\s*=(?!=)/g) || []).length < 2) {
             return { pass: false, message: "检查一下代码里有没有对同一个变量赋值两次。" };
           }
           return { pass: true, message: "很好，变量可以随时被重新赋值，新值会覆盖旧值。" };
@@ -134,10 +138,11 @@ copy = original
 print(copy)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.trim().length === 0) {
             return { pass: false, message: "记得要创建变量并且 print() 出来才能看到结果哦。" };
           }
-          if ((r.code.match(/\w+\s*=(?!=)/g) || []).length < 2) {
+          if ((codeWithoutComments.match(/\w+\s*=(?!=)/g) || []).length < 2) {
             return { pass: false, message: "这一关要创建两个变量（original 和 copy），检查一下是不是只写了一次赋值。" };
           }
           return { pass: true, message: "很好，一个变量的值可以传给另一个变量，两者存的是同一份数据。" };
@@ -160,6 +165,7 @@ print(a)
 print(b)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           const lines = r.stdout.trim().split("\n").filter(Boolean);
           if (lines.length < 2) {
             return { pass: false, message: "这一关要打印两行（a和b各一行），检查一下是不是两个都print了。" };
@@ -167,7 +173,7 @@ print(b)`,
           if (lines[0] !== lines[1]) {
             return { pass: false, message: "链式赋值应该让两个变量存一样的值，检查一下打印出来的两行是不是相同。" };
           }
-          if (!/\w+\s*=\s*\w+\s*=(?!=)/.test(r.code)) {
+          if (!/\w+\s*=\s*\w+\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "检查一下有没有用链式赋值的写法，比如 a = b = \"你好\"。" };
           }
           return { pass: true, message: "很好，链式赋值可以一次性给多个变量存同一个值。" };

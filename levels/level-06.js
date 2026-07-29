@@ -25,7 +25,8 @@ else:
     print("不及格")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bif\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用到 if，这一关的重点是让程序自己做判断，不是直接打印结果。" };
           }
           if (r.stdout.includes("及格")) return { pass: true, message: "if判断学会了，这是编程里最常用的东西之一。" };
@@ -56,7 +57,8 @@ else:
     print("C")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\belif\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\belif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 elif 处理第二种情况，检查一下代码里有没有 elif。" };
           }
           if (r.stdout.includes("A")) return { pass: true, message: "elif 学会了！可以用来处理两种以上的分支情况。" };
@@ -80,7 +82,8 @@ if balance < 50:
     print("余额不足，请充值")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bif\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用到 if，检查一下有没有写判断。" };
           }
           if (r.stdout.includes("余额不足")) return { pass: true, message: "if 学会了！不是每个if都必须配else，不满足条件时可以什么都不做。" };
@@ -108,7 +111,8 @@ else:
     print("不通过")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\band\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\band\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 and 合并两个条件，检查一下代码里有没有 and。" };
           }
           if (r.stdout.includes("通过") && !r.stdout.includes("不通过")) {
@@ -137,7 +141,8 @@ else:
     print("工作日")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bor\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 or 合并两个条件，检查一下代码里有没有 or。" };
           }
           if (r.stdout.includes("周末")) {
@@ -166,7 +171,8 @@ else:
     print("成年人")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bnot\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bnot\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 not 反转条件，检查一下代码里有没有 not。" };
           }
           if (r.stdout.includes("未成年人")) {

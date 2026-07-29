@@ -21,10 +21,11 @@ print(favorites[1])
 print(favorites[2])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/=\s*\[.*\]/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/=\s*\[.*\]/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要先创建一个列表（用方括号[]），检查一下代码里有没有类似 favorites = [...] 这样的写法。" };
           }
-          if (!/\[\s*\d+\s*\]/.test(r.code)) {
+          if (!/\[\s*\d+\s*\]/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用下标（比如 favorites[0]）取出列表里的每一项，检查一下代码里有没有用方括号+数字。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -49,7 +50,8 @@ for place in dream_places:
     print(place)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bfor\b/.test(r.code) || r.code.includes("range(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bfor\b/.test(codeWithoutComments) || codeWithoutComments.includes("range(")) {
             return { pass: false, message: "这一关要用 for 循环直接遍历列表（for x in dream_places），不用下标或range()，检查一下写法。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -77,7 +79,8 @@ for i in range(len(movies)):
     print(movies[i])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/range\(\s*len\(/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/range\(\s*len\(/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 range(len(...)) 的写法遍历，检查一下代码里有没有用 len()。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -106,7 +109,8 @@ for h in hobbies:
     print(h)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          const appendCount = (r.code.match(/\.append\(/g) || []).length;
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          const appendCount = (codeWithoutComments.match(/\.append\(/g) || []).length;
           if (appendCount < 3) {
             return { pass: false, message: "这一关要用 .append() 往空列表里添加至少3个元素，检查一下 .append( 是不是只写了不到3次。" };
           }
@@ -135,7 +139,8 @@ print(favorites[1])
 print(favorites[-1])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("[-1]")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("[-1]")) {
             return { pass: false, message: "这一关要用 [-1] 打印列表最后一项，检查一下代码里有没有用负数下标。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -161,7 +166,8 @@ print(favorites[0:2])
 print(favorites[2])`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\[\s*\d*\s*:\s*\d*\s*\]/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\[\s*\d*\s*:\s*\d*\s*\]/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用切片语法（比如 favorites[0:2]），检查一下代码里有没有用冒号做切片。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);

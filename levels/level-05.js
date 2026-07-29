@@ -22,7 +22,8 @@ print(f"你好，{name}！")`,
       defaultInput: `小明`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里好像没有用到 input()，这一关的重点就是用它接收用户输入。" };
           }
           if (r.stdout.includes("你好")) return { pass: true, message: "完美，你已经学会怎么和程序'对话'了。" };
@@ -47,7 +48,8 @@ print(f"明年你{age + 1}岁")`,
       defaultInput: `13`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bint\(/.test(r.code) || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bint\(/.test(codeWithoutComments) || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "这一关要用 int(input(...)) 把输入转成数字，检查一下代码里有没有这样写。" };
           }
           if (r.stdout.includes("明年你") && /\d/.test(r.stdout)) {
@@ -77,7 +79,8 @@ print(f"{name}最喜欢吃{food}")`,
 披萨`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if ((r.code.match(/input\(/g) || []).length < 2) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if ((codeWithoutComments.match(/input\(/g) || []).length < 2) {
             return { pass: false, message: "这一关要用两次 input()，检查一下是不是只问了一个问题。" };
           }
           if (r.stdout.includes("最喜欢吃")) {
@@ -107,7 +110,8 @@ print(f"华氏温度是{fahrenheit}度")`,
       defaultInput: `0`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bint\(/.test(r.code) || !r.code.includes("input(") || !r.code.includes("*")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bint\(/.test(codeWithoutComments) || !codeWithoutComments.includes("input(") || !codeWithoutComments.includes("*")) {
             return { pass: false, message: "这一关要用 int(input(...)) 拿到摄氏度，再用公式算出华氏度，检查一下代码里有没有用到乘法。" };
           }
           if (r.stdout.includes("华氏温度是")) {
@@ -134,10 +138,11 @@ print("我" + "住在" + city)`,
       defaultInput: `北京`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里好像没有用到 input()，这一关的重点就是用它接收用户输入。" };
           }
-          if (!r.code.includes("+")) {
+          if (!codeWithoutComments.includes("+")) {
             return { pass: false, message: "这一关要用加号 + 拼接文字（不用f-string），检查一下代码里有没有用+号。" };
           }
           if (r.stdout.includes("我住在")) {
@@ -164,7 +169,8 @@ print(f"这个词有{len(word)}个字")`,
       defaultInput: `编程`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("len(") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("len(") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "这一关要用 len() 算出输入的字数，检查一下代码里有没有用到 len()。" };
           }
           if (r.stdout.includes("个字") && /\d/.test(r.stdout)) {

@@ -27,7 +27,8 @@ print(celsius_to_fahrenheit(100))`,
     why: `为什么Python这么在意缩进？因为很多语言用花括号{}来表示"这段代码属于哪一块"，Python选择了用缩进本身来表达，代码更简洁好读，代价是缩进错一点就会出错——这是Python的设计取舍，不是bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!/\bdef\s+\w+\s*\(/.test(r.code) || !/\breturn\b/.test(r.code)) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/\bdef\s+\w+\s*\(/.test(codeWithoutComments) || !/\breturn\b/.test(codeWithoutComments)) {
         return { pass: false, message: "函数定义和 return 好像被删掉了，这一关是改缩进修好bug，不是绕开函数直接打印结果。" };
       }
       if (r.stdout.includes("32.0") && r.stdout.includes("212.0")) {
@@ -50,7 +51,8 @@ print(celsius_to_fahrenheit(100))`,
     why: `为什么range()的终点不包含本身？这是编程语言里一个常见的设计习惯（叫"左闭右开区间"），好处是range(0, n)正好给出n个数、配合列表长度用起来很顺手——刚接触时反直觉，习惯了会发现它其实更方便。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("range(") || !/\bfor\b/.test(r.code)) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("range(") || !/\bfor\b/.test(codeWithoutComments)) {
         return { pass: false, message: "for 循环和 range() 好像被删掉了，这一关是改 range() 的参数修好bug，不是绕开循环直接打印数字。" };
       }
       const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -80,7 +82,8 @@ else:
     why: `为什么Python不让 if age = 18 这样写（有些语言允许）？因为这是一个极容易手滑的错误，Python选择在这里直接报错，而不是"悄悄按你可能没想到的方式执行"，这样的错误更容易被发现，而不是留到后面变成难查的bug。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!/\bif\b/.test(r.code) || !r.code.includes("==")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/\bif\b/.test(codeWithoutComments) || !codeWithoutComments.includes("==")) {
         return { pass: false, message: "if 判断和 == 好像被删掉了，这一关是把 = 改成 == 修好bug，不是绕开判断直接打印结果。" };
       }
       if (r.stdout.includes("正好18岁")) {
@@ -105,7 +108,8 @@ print(name + "今年" + str(age) + "岁")`,
     why: `为什么Python不自动把数字转成文字？因为"13" + "岁"和13+多少哪个是"加法"，如果自动转换，容易掩盖真正的bug（比如你以为在做数学运算，其实在做拼接）。Python选择让你明确写出 str(age)，代码意图更清楚。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("+") || !r.code.includes("str(")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("+") || !codeWithoutComments.includes("str(")) {
         return { pass: false, message: "字符串拼接和 str() 转换好像被删掉了，这一关是加 str() 修好bug，不是绕开拼接直接打印结果。" };
       }
       if (r.stdout.includes("小明今年13岁")) {
@@ -139,7 +143,8 @@ else:
     why: `为什么if/elif的顺序会影响结果？因为Python的if/elif是"从上往下，第一个满足的条件就执行，后面全部跳过"，不会继续往下检查。这跟很多人以为的"每个条件都会单独判断一次"不一样，是很容易踩的坑。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!/\bif\b/.test(r.code) || !r.code.includes("elif")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/\bif\b/.test(codeWithoutComments) || !codeWithoutComments.includes("elif")) {
         return { pass: false, message: "if/elif 判断好像被删掉了，这一关是调整条件顺序修好bug，不是绕开判断直接打印结果。" };
       }
       if (r.stdout.includes("优秀")) {
@@ -168,7 +173,8 @@ print("倒数结束")`,
     why: `这个bug没有报错，只是"什么都没做"——这类bug往往比直接报错的bug更难发现，因为程序看起来"正常运行完了"。养成运行后检查结果是否符合预期的习惯，比只看"有没有报错"更重要。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("while")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("while")) {
         return { pass: false, message: "while 循环好像被删掉了，这一关是改循环条件修好bug，不是绕开循环直接打印数字。" };
       }
       const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -192,7 +198,8 @@ print("最后一个水果是：" + fruits[2])`,
     why: `为什么下标从0开始，而不是像日常数数一样从1开始？这跟计算机内存的存储方式有关——下标本质上是"从起始位置数过去多少步"，第一个元素就在起始位置，走0步就到了。这是几乎所有编程语言的共同设计。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!r.code.includes("fruits[")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("fruits[")) {
         return { pass: false, message: "fruits[下标] 这种取值方式好像被删掉了，这一关是改下标修好bug，不是绕开列表直接打印结果。" };
       }
       if (r.stdout.includes("最后一个水果是：橙子")) {
@@ -221,7 +228,8 @@ print(counts)`,
     why: `为什么字典不会自动给不存在的键一个默认值？因为如果访问不存在的键都"悄悄"返回某个默认值（比如0），拼写错误的键名就会被无声无息地放过，很难发现——报错反而是一种保护，逼你处理"这个键真的存在吗"这个问题。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err) };
-      if (!/\bfor\b/.test(r.code) || !r.code.includes("counts")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/\bfor\b/.test(codeWithoutComments) || !codeWithoutComments.includes("counts")) {
         return { pass: false, message: "for 循环和 counts 字典好像被删掉了，这一关是给默认值修好bug，不是绕开统计直接打印结果。" };
       }
       // 光检查"苹果"、"香蕉"、"橙子"、"2"这几个字符串是不是都出现过还不够——

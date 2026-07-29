@@ -41,7 +41,8 @@ print("猜对了！")`,
 7`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
           }
           if (r.stdout.includes("猜对了")) {
@@ -84,10 +85,11 @@ print(f"你用了{count}次猜中！")`,
 15`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家。" };
           }
-          if (!r.code.includes("+= 1") && !r.code.includes("+=1")) {
+          if (!codeWithoutComments.includes("+= 1") && !codeWithoutComments.includes("+=1")) {
             return { pass: false, message: "这一关要用一个计数器统计猜测次数，检查一下有没有用 count += 1 这样的写法。" };
           }
           if (r.stdout.includes("猜对了") && r.stdout.includes("次猜中")) {
@@ -137,13 +139,14 @@ if not found:
 7`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
           }
-          if (!r.code.includes("break")) {
+          if (!codeWithoutComments.includes("break")) {
             return { pass: false, message: "这一关猜中时要用 break 提前跳出循环，检查一下代码里有没有 break。" };
           }
-          if (!r.code.includes("tries") && !r.code.includes("max_tries")) {
+          if (!codeWithoutComments.includes("tries") && !codeWithoutComments.includes("max_tries")) {
             return { pass: false, message: "这一关要限制最多猜的次数，检查一下有没有用一个变量记录已经猜了几次。" };
           }
           if (r.stdout.includes("猜对了")) {
@@ -178,10 +181,11 @@ print("猜对了！")`,
 大象`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家。" };
           }
-          if (/\bint\(/.test(r.code)) {
+          if (/\bint\(/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关猜的是文字，不需要用 int() 转换成数字，检查一下是不是多此一举了。" };
           }
           if (r.stdout.includes("猜对了")) {
@@ -224,10 +228,11 @@ print("猜对了！")`,
 50`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\belif\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\belif\b/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 elif 处理'超出范围'和'太大/太小'两种不同的情况，检查一下有没有用elif。" };
           }
-          if (!/\bor\b/.test(r.code)) {
+          if (!/\bor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "判断'超出范围'要用 or 合并两个条件（小于1 或 大于100），检查一下有没有用or。" };
           }
           if (r.stdout.includes("超出范围了") && r.stdout.includes("猜对了")) {
@@ -271,10 +276,11 @@ print(f"你一共猜了这些数字：{history}")`,
 7`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("while") || !r.code.includes("input(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("while") || !codeWithoutComments.includes("input(")) {
             return { pass: false, message: "代码里要用到 while 循环和 input()，不断询问玩家，而不是直接打印'猜对了！'。" };
           }
-          if (!r.code.includes(".append(")) {
+          if (!codeWithoutComments.includes(".append(")) {
             return { pass: false, message: "这一关要用 .append() 把每次猜测记进 history 列表，检查一下代码里有没有用到。" };
           }
           if (r.stdout.includes("猜对了") && r.stdout.includes("你一共猜了")) {

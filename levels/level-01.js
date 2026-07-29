@@ -39,7 +39,8 @@ const LEVEL_1 = {
       answer: `print("你好", "世界！")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/print\(\s*["'][^"']*["']\s*,/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/print\(\s*["'][^"']*["']\s*,/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用逗号分隔多个内容传给 print()，检查一下是不是写成了 print(\"你好\", \"世界！\") 这种格式。" };
           }
           if (r.stdout.includes("你好") && r.stdout.includes("世界")) {
@@ -63,7 +64,8 @@ print(message)</pre>
 print(message)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\w+\s*=(?!=)/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\w+\s*=(?!=)/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要先创建一个变量存文字，再 print 这个变量，检查一下有没有用等号赋值。" };
           }
           if (r.stdout.includes("Python") && r.stdout.includes("好玩")) {
@@ -84,7 +86,8 @@ print(message)`,
       answer: `print("你" + "好" + "，" + "世界" + "！")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes("+")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes("+")) {
             return { pass: false, message: "这一关要用加号 + 拼接几段文字，检查一下代码里有没有用+号。" };
           }
           if (r.stdout.includes("你好") && r.stdout.includes("世界")) {
@@ -135,7 +138,8 @@ print("世界！")`,
 世界！""")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!r.code.includes('"""') && !r.code.includes("'''")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!codeWithoutComments.includes('"""') && !codeWithoutComments.includes("'''")) {
             return { pass: false, message: "这一关要用三引号（\"\"\" 或 '''）包起来的字符串，检查一下代码里有没有用三引号。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);

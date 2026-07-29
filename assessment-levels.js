@@ -32,7 +32,9 @@ const LEVELS = [
     why: `FizzBuzz为什么是经典面试题？它同时考"循环+条件判断+取余运算"这三个基础，而且条件顺序稍微写错就会出bug（比如15漏判成Fizz），很适合检验对基础语法的熟练程度。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 6 };
-      if (!r.code.includes("%")) {
+      // 去掉注释再检测——不然把%随便塞进注释里就能绕开"是不是真的用了取余运算"这个检查。
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("%")) {
         return { pass: false, message: "代码里好像没有用取余运算符 %，检查一下是不是把20行结果直接写死了。", reviewLevel: 7 };
       }
       const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -65,7 +67,8 @@ print(max(nums))`,
     why: `为什么Python要内置sum()/max()这些函数？因为"对一组数据求和/求最大值"是极其常见的需求，内置函数比自己写循环更快、更不容易出错——但理解它们背后就是遍历+累加/比较，遇到内置函数解决不了的情况时才知道怎么自己实现。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 9 };
-      if (!r.code.includes("sum(") && !r.code.includes("max(") && !/\bfor\b/.test(r.code)) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("sum(") && !codeWithoutComments.includes("max(") && !/\bfor\b/.test(codeWithoutComments)) {
         return { pass: false, message: "代码里好像没有用 sum()/max() 或者循环，检查一下是不是把108和42直接写死了。", reviewLevel: 9 };
       }
       if (!r.stdout.includes("108")) {
@@ -95,7 +98,8 @@ print(count)`,
     why: `为什么字符串可以像列表一样遍历？因为字符串本质上就是"字符的序列"，Python里很多用在列表上的操作（遍历、切片、count）字符串也能用，这种"不同类型共享同一套操作"的设计能少记很多规则。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 4 };
-      if (!r.code.includes(".count(") && !/\bfor\b/.test(r.code)) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes(".count(") && !/\bfor\b/.test(codeWithoutComments)) {
         return { pass: false, message: "代码里好像没有用 .count() 或者循环，检查一下是不是把答案2直接写死了。", reviewLevel: 4 };
       }
       if (r.stdout.includes("2")) {
@@ -131,7 +135,8 @@ print(is_prime(15))`,
     why: `判断质数为什么要试到n-1？因为质数的定义就是"除了1和自己没有别的因数"，逐个试是最直接的验证方式（后面学更多算法后会知道其实只需要试到根号n，但现在这样写完全正确，只是慢一点）。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 11 };
-      if (!r.code.includes("def is_prime")) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!codeWithoutComments.includes("def is_prime")) {
         return { pass: false, message: "代码里好像没有用 def 定义 is_prime 函数，检查一下是不是把 True/False 直接写死了。", reviewLevel: 11 };
       }
       // 光检查 True/False 是否都出现过还不够——逻辑写反了（质数判True，合数判False）
@@ -165,7 +170,8 @@ print(counts)`,
     why: `词频统计是文本分析最基础的操作——搜索引擎、推荐系统、垃圾邮件过滤，很多都是从"数一数每个词出现了几次"这一步开始的。字典正是干这个最合适的数据结构。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
-      if (!/\bfor\b/.test(r.code) || (!r.code.includes("{") && !r.code.includes("dict("))) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      if (!/\bfor\b/.test(codeWithoutComments) || (!codeWithoutComments.includes("{") && !codeWithoutComments.includes("dict("))) {
         return { pass: false, message: "代码里好像没有用循环+字典统计，检查一下是不是把结果直接写死了。", reviewLevel: 10 };
       }
       // 光分别检查"苹果"、"3"、"香蕉"、"2"是否出现还不够——次数算错了但刚好都
@@ -205,9 +211,10 @@ print(prediction)`,
     why: `"预测下一步"这类AI功能，本质上很多时候就是"统计历史数据里最常见的模式"。没有魔法，只是数据统计——理解了这一点，AI就没那么神秘了。`,
     check: (r) => {
       if (r.err) return { pass: false, message: explainError(r.err), reviewLevel: 10 };
-      const hasDict = r.code.includes("{") || r.code.includes("dict(");
-      const hasCount = r.code.includes(".get(") || r.code.includes("+= 1") || r.code.includes("+=1") || r.code.includes(".count(");
-      if (!/\bfor\b/.test(r.code) || !hasDict || !hasCount) {
+      const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+      const hasDict = codeWithoutComments.includes("{") || codeWithoutComments.includes("dict(");
+      const hasCount = codeWithoutComments.includes(".get(") || codeWithoutComments.includes("+= 1") || codeWithoutComments.includes("+=1") || codeWithoutComments.includes(".count(");
+      if (!/\bfor\b/.test(codeWithoutComments) || !hasDict || !hasCount) {
         return { pass: false, message: "代码里好像没有真的用循环+字典统计出现次数，检查一下是不是把'石头'直接写死了。", reviewLevel: 10 };
       }
       if (r.stdout.includes("石头")) {

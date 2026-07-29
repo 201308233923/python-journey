@@ -20,10 +20,11 @@ age = 13
 print(f"我叫{name}，今年{age}岁")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成变量的值，检查一下字符串前面有没有加 f。" };
           }
-          if (!r.code.includes("name") || !r.code.includes("age")) {
+          if (!codeWithoutComments.includes("name") || !codeWithoutComments.includes("age")) {
             return { pass: false, message: "检查一下代码里有没有真的创建 name 和 age 这两个变量，而不是把文字写死。" };
           }
           if (r.stdout.includes("我叫") && r.stdout.includes("岁")) {
@@ -48,10 +49,11 @@ print(f"5年后我{age + 5}岁")   # 花括号里直接算</pre>
 print(f"我今年{age}岁，5年后我{age + 5}岁")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成值，检查一下字符串前面有没有加 f。" };
           }
-          if (!/\{\s*\w+\s*\+\s*\d+\s*\}/.test(r.code)) {
+          if (!/\{\s*\w+\s*\+\s*\d+\s*\}/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要在花括号里直接写算式（比如 {age + 5}），而不是先单独算好存进新变量，检查一下花括号里有没有直接写加法。" };
           }
           if (r.stdout.includes("5年后")) {
@@ -79,10 +81,11 @@ hobby = "篮球"
 print(f"我叫{name}，来自{city}，喜欢{hobby}")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成变量的值，检查一下字符串前面有没有加 f。" };
           }
-          if (!r.code.includes("name") || !r.code.includes("city") || !r.code.includes("hobby")) {
+          if (!codeWithoutComments.includes("name") || !codeWithoutComments.includes("city") || !codeWithoutComments.includes("hobby")) {
             return { pass: false, message: "检查一下代码里有没有真的创建 name、city、hobby 这三个变量。" };
           }
           if (r.stdout.includes("我叫") && r.stdout.includes("来自") && r.stdout.includes("喜欢")) {
@@ -107,10 +110,11 @@ print(f"大写是{name.upper()}")   # 大写是TOM</pre>
 print(f"我的英文名大写是{name.upper()}")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成值，检查一下字符串前面有没有加 f。" };
           }
-          if (!r.code.includes(".upper(")) {
+          if (!codeWithoutComments.includes(".upper(")) {
             return { pass: false, message: "这一关要在花括号里调用 .upper() 方法，检查一下代码里有没有写 name.upper()。" };
           }
           if (!/[A-Z]/.test(r.stdout)) {
@@ -139,10 +143,11 @@ print(f"""姓名：{name}
 年龄：{age}""")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成值，检查一下字符串前面有没有加 f。" };
           }
-          if (!r.code.includes('f"""') && !r.code.includes("f'''")) {
+          if (!codeWithoutComments.includes('f"""') && !codeWithoutComments.includes("f'''")) {
             return { pass: false, message: "这一关要用三引号+f-string结合的写法（比如 f\"\"\"...\"\"\"），检查一下代码里有没有用三引号。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -170,10 +175,11 @@ print(f"价格是{price:.2f}元")   # 价格是9.50元</pre>
 print(f"价格是{price:.2f}元")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
           if (r.stdout.includes("{")) {
             return { pass: false, message: "花括号好像没有被替换成值，检查一下字符串前面有没有加 f。" };
           }
-          if (!r.code.includes(":.2f")) {
+          if (!codeWithoutComments.includes(":.2f")) {
             return { pass: false, message: "这一关要用 :.2f 格式说明，检查一下花括号里有没有写 {price:.2f}。" };
           }
           if (!/\.\d{2}/.test(r.stdout)) {

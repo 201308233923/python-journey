@@ -20,7 +20,8 @@ const LEVEL_7 = {
     print(i)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bfor\b/.test(r.code) || !r.code.includes("range(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bfor\b/.test(codeWithoutComments) || !codeWithoutComments.includes("range(")) {
             return { pass: false, message: "代码里好像没有用 for 循环 + range()，检查一下是不是把1到10直接写死了十个print()。" };
           }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -53,7 +54,8 @@ const LEVEL_7 = {
     print(i)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/range\([^)]*,[^)]*,[^)]*\)/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/range\([^)]*,[^)]*,[^)]*\)/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用 range() 的第三个参数（步长），检查一下 range() 里有没有写三个数字，用逗号隔开。" };
           }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -80,7 +82,8 @@ const LEVEL_7 = {
     print(i)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/range\([^)]*-1[^)]*\)/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/range\([^)]*-1[^)]*\)/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用负数步长（-1）让 range() 倒着数，检查一下 range() 里有没有写 -1。" };
           }
           const nums = r.stdout.trim().split(/\s+/).filter(Boolean);
@@ -110,10 +113,11 @@ for f in fruits:
     print(f)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (r.code.includes("range(")) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (codeWithoutComments.includes("range(")) {
             return { pass: false, message: "这一关要直接遍历列表本身（for x in fruits），不需要用 range()，检查一下有没有用错方式。" };
           }
-          if (!/\bfor\b/.test(r.code)) {
+          if (!/\bfor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用 for 循环遍历列表，检查一下写法。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
@@ -141,10 +145,11 @@ for i in range(1, 11):
 print(total)`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bfor\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bfor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用 for 循环，检查一下有没有真的循环累加，而不是直接算出答案写死。" };
           }
-          if (!r.code.includes("+=") && !/\w+\s*=\s*\w+\s*\+/.test(r.code)) {
+          if (!codeWithoutComments.includes("+=") && !/\w+\s*=\s*\w+\s*\+/.test(codeWithoutComments)) {
             return { pass: false, message: "这一关要用累加器（比如 total += i），检查一下代码里有没有在循环里累加。" };
           }
           if (r.stdout.includes("55")) {
@@ -169,7 +174,8 @@ print(total)`,
     print(f"5x{i}={5*i}")`,
       check: (r) => {
           if (r.err) return { pass: false, message: explainError(r.err) };
-          if (!/\bfor\b/.test(r.code)) {
+          const codeWithoutComments = r.code.replace(/#.*$/gm, "");
+          if (!/\bfor\b/.test(codeWithoutComments)) {
             return { pass: false, message: "代码里好像没有用 for 循环，检查一下是不是把9行结果直接写死了。" };
           }
           const lines = r.stdout.trim().split("\n").filter(Boolean);
