@@ -8,20 +8,39 @@ const LEVELS = [
     icon: "🔢",
     title: "游戏1：AI 猜数字",
     explain: `
-      <p>你心里想一个 1-100 的数字，别告诉AI。AI 每次猜一个数，你告诉它"大了"还是"小了"，
-      它很快就能猜中——这就是"二分查找"，很多AI做决策时用的基本思路。</p>
-      <p>AI猜完之后会反过来：它心里想一个数字，换你来猜。猜完对比一下双方各用了几次，
-      就能直观感受到"每次都猜正中间"这个策略到底有多高效。</p>
+      <p>你心里想一个数字，别告诉AI。AI 每次猜一个数，你告诉它"大了"还是"小了"，它很快就能猜中
+      ——这就是"二分查找"，很多AI做决策时用的基本思路。可以先选难度：范围越大，理论上限次数
+      越高，二分法的效率优势也越明显。</p>
+      <p>AI猜完之后会反过来：它心里想一个数字，换你来猜。猜完对比一下双方各用了几次。</p>
+      <p>AI还会记住你每次回答划定的范围——如果你哪次回答跟之前自相矛盾（比如范围明明只剩一个
+      数字了，还说"比它还大"），AI会当场指出来，让你重新回答，而不是被带偏。</p>
       <p>点"开始游戏"，然后跟着提示一步步回答就行。</p>
     `,
     code: `import random
 
+DIFFICULTIES = {
+    "1": ("简单", 1, 50),
+    "2": ("中等", 1, 100),
+    "3": ("困难", 1, 500),
+    "4": ("地狱", 1, 2000),
+}
 
-def ai_guess_number():
-    print("请在心里想一个 1 到 100 之间的数字，别告诉我！")
+
+def max_guesses_needed(n):
+    """二分法最多需要猜几次，才能覆盖n个数字的范围"""
+    guesses = 0
+    total = 1
+    while total < n:
+        total *= 2
+        guesses += 1
+    return guesses
+
+
+def ai_guess_number(low_bound, high_bound):
+    print(f"请在心里想一个 {low_bound} 到 {high_bound} 之间的数字，别告诉我！")
     input("想好了按回车继续...")
 
-    low, high = 1, 100
+    low, high = low_bound, high_bound
     guess_count = 0
 
     while low <= high:
@@ -36,8 +55,18 @@ def ai_guess_number():
             print("这叫'二分查找'，很多AI系统在做决策、搜索答案时都用类似的思路。")
             return guess_count
         elif answer == "大":
+            if guess == low:
+                print(f"\\n等等，这样矛盾了：范围已经缩小到只剩 {low} 这一个数字了，")
+                print("不可能比它自己还大——是不是这次回答按错了？重新回答这一次。")
+                guess_count -= 1
+                continue
             high = guess - 1
         elif answer == "小":
+            if guess == high:
+                print(f"\\n等等，这样矛盾了：范围已经缩小到只剩 {high} 这一个数字了，")
+                print("不可能比它自己还小——是不是这次回答按错了？重新回答这一次。")
+                guess_count -= 1
+                continue
             low = guess + 1
         else:
             print("请输入 大/小/对 哦")
@@ -47,19 +76,19 @@ def ai_guess_number():
     return guess_count
 
 
-def you_guess_number():
-    secret = random.randint(1, 100)
+def you_guess_number(low_bound, high_bound):
+    secret = random.randint(low_bound, high_bound)
     your_count = 0
-    print("\\n换你来猜！AI 心里想好了一个 1 到 100 之间的数字，轮到你来猜它。")
+    print(f"\\n换你来猜！AI 心里想好了一个 {low_bound} 到 {high_bound} 之间的数字，轮到你来猜它。")
 
     while True:
-        raw = input("你猜（1-100之间的数字）：").strip()
+        raw = input(f"你猜（{low_bound}-{high_bound}之间的数字）：").strip()
         if not raw.isdigit():
             print("请输入一个数字哦")
             continue
         guess = int(raw)
-        if guess < 1 or guess > 100:
-            print("请输入 1-100 之间的数字")
+        if guess < low_bound or guess > high_bound:
+            print(f"请输入 {low_bound}-{high_bound} 之间的数字")
             continue
         your_count += 1
         if guess == secret:
@@ -71,36 +100,57 @@ def you_guess_number():
             print("大了")
 
 
-ai_count = ai_guess_number()
-your_count = you_guess_number()
+def play_one_round(low_bound, high_bound):
+    ai_count = ai_guess_number(low_bound, high_bound)
+    your_count = you_guess_number(low_bound, high_bound)
 
-print("\\n--- 对比一下 ---")
-print(f"AI 猜你的数字用了 {ai_count} 次，你猜 AI 的数字用了 {your_count} 次。")
-if your_count <= ai_count:
-    print("你也用上了二分法的思路（每次都猜中间附近），效率跟AI差不多！")
-else:
-    print("提示：如果每次都猜'当前范围的正中间'，最多7次就能在1到100之间猜中任何数字——")
-    print("这就是AI刚才用的策略，试试下次也用这个思路。")`,
-    hint: `AI第一次总是猜(1+100)//2=50。如果你想的数比50小就回答"大"（意思是AI猜大了），比50大就回答"小"。
-轮到你猜AI的数字时，也试试同样的技巧：每次都猜"当前范围的正中间"，最多7次就能猜中任何1-100之间的数。`,
+    best_possible = max_guesses_needed(high_bound - low_bound + 1)
+    print("\\n--- 对比一下 ---")
+    print(f"这个范围（{low_bound}-{high_bound}）理论上最多只需要 {best_possible} 次就能猜中任何数字。")
+    print(f"AI 猜你的数字用了 {ai_count} 次，你猜 AI 的数字用了 {your_count} 次。")
+    if your_count <= ai_count:
+        print("你也用上了二分法的思路（每次都猜中间附近），效率跟AI差不多！")
+    else:
+        print(f"提示：如果每次都猜'当前范围的正中间'，最多{best_possible}次就能在这个范围内猜中任何数字——")
+        print("这就是AI刚才用的策略，试试下次也用这个思路。")
+
+
+def choose_difficulty():
+    print("选择难度：1=简单(1-50)，2=中等(1-100)，3=困难(1-500)，4=地狱(1-2000)")
+    choice = input("输入 1/2/3/4：").strip()
+    name, low_bound, high_bound = DIFFICULTIES.get(choice, DIFFICULTIES["2"])
+    print(f"\\n难度：{name}（{low_bound}-{high_bound}）\\n")
+    return low_bound, high_bound
+
+
+low_bound, high_bound = choose_difficulty()
+play_one_round(low_bound, high_bound)
+
+while True:
+    again = input("\\n再战一局吗？可以换个难度（输入 是/否）：").strip()
+    if again != "是":
+        break
+    low_bound, high_bound = choose_difficulty()
+    play_one_round(low_bound, high_bound)`,
+    hint: `AI第一次总是猜范围正中间。想让AI很快猜中，就老老实实按你心里想的数字回答；想看"矛盾检测"，可以故意在范围只剩最后一个数字时还乱答"大"或"小"试试。轮到你猜AI的数字时，也用同样的技巧：每次都猜"当前范围的正中间"，猜的次数会明显变少。`,
     walkthrough: [
       { lines: [1, 1], note: `待会儿"反过来轮到你猜"这个环节，AI要偷偷想一个秘密数字，需要用到这个内置模块来随机抽。` },
-      { lines: [4, 6], note: `定义AI猜你数字的逻辑——跟之前一样，先让你心里想好数字，input()只是等你按一下回车。` },
-      { lines: [8, 9], note: `设定猜测范围的上下界，再记一下总共猜了几次——二分法的起点。` },
-      { lines: [11, 15], note: `只要范围还没缩没了就继续猜：永远猜"当前范围的正中间"，计数+1，然后读你的反馈（"大"/"小"/"对"）。` },
-      { lines: [17, 21], note: `猜中了：打印结果和"这就是二分法"的讲解，把猜了几次通过 return 带出去——待会儿要拿这个数字跟你自己猜的次数做对比。` },
-      { lines: [22, 23], note: `你说AI猜大了，说明真正的数字比guess小，把上界收缩到guess-1。` },
-      { lines: [24, 25], note: `同理，猜小了就把下界往上收缩。` },
-      { lines: [26, 28], note: `如果你打的不是"大/小/对"这三个词，提示重新输入，同时把计数减回去——这一次不该算数。` },
-      { lines: [30, 31], note: `理论上不该走到这里（1到100之间二分法一定能猜中），只是防御性地兜个底，同样把计数带出去。` },
-      { lines: [34, 37], note: `定义"反过来"的逻辑：AI偷偷想一个1-100之间的秘密数字，不会让你看到，然后告诉你轮到你猜了。` },
-      { lines: [39, 43], note: `一直问你猜多少，直到猜中为止；如果输入的不是数字，提示重新输入。` },
-      { lines: [44, 47], note: `把文字转成数字，顺便检查是不是在1-100范围内，不在的话也提示重新输入。` },
-      { lines: [48, 51], note: `每猜一次计数+1；猜中了就把总共猜了几次通过 return 带出去。` },
-      { lines: [52, 55], note: `没猜中就告诉你是猜小了还是猜大了，你可以照着这个反馈调整下一次要猜的数字。` },
-      { lines: [58, 59], note: `真正开始玩：先让AI猜你的数字，再反过来让你猜AI的数字，两边各用了几次都记下来。` },
-      { lines: [61, 62], note: `把双方的次数摆出来对比。` },
-      { lines: [63, 67], note: `如果你用的次数不比AI多，说明你也无意中用上了"猜正中间"这个二分法技巧；用得比AI多的话，直接把这个技巧点出来，方便你下次试试。` },
+      { lines: [3, 8], note: `新增的难度表：编号对应"难度名字、范围下限、范围上限"——范围越大，二分法要猜的次数理论上限也越高。` },
+      { lines: [11, 18], note: `新增的小工具：算出这个范围理论上最多要猜几次——从1开始不断翻倍，翻几次能盖住整个范围，就要猜几次，这正是二分法效率的数学解释。` },
+      { lines: [21, 26], note: `定义AI猜你数字的逻辑，改成接收难度对应的上下界（不再写死1-100）；先让你心里想好数字，input()只是等你按一下回车。` },
+      { lines: [28, 32], note: `只要范围还没缩没了就继续猜：永远猜"当前范围的正中间"，计数+1，然后读你的反馈（"大"/"小"/"对"）。` },
+      { lines: [34, 38], note: `猜中了：打印结果和"这就是二分法"的讲解，把猜了几次通过 return 带出去。` },
+      { lines: [39, 45], note: `你说"大了"：新增的矛盾检测——如果范围已经缩小到只剩guess自己一个数字，还说"比它还大"，那范围就会变成空的，逻辑上不可能，所以先原样重新问一遍（这次不计入次数）；确实还有缩小空间才正常收缩上界。` },
+      { lines: [46, 52], note: `你说"小了"：同样的矛盾检测，只是方向相反——范围缩到只剩guess自己还说"比它还小"，也是不可能的，一样重新问一遍。` },
+      { lines: [53, 55], note: `如果你打的不是"大/小/对"这三个词，提示重新输入，同时把计数减回去——这一次不该算数。` },
+      { lines: [57, 58], note: `理论上不该走到这里（范围内二分法一定能猜中），只是防御性地兜个底，同样把计数带出去。` },
+      { lines: [61, 64], note: `定义"反过来"的逻辑，同样接收难度对应的上下界：AI偷偷想一个秘密数字，不会让你看到，然后告诉你轮到你猜了。` },
+      { lines: [66, 74], note: `一直问你猜多少，直到猜中为止；如果输入的不是数字，或者不在这个难度的范围内，提示重新输入。` },
+      { lines: [75, 82], note: `每猜一次计数+1；猜中了就把总共猜了几次通过 return 带出去；没猜中就告诉你是猜小了还是猜大了。` },
+      { lines: [85, 97], note: `新增的"跑完整局"函数：依次跑"AI猜你"和"你猜AI"两段，算出这个范围理论最少要猜几次，再把双方用的次数摆出来对比，给出对应的反馈。` },
+      { lines: [100, 105], note: `新增的选难度函数：打印四个选项，读你的选择，从难度表里查出对应的名字和范围（选错了默认按中等处理，不会报错）。` },
+      { lines: [108, 109], note: `真正开始玩：先选一次难度，跑第一局。` },
+      { lines: [111, 116], note: `问要不要再战——可以借这个机会换个难度再来一局，回答不是"是"就结束整个游戏。` },
     ],
   },
   {
