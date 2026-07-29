@@ -452,8 +452,12 @@ print("__GAME_OUTCOME__:WIN" if you_score >= ai_score else "__GAME_OUTCOME__:LOS
       <p>输入 <code>1</code> 训练 AND 逻辑，输入 <code>2</code> 训练 OR 逻辑，输入 <code>3</code>
       挑战一下：训练 XOR 逻辑。权重是随机初始化的，每次训练过程可能不完全一样，这是正常的——
       但XOR不管练多少轮都学不会，这不是运气问题，是单个神经元数学上的天花板。</p>
+      <p>选XOR之后，AI会问你要不要亲眼看看"加一层神经元"能不能解决这个天花板——真的用
+      反向传播训练一个两层神经网络（不是演示，是真训练），让你直接看到"深度"是怎么
+      解决单层做不到的问题的。</p>
     `,
     code: `import random
+import math
 
 # 训练数据：AND 逻辑（两个都是1，结果才是1）
 TRAINING_DATA_AND = [
@@ -526,6 +530,50 @@ def test(data, weights, bias):
     return all_correct
 
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+
+def train_two_layer_xor(hidden_n=3, epochs=3000, learning_rate=1.0):
+    """两层神经网络：2个输入 -> hidden_n个隐藏神经元 -> 1个输出神经元，用反向传播训练"""
+    w1 = [[random.uniform(-1, 1) for _ in range(2)] for _ in range(hidden_n)]
+    b1 = [random.uniform(-1, 1) for _ in range(hidden_n)]
+    w2 = [random.uniform(-1, 1) for _ in range(hidden_n)]
+    b2 = random.uniform(-1, 1)
+
+    for _ in range(epochs):
+        for inputs, target in TRAINING_DATA_XOR:
+            hidden = [sigmoid(sum(inputs[i] * w1[j][i] for i in range(2)) + b1[j]) for j in range(hidden_n)]
+            output = sigmoid(sum(hidden[j] * w2[j] for j in range(hidden_n)) + b2)
+
+            error = target - output
+            d_output = error * output * (1 - output)
+
+            for j in range(hidden_n):
+                d_hidden = d_output * w2[j] * hidden[j] * (1 - hidden[j])
+                for i in range(2):
+                    w1[j][i] += learning_rate * d_hidden * inputs[i]
+                b1[j] += learning_rate * d_hidden
+                w2[j] += learning_rate * d_output * hidden[j]
+            b2 += learning_rate * d_output
+
+    return w1, b1, w2, b2, hidden_n
+
+
+def test_two_layer_xor(w1, b1, w2, b2, hidden_n):
+    print("\\n--- 两层神经网络的测试结果 ---")
+    all_correct = True
+    for inputs, target in TRAINING_DATA_XOR:
+        hidden = [sigmoid(sum(inputs[i] * w1[j][i] for i in range(2)) + b1[j]) for j in range(hidden_n)]
+        output = sigmoid(sum(hidden[j] * w2[j] for j in range(hidden_n)) + b2)
+        guess = 1 if output > 0.5 else 0
+        result = "正确" if guess == target else "错误"
+        if guess != target:
+            all_correct = False
+        print(f"输入 {inputs} -> AI猜：{guess}，正确答案：{target} ({result})")
+    return all_correct
+
+
 DATASETS = {
     "1": ("AND", TRAINING_DATA_AND),
     "2": ("OR", TRAINING_DATA_OR),
@@ -545,31 +593,42 @@ if name == "XOR":
     print("AND和OR都能画一条直线把'该输出1'和'该输出0'的点分开，XOR不管怎么画都分不开一条直线两边。")
     print("这就是单个神经元的天花板——真实的AI（比如神经网络）靠的是把很多个神经元叠成好几层，")
     print("一层负责画一条线，好几层叠起来就能画出弯曲的边界，这样才能学会XOR这种更复杂的规律。")
+
+    want_upgrade = input("\\n要不要亲眼看看加一层神经元之后，XOR能不能被学会？（输入 是/否）：").strip()
+    if want_upgrade == "是":
+        print("\\n这次改用两层：2个输入 -> 3个隐藏神经元 -> 1个输出神经元，训练3000轮...\\n")
+        w1, b1, w2, b2, hidden_n = train_two_layer_xor()
+        two_layer_correct = test_two_layer_xor(w1, b1, w2, b2, hidden_n)
+        if two_layer_correct:
+            print("\\n看到了吗？两层神经元，全部猜对！多出来的这一层让网络能画出弯曲的分界线，")
+            print("不再局限于一条直线——这就是深度学习里'深度'两个字的含义：层数越多，能学会的规律越复杂。")
+        else:
+            print("\\n这次没有全部学会——训练神经网络本来就有运气成分（权重是随机起步的，偶尔会卡在半路）。")
+            print("真实的深度学习项目里，遇到这种情况通常会换一次随机初始化，或者调整训练轮数再试。")
+        print("__GAME_OUTCOME__:WIN" if two_layer_correct else "__GAME_OUTCOME__:LOSE")
 else:
     print("\\n提示：这个神经元一开始权重是瞎猜的（随机数），")
     print("每次猜错就往'正确方向'调整一点点权重，猜的次数够多，它就学会规律了。")
     print("真实的AI（比如神经网络）原理类似，只是有几十亿个这样的神经元一起工作。")
     print("__GAME_OUTCOME__:WIN" if all_correct else "__GAME_OUTCOME__:LOSE")`,
-    hint: `输入 1 训练AND逻辑，输入 2 训练OR逻辑。想看AI的极限在哪，输入 3 训练XOR——练多少轮都学不会才是正常的，这正是这一关想让你看到的。`,
+    hint: `输入 1 训练AND逻辑，输入 2 训练OR逻辑。想看AI的极限在哪，输入 3 训练XOR——练多少轮都学不会才是正常的。选完XOR之后，一定要试试"要不要看两层神经元"那个选项，输入"是"，看单层学不会的问题，加一层之后是怎么被解决的。`,
     walkthrough: [
-      { lines: [1, 1], note: `导入random模块——用来生成一开始的随机权重和偏移，让神经元不是从0开始，而是"瞎猜"起步。` },
-      { lines: [3, 9], note: `训练数据：每一条是"两个输入 -> 正确答案该是什么"。AND逻辑要两个都是1才算1。` },
-      { lines: [11, 17], note: `OR逻辑的训练数据：只要有一个是1，结果就该是1。` },
-      { lines: [19, 26], note: `新增的XOR训练数据：两个不一样才算1，一样（都是0或都是1）就算0——注释先提前预告了一句：这个逻辑单个神经元学不会，不是bug，是数学上真的不可能。` },
-      { lines: [29, 31], note: `神经元最核心的计算：把每个输入乘上对应的权重再加起来，再加上一个偏移值bias，总和大于0就猜"1"，否则猜"0"——这就是神经元做"决策"的方式。` },
-      { lines: [34, 36], note: `训练函数：epochs是要训练多少轮，learning_rate是每次调整权重的"步子"大小；一开始权重和偏移都是瞎猜的随机数。` },
-      { lines: [38, 38], note: `训练开始前先亮一下初始的随机权重，方便你对比训练前后到底变了多少。` },
-      { lines: [40, 44], note: `反复训练很多轮（默认20轮），每一轮都要看一遍全部训练数据：用现在的权重猜一下，再算跟正确答案差多少。` },
-      { lines: [46, 50], note: `猜错了才调整：往"能减小误差"的方向，小幅度修正权重和偏移——这就是"学习"的本质，错了就往对的方向挪一点点，不是一步到位。` },
-      { lines: [52, 53], note: `每训练一轮就打印这一轮的错误次数和当前权重，能直观看到数字在慢慢变准（XOR的话会发现错误次数一直降不到0）。` },
-      { lines: [55, 57], note: `如果这一整轮全部猜对了，说明学会了，提前结束训练，不用再浪费轮数——但XOR永远走不到这一步，会老老实实跑完全部20轮。` },
-      { lines: [59, 59], note: `训练结束，把学到的权重和偏移交出去，后面测试要用到。` },
-      { lines: [62, 71], note: `测试函数：用同样的数据再测一遍，先假设"全对"，只要有一条猜错就把这个假设推翻，最后把"是不是全对"交出去。` },
-      { lines: [74, 78], note: `新增的字典：把输入的编号（1/2/3）对应到"这个逻辑叫什么名字"和"用哪份训练数据"——比原来一串if/else更容易加新选项，这次多出来的XOR就是这么加进去的。` },
-      { lines: [80, 82], note: `提示文字加上了新的XOR选项，读取你的选择，从字典里查出对应的名字和数据（如果输入的不是1/2/3，默认按AND处理，不会报错）。` },
-      { lines: [84, 86], note: `真正开始训练、测试，并且记住测试结果是不是全对——前面全是定义好的工具函数，这里才是真正执行的地方。` },
-      { lines: [88, 92], note: `新增的揭示逻辑：如果刚才训练的是XOR，不管练得怎么样都直接告诉你真相——这不是练得不够，是AND/OR能画一条直线分开两类点，XOR不管怎么画都分不开，这就是单个神经元的数学天花板，真实AI要叠很多层神经元才能学会这种更复杂的规律。` },
-      { lines: [93, 97], note: `AND/OR的收尾逻辑不变：总结"随机起步、猜错就微调"这个学习的本质，打印一个只有代码自己认识的"暗号"，报告这次是不是真的100%学会了——页面看到"全对"这个暗号才会放庆祝的礼花。` },
+      { lines: [1, 2], note: `random用来生成一开始的随机权重和偏移；math这次新增，两层网络要用到里面的指数函数e^x（藏在下面的sigmoid里）。` },
+      { lines: [4, 10], note: `训练数据：每一条是"两个输入 -> 正确答案该是什么"。AND逻辑要两个都是1才算1。` },
+      { lines: [12, 18], note: `OR逻辑的训练数据：只要有一个是1，结果就该是1。` },
+      { lines: [20, 27], note: `XOR训练数据：两个不一样才算1，一样（都是0或都是1）就算0——注释先提前预告了一句：这个逻辑单个神经元学不会，不是bug，是数学上真的不可能。` },
+      { lines: [30, 32], note: `单个神经元最核心的计算：把每个输入乘上对应的权重再加起来，再加上一个偏移值bias，总和大于0就猜"1"，否则猜"0"。` },
+      { lines: [35, 60], note: `单神经元的训练函数：一开始权重瞎猜，反复训练很多轮，每轮看一遍全部数据、猜错了就往"能减小误差"的方向微调权重，全部猜对就提前结束——这套逻辑不变，AND/OR能学会，XOR学不会。` },
+      { lines: [63, 72], note: `单神经元的测试函数：用训练好的权重把每条数据都测一遍，看猜得对不对，最后交出"是不是全对"这个结果。` },
+      { lines: [75, 76], note: `新增：sigmoid把任意一个数字压缩到0~1之间——两层网络的每个神经元都要经过这一步再往下传，这是让"多层叠加"真正有意义的关键（如果没有这一步，无论叠多少层，数学上都等价于一层，一样学不会XOR）。` },
+      { lines: [79, 102], note: `新增的两层网络训练函数：2个输入先经过3个隐藏神经元（每个都用sigmoid处理），再汇总到1个输出神经元；每条数据算完预测，把误差用"反向传播"这个方法，从输出神经元往回一层层传给隐藏神经元，各自按自己对误差的"贡献大小"微调权重——这比单神经元的调整规则复杂，但思路是相通的：错了就往对的方向挪一点。` },
+      { lines: [105, 116], note: `两层网络的测试函数：跟单神经元的test()结构一样，只是要先经过隐藏层再到输出层，多一步中间计算。` },
+      { lines: [119, 123], note: `把输入的编号（1/2/3）对应到"这个逻辑叫什么名字"和"用哪份训练数据"。` },
+      { lines: [125, 127], note: `提示文字列出三个选项，读取你的选择，从字典里查出对应的名字和数据（选错了默认按AND处理，不会报错）。` },
+      { lines: [129, 131], note: `真正开始训练、测试单个神经元，并且记住测试结果是不是全对。` },
+      { lines: [133, 137], note: `如果刚才训练的是XOR，不管练得怎么样都直接揭示真相：AND/OR能画一条直线分开两类点，XOR不管怎么画都分不开，这是单个神经元的数学天花板。` },
+      { lines: [139, 150], note: `新增的关键环节：问你要不要亲眼看两层网络解决XOR——选"是"就真的训练一个两层网络并测试，根据这次是不是真的全部学会了，给出对应的解读（学会了就点出"深度"的含义；没学会就如实说明训练本身有随机成分，这也是真实场景会遇到的情况），最后打印结算暗号。` },
+      { lines: [151, 155], note: `AND/OR的收尾逻辑不变：总结"随机起步、猜错就微调"这个学习的本质，打印结算暗号，页面看到"全对"才会放庆祝的礼花。` },
     ],
   },
   {
