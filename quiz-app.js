@@ -190,17 +190,28 @@ function wireAccountGate(destinationUrl) {
       setGateMessage("用户名不能为空，密码至少6位。", true);
       return;
     }
+    const btn = document.getElementById("gate-signup-btn");
+    btn.disabled = true;
     setGateMessage("注册中...");
-    const { data, error } = await supabaseClient.auth.signUp({
-      email: usernameToEmail(username),
-      password,
-    });
-    if (error) {
-      setGateMessage("注册失败：" + (error.message.includes("already") ? "这个用户名已经被用过了，换一个或者点'已有账号，登录'。" : error.message), true);
-      return;
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: usernameToEmail(username),
+        password,
+      });
+      if (error) {
+        setGateMessage("注册失败：" + (error.message.includes("already") ? "这个用户名已经被用过了，换一个或者点'已有账号，登录'。" : error.message), true);
+        return;
+      }
+      await pushProgressToCloud(data.user.id);
+      location.href = destinationUrl;
+    } catch (e) {
+      // 之前这里完全没有try/catch：网络彻底断开这类真正抛异常的情况（不是
+      // 走signUp()返回的{error}字段，是请求本身失败）会让按钮永远停在
+      // "注册中..."、控制台留一个没处理的promise rejection，用户不知道发生了什么。
+      setGateMessage("注册失败，可能是网络问题，请稍后重试。", true);
+    } finally {
+      btn.disabled = false;
     }
-    await pushProgressToCloud(data.user.id);
-    location.href = destinationUrl;
   });
 
   document.getElementById("gate-login-btn").addEventListener("click", async () => {
@@ -210,17 +221,28 @@ function wireAccountGate(destinationUrl) {
       setGateMessage("请输入用户名和密码。", true);
       return;
     }
+    const btn = document.getElementById("gate-login-btn");
+    btn.disabled = true;
     setGateMessage("登录中...");
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: usernameToEmail(username),
-      password,
-    });
-    if (error) {
-      setGateMessage("登录失败：用户名或密码不对。", true);
-      return;
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: usernameToEmail(username),
+        password,
+      });
+      if (error) {
+        setGateMessage("登录失败：用户名或密码不对。", true);
+        return;
+      }
+      await pullProgressFromCloud(data.user.id, true);
+      location.href = destinationUrl;
+    } catch (e) {
+      // pullProgressFromCloud现在同步失败会真的抛出异常（保护本地数据不被
+      // 不完整的云端数据覆盖），这里必须如实提示，不能直接跳转到下一页——
+      // 跳转会让用户以为进度已经恢复了，其实同步压根没成功。
+      setGateMessage("登录成功，但进度同步失败（可能是网络问题），请检查网络后重试，或者直接点下面的链接先开始学习。", true);
+    } finally {
+      btn.disabled = false;
     }
-    await pullProgressFromCloud(data.user.id, true);
-    location.href = destinationUrl;
   });
 }
 

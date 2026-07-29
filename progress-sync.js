@@ -126,15 +126,23 @@ const SYNCED_USER_ID_KEY = "codecourse_synced_user_id";
 
 async function pushProgressToCloud(userId) {
   const local = gatherLocalData();
-  const { data: existing } = await supabaseClient
+  const { data: existing, error: selectError } = await supabaseClient
     .from("progress")
     .select("data")
     .eq("user_id", userId)
     .maybeSingle();
+  if (selectError) throw selectError;
   const merged = Object.assign({}, (existing && existing.data) || {}, local);
-  await supabaseClient
+  const { error: upsertError } = await supabaseClient
     .from("progress")
     .upsert({ user_id: userId, data: merged, updated_at: new Date().toISOString() });
+  // 之前这两次请求的error都没检查——upsert失败（网络问题/RLS配置问题等）时
+  // 代码会假装推送成功一样往下走，照样把SYNCED_USER_ID_KEY标记成"已同步"。
+  // 这个函数被pullProgressFromCloud用来"先把本地兜底推一次，再放心用云端数据
+  // 覆盖本地"，如果这次推送其实失败了却被当成成功，紧接着的覆盖操作就会用
+  // （不包含刚才这次推送内容的）旧云端数据，把本地这些永远没推成功的改动
+  // 直接冲掉——所以这里必须让错误真的抛出去，调用方才能知道不能贸然覆盖本地。
+  if (upsertError) throw upsertError;
   localStorage.setItem(SYNCED_USER_ID_KEY, userId);
   // 顺带把排行榜分数也更新一下——不额外新增同步时机，复用这个已有的"进度推上云端"
   // 节点（每过一关自动同步、退出登录前兜底同步、手动点立即同步、注册时同步，
@@ -218,20 +226,30 @@ async function reportStuck(track, levelId, variantIndex) {
 // 异步推上云端（autoSaveToCloud没await，有极小概率的race），例行拉取时先清本地
 // 再等云端数据，反而可能把刚拿到的进度清没了。
 async function pullProgressFromCloud(userId, clearFirst) {
+  let shouldClearStaleIdentity = false;
   if (clearFirst) {
     const lastSyncedUserId = localStorage.getItem(SYNCED_USER_ID_KEY);
     if (lastSyncedUserId === userId) {
       await pushProgressToCloud(userId);
     } else {
-      clearLocalProgressData();
+      // 之前这里是直接调用clearLocalProgressData()，也就是先清本地、再去
+      // 拉云端数据。如果紧接着这次拉取失败（网络问题），本地已经被清空、
+      // 云端数据又没能拉回来，用户会两头落空——比登录之前还惨。现在把"清"
+      // 这个动作挪到拉取成功、确认拿到数据之后再做（见下面），这里只记一下
+      // "待会儿要清"，真正清空推迟到网络请求已经成功返回之后。
+      shouldClearStaleIdentity = true;
     }
   }
 
-  const { data: existing } = await supabaseClient
+  const { data: existing, error } = await supabaseClient
     .from("progress")
     .select("data")
     .eq("user_id", userId)
     .maybeSingle();
+  if (error) throw error;
+  if (shouldClearStaleIdentity) {
+    clearLocalProgressData();
+  }
   if (existing && existing.data) {
     restoreLocalData(existing.data);
   }
@@ -350,6 +368,11 @@ function setupAccountUI() {
       await pushProgressToCloud(data.user.id);
       setAccountMessage("注册成功，已经把当前进度同步上去了！");
       showLoggedInUI(data.user.email);
+    } catch (e) {
+      // pushProgressToCloud现在网络/写入失败会真的抛出异常（之前是静默忽略、
+      // 假装成功）——账号本身已经注册成功了，只是进度同步没推上去，如实告知，
+      // 不能让用户以为进度已经保住了。
+      setAccountMessage("账号注册成功，但进度同步失败（可能是网络问题），稍后可以点'立即同步'再试一次。", true);
     } finally {
       btn.disabled = false;
     }
@@ -381,6 +404,12 @@ function setupAccountUI() {
       // 而且刷新前用户根本来不及看，之前那个alert反而挡住了下面这行文字。
       setAccountMessage("登录成功，进度已经恢复，页面即将刷新...");
       setTimeout(() => location.reload(), 600);
+    } catch (e) {
+      // pullProgressFromCloud内部"先补推本地、再拉云端覆盖本地"这一步失败时
+      // 现在会真的抛出异常（保护措施：宁可不覆盖本地，也不能用可能不完整的
+      // 云端数据冲掉本地还没推上去的改动）。这里必须如实告知，不能刷新页面——
+      // 刷新会用本地当前（其实没被覆盖成功）的数据重新渲染，跟提示语对不上。
+      setAccountMessage("登录成功，但进度同步失败（可能是网络问题），本地进度先保留，请检查网络后点'立即同步'重试。", true);
     } finally {
       btn.disabled = false;
     }
@@ -389,9 +418,20 @@ function setupAccountUI() {
   document.getElementById("account-sync-btn").addEventListener("click", async () => {
     const { data } = await supabaseClient.auth.getUser();
     if (!data || !data.user) return;
+    const btn = document.getElementById("account-sync-btn");
+    btn.disabled = true;
     setAccountMessage("同步中...");
-    await pushProgressToCloud(data.user.id);
-    setAccountMessage("已同步到云端。");
+    try {
+      await pushProgressToCloud(data.user.id);
+      setAccountMessage("已同步到云端。");
+    } catch (e) {
+      // pushProgressToCloud现在失败会真的抛出异常，这里之前完全没有
+      // try/catch，失败时按钮会一直停在"同步中..."，还留下一个未处理的
+      // promise rejection，用户看不出到底发生了什么。
+      setAccountMessage("同步失败，可能是网络问题，稍后再试一次。", true);
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   document.getElementById("account-logout-btn").addEventListener("click", async () => {
