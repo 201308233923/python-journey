@@ -252,16 +252,24 @@ chat()`,
     icon: "✊",
     title: "游戏3：会学习的石头剪刀布",
     explain: `
-      <p>这个AI只看你"最近5局"出的招数，猜你接下来最可能出哪个，然后专门克制它——不是记全部历史，
-      是"最近的更重要"。多打几局，你会发现它越来越难赢；如果你中途突然换一种打法，也会发现AI没法
-      马上跟上，得再攒够5局新数据才会调整过来。</p>
-      <p>每次输入"石头"/"剪刀"/"布"出一拳，输入"退出"结束游戏。</p>
+      <p>先选AI对手的难度：<b>新手AI</b>纯靠运气随便出；<b>进阶AI</b>会看你"最近5局"的出拳习惯，
+      猜你接下来最可能出哪个然后专门克制它；<b>高手AI</b>更进一步——它会分别记住"你刚赢了一局
+      之后""你刚输了一局之后""平局之后"，你紧接着分别习惯出什么，按当前所处的情境预测，而不是
+      把所有历史混在一起统计。</p>
+      <p>赛制是三局两胜：谁先赢3局，这一场就算谁赢。打完一场可以选择换个难度再战一场。</p>
+      <p>每次输入"石头"/"剪刀"/"布"出一拳，输入"退出"可以提前结束当前这一场。</p>
     `,
     code: `import random
 
 CHOICES = ["石头", "剪刀", "布"]
 BEATS = {"石头": "剪刀", "剪刀": "布", "布": "石头"}  # key 能赢 value
-WINDOW_SIZE = 5  # 只看最近5局，而不是从头到尾全部历史
+WINDOW_SIZE = 5  # 进阶AI只看最近5局，而不是从头到尾全部历史
+
+DIFFICULTIES = {
+    "1": "新手",
+    "2": "进阶",
+    "3": "高手",
+}
 
 
 def counter_move(predicted):
@@ -280,71 +288,127 @@ def most_common(moves):
     return max(counts, key=counts.get)
 
 
-def play():
-    recent_moves = []  # 只留最近WINDOW_SIZE局，模拟"最近的行为更重要"
-    ai_score, you_score = 0, 0
+def novice_ai_move(state):
+    return random.choice(CHOICES)
+
+
+def intermediate_ai_move(state):
+    recent = state["recent_moves"]
+    if len(recent) < WINDOW_SIZE:
+        return random.choice(CHOICES)
+    predicted = most_common(recent[-WINDOW_SIZE:])
+    return counter_move(predicted)
+
+
+def expert_ai_move(state):
+    # 高手AI：看"上一局你赢/输/平之后，你紧接着出了什么"，按当前所处的情境分别
+    # 统计，而不是像进阶AI那样把所有历史混在一起——这是从"看整体习惯"进化到
+    # "看情境下的习惯"，更贴近真实场景里"人赢了/输了之后往往会改变策略"这件事。
+    context_moves = state["after_outcome"].get(state["last_outcome"], [])
+    if context_moves:
+        predicted = most_common(context_moves)
+        return counter_move(predicted)
+    return intermediate_ai_move(state)
+
+
+AI_STRATEGIES = {
+    "1": novice_ai_move,
+    "2": intermediate_ai_move,
+    "3": expert_ai_move,
+}
+
+
+def play_match(difficulty_name, ai_move_fn):
+    print(f"\\n选好了！这场对手是【{difficulty_name}AI】，先赢3局的人获胜！输入'退出'可以提前结束这场。\\n")
+    state = {"recent_moves": [], "last_outcome": None, "after_outcome": {"赢": [], "输": [], "平": []}}
+    you_score = 0
+    ai_score = 0
     rounds = 0
 
-    print(f"石头剪刀布！AI 会记住你最近 {WINDOW_SIZE} 局的出拳习惯来预测你。输入'退出'结束。\\n")
-
-    while True:
-        user_move = input("你出（石头/剪刀/布）：").strip()
+    while you_score < 3 and ai_score < 3:
+        user_move = input(f"第{rounds + 1}局，你出（石头/剪刀/布）：").strip()
         if user_move == "退出":
-            break
+            print("提前结束这场比赛。")
+            return you_score, ai_score
         if user_move not in CHOICES:
             print("请输入 石头/剪刀/布 哦")
             continue
 
         rounds += 1
-
-        # 数据不够WINDOW_SIZE局之前，AI还没法预测，就随便出
-        if len(recent_moves) < WINDOW_SIZE:
-            ai_move = random.choice(CHOICES)
-        else:
-            predicted = most_common(recent_moves)
-            ai_move = counter_move(predicted)
-
-        recent_moves.append(user_move)
-        if len(recent_moves) > WINDOW_SIZE:
-            recent_moves.pop(0)  # 只留最近WINDOW_SIZE局，太老的记录直接丢掉
-
+        ai_move = ai_move_fn(state)
         print(f"AI出：{ai_move}")
 
         if user_move == ai_move:
+            outcome = "平"
             print("平局！")
         elif BEATS[user_move] == ai_move:
-            print("你赢了！")
+            outcome = "赢"
+            print("你赢了这一局！")
             you_score += 1
         else:
-            print("AI赢了！")
+            outcome = "输"
+            print("AI赢了这一局！")
             ai_score += 1
 
         print(f"比分——你：{you_score}  AI：{ai_score}\\n")
 
-    print(f"\\n你最近 {len(recent_moves)} 局的出拳：{recent_moves}")
-    print(f"发现了吗？AI 只看你'最近 {WINDOW_SIZE} 局'出过什么，不是从头到尾的全部历史——")
-    print("这样即使你中途改变习惯，AI也能跟着调整过来，而不是被你很久以前的老习惯拖着走。")
-    print("这就是'从数据中学习规律'的简单例子——真实的AI用的数据量更大，方法更复杂，但思路是相通的。")
-    if rounds > 0:
-        print("__GAME_OUTCOME__:WIN" if you_score >= ai_score else "__GAME_OUTCOME__:LOSE")
+        if state["last_outcome"]:
+            state["after_outcome"][state["last_outcome"]].append(user_move)
+        state["recent_moves"].append(user_move)
+        if len(state["recent_moves"]) > WINDOW_SIZE:
+            state["recent_moves"].pop(0)
+        state["last_outcome"] = outcome
+
+    if you_score > ai_score:
+        print("恭喜，你赢下了这场比赛！")
+    else:
+        print("这场AI赢了，再战一场试试？")
+    return you_score, ai_score
 
 
-play()`,
-    hint: `攒够5局之前AI是瞎猜的，从第6局开始才会用"最近5局"预测。想赢AI，就连续出好几次同一个招数，等它开始预测之后，突然换一种打法，观察它要几局才会跟上。`,
+def choose_difficulty():
+    print("选择对手难度：1=新手AI（纯随机），2=进阶AI（看最近5局频率），3=高手AI（看你赢/输/平之后的反应习惯）")
+    choice = input("输入 1/2/3：").strip()
+    name = DIFFICULTIES.get(choice, DIFFICULTIES["2"])
+    ai_move_fn = AI_STRATEGIES.get(choice, AI_STRATEGIES["2"])
+    return name, ai_move_fn
+
+
+name, ai_move_fn = choose_difficulty()
+you_score, ai_score = play_match(name, ai_move_fn)
+
+while True:
+    again = input("\\n再来一场吗？可以换个难度（输入 是/否）：").strip()
+    if again != "是":
+        break
+    name, ai_move_fn = choose_difficulty()
+    you_score, ai_score = play_match(name, ai_move_fn)
+
+print("\\n发现了吗？AI从'完全随机'到'看整体频率'再到'看情境反应'，一步步更像'真的在观察你'——")
+print("这就是AI从简单规则进化到复杂模式识别的缩影。")
+print("__GAME_OUTCOME__:WIN" if you_score >= ai_score else "__GAME_OUTCOME__:LOSE")`,
+    hint: `新手AI靠猜，进阶AI攒够5局才会用频率预测，高手AI从第2局起就会看"你上一局赢/输/平之后习惯出什么"。想赢高手AI，试试故意打乱"赢了就重复""输了就换"这种下意识的反应模式。`,
     walkthrough: [
-      { lines: [1, 1], note: `导入random模块——AI在没攒够数据的时候要随便出拳，得靠它来"掷骰子"。` },
-      { lines: [3, 5], note: `所有合法的出拳选项，"谁克制谁"的规则，再加一个新常量WINDOW_SIZE：只往前数最近5局，不是全部历史。` },
-      { lines: [8, 13], note: `"反推"逻辑不变：如果预测你会出剪刀，就要找"谁能赢剪刀"——遍历BEATS字典，找到"值等于剪刀"的那一项，它的键就是答案。` },
-      { lines: [16, 21], note: `新增的小工具：数一下一份出拳记录（不管是全部历史还是最近几局）里，石头/剪刀/布各出现了几次，返回出现最多的那个——这是"预测"的核心计算，抽出来单独写是因为待会儿要专门喂给它"最近5局"这一小份数据。` },
-      { lines: [24, 29], note: `把整局游戏的逻辑都装进这个函数里；recent_moves改成一个列表（不再是累加总数的字典），只留最近的记录；开场白也改成提示"最近5局"。` },
-      { lines: [31, 37], note: `每一轮先问你出什么，退出/容错跟原来一样。` },
-      { lines: [39, 46], note: `记一下打了第几轮；数据攒够WINDOW_SIZE局之前AI还没法预测就随便出，攒够了就用"最近5局"算出预测，再找能克制它的招数。` },
-      { lines: [48, 50], note: `"滑动窗口"的核心：把这一轮你出的招数加进recent_moves，但只留最近WINDOW_SIZE条——超过了就把最老的一条丢掉，这样AI永远只根据"最近的行为"预测，不会被很久以前的老习惯拖着走。` },
-      { lines: [52, 52], note: `把AI这一轮出的招数打印出来，让你马上能对比输赢。` },
-      { lines: [54, 63], note: `用最开始定义的BEATS规则判断这一轮到底是谁赢，更新比分，每一轮结束都亮一下比分。` },
-      { lines: [65, 68], note: `游戏结束后亮出"最近几局"的记录（不再是全部历史的总数统计），点明AI这次靠的是"看最近的行为"，好处是你中途换打法它也能跟着调整，不会被老习惯拖着走。` },
-      { lines: [69, 70], note: `打完至少1局才判断输赢：你的分数不低于AI就算赢，打印一个只有代码自己认识的"暗号"，页面看到这个暗号才会放庆祝的礼花——真的打赢了才庆祝，不是随便跑完代码就庆祝。` },
-      { lines: [73, 73], note: `前面全是定义，这一行才是真正开始跑游戏的地方。` },
+      { lines: [1, 1], note: `导入random模块——新手AI全靠它随机出拳，其他难度在数据不够时也会用它来兜底。` },
+      { lines: [3, 5], note: `所有合法的出拳选项，"谁克制谁"的规则，再加一个常量WINDOW_SIZE：进阶AI只往前数最近5局，不是全部历史。` },
+      { lines: [7, 11], note: `新增的难度表：编号对应难度名字，待会儿用来打印选项和查找对应的AI策略。` },
+      { lines: [14, 19], note: `"反推"逻辑：如果预测你会出剪刀，就要找"谁能赢剪刀"——遍历BEATS字典，找到"值等于剪刀"的那一项，它的键就是答案。` },
+      { lines: [22, 27], note: `数一下一份出拳记录里，石头/剪刀/布各出现了几次，返回出现最多的那个——这是"预测"的核心计算。` },
+      { lines: [30, 31], note: `新手AI的策略：不看任何数据，纯随机出拳。` },
+      { lines: [34, 39], note: `进阶AI的策略：数据不够5局就随便出，攒够了就用"最近5局"算出预测，再找能克制它的招数——这是上一版就有的滑动窗口逻辑。` },
+      { lines: [42, 50], note: `新增的高手AI策略：不看"最近几局出了什么"，而是看"上一局的结果（赢/输/平）之后，你紧接着习惯出什么"，用这个更精准的情境数据预测；这份情境数据还不够时，退回去用进阶AI的策略兜底。` },
+      { lines: [53, 57], note: `把难度编号对应到具体的策略函数——待会儿选了哪个难度，就直接调用对应的函数来决定AI怎么出招，不用写一长串if/elif。` },
+      { lines: [60, 65], note: `新增的"打一场比赛"函数：开场白报难度和赛制；state这个字典装着这场比赛AI要用到的全部数据（最近几局、上一局结果、按情境分类的历史）；比分和轮次清零。` },
+      { lines: [67, 74], note: `只要双方都没到3胜就继续：读你出的招数，"退出"可以提前结束这场，打错字重新问。` },
+      { lines: [76, 78], note: `记一下第几轮；调用这场选定的AI策略函数算出AI出什么，打印出来。` },
+      { lines: [80, 90], note: `用BEATS规则判断这一局到底是谁赢，记下这局的结果(outcome)，更新对应的比分。` },
+      { lines: [92, 92], note: `每一局结束都亮一下比分。` },
+      { lines: [94, 99], note: `更新state：把"上一局结果之后你这次出的招数"记进对应的情境分类里（高手AI靠这个预测）；维护最近5局的滑动窗口（进阶AI靠这个预测）；记下这一局的结果，作为下一局的"上一局结果"。` },
+      { lines: [101, 105], note: `跳出循环说明有一方先到3胜——按比分打印这场比赛谁赢了，同时把比分交出去，方便外面统计总的输赢。` },
+      { lines: [108, 113], note: `选难度的函数：打印三个选项，读你的选择，从两张表里分别查出难度名字和对应的策略函数（选错了默认按进阶处理，不会报错）。` },
+      { lines: [116, 117], note: `真正开始玩：先选一次难度，打一场比赛，记下这场最终比分。` },
+      { lines: [119, 124], note: `问要不要再来一场——可以借这个机会换个难度挑战更高级的AI，回答不是"是"就结束整个游戏。` },
+      { lines: [126, 128], note: `总结AI三档难度的进化脉络；用最后一场的比分判断整体上算不算赢，打印一个只有代码自己认识的"暗号"，页面看到这个暗号才会放庆祝的礼花。` },
     ],
   },
   {
