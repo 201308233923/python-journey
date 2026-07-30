@@ -725,7 +725,10 @@
     entries.forEach((e,i) => {
       if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'), i*80); io.unobserve(e.target); }
     });
-  }, {threshold:0.1});
+  // rootMargin的100px提前量：不用等元素真的滚进视口才开始触发淡入，
+  // 提前100px就触发，滚动快的时候淡入动画有更充分的时间在元素真正
+  // 进入视野前完成，不会出现"滚过去了内容还没完全显现"的观感。
+  }, {threshold:0.1, rootMargin: '0px 0px 100px 0px'});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
   document.querySelectorAll('.feat-card,.level-card,.testi,.day-dot').forEach((el,i)=>{ el.style.transitionDelay=`${i*0.07}s`; });
 </script>
