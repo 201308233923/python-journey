@@ -451,16 +451,42 @@ body {
 }
 
 .sidebar h1 {
-  font-size: 18px;
-  margin: 4px 8px 10px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 4px 8px 14px;
 }
 
 .progress-summary {
+  margin: 0 8px 16px;
+}
+
+.progress-summary-text {
+  display: block;
   font-size: 12.5px;
   font-weight: 600;
   color: var(--muted);
-  margin: 0 8px 16px;
+  margin-bottom: 6px;
   font-variant-numeric: tabular-nums;
+}
+
+/* 之前"已完成 X/12 关"只是一行纯文字，进度这件事本身完全没有视觉化——
+   加一条渐变进度条，宽度由JS算出的百分比决定（见app.js），比一行数字
+   更直观，也是这次让整个侧栏更有"设计过"的质感的一部分。 */
+.progress-track {
+  display: block;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-light), var(--accent));
+  transition: width 0.4s ease;
 }
 
 .entry-switch {
@@ -788,6 +814,31 @@ body {
   max-width: 980px;
 }
 
+/* #level-title之前完全没有自己的样式，走的是浏览器默认h2（字号偏小、
+   没有字间距处理），是页面上最重要的一行字却最不起眼。加大字号、收紧
+   字间距，配一条渐变小竖条当"眼标"——这个竖条元素本身不含文字（纯装饰），
+   用::before而不是额外的HTML标签。 */
+#level-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0 0 18px;
+  padding-left: 16px;
+  position: relative;
+}
+
+#level-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent));
+}
+
 .loading {
   color: var(--muted);
   font-size: 15px;
@@ -995,15 +1046,18 @@ body {
   max-width: 640px;
 }
 
-/* 深色代码框反馈说"太黑了"，先改成纯浅灰白，后来又反馈想要绿色渐变——
-   跟品牌"发芽绿"的思路对上，用一个很浅的白到浅绿对角渐变，文字对比度
-   还是够（深灰文字），不是纯黑配纯白那种硬对比。不用--code-bg/--code-text
-   这两个全站共用的变量（改那两个会影响course/assessment/advanced/debug
-   四个页面的代码框，范围太大了），只在这几个AI小游戏专属的选择器上
-   单独写死这套浅色渐变。 */
+/* 深色代码框反馈说"太黑了"，先改成纯浅灰白，后来又反馈想要跟主色调呼应
+   的渐变——一直是用一个很浅的白到浅色对角渐变，文字对比度还是够（深色
+   文字），不是纯黑配纯白那种硬对比。不用--code-bg/--code-text这两个全站
+   共用的变量（改那两个会影响course/assessment/advanced/debug四个页面的
+   代码框，范围太大了），只在这几个AI小游戏专属的选择器上单独写死这套
+   浅色渐变——写死是故意的（这个框设计上不跟着深色模式变暗），但色相要
+   跟着主色调走，之前主色换了好几次这里都忘了同步改，导致一直是最早那版
+   绿色主题的浅绿渐变，这次改成跟当前蓝色主色呼应的浅蓝渐变，以后主色调
+   再换记得一起改这两处。 */
 .terminal-box {
-  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
-  color: #24292f;
+  background: linear-gradient(135deg, #f5f8fc, #dce7f6);
+  color: #1c2430;
   box-shadow: 0 2px 12px var(--shadow-soft);
   min-height: 260px;
 }
@@ -1016,8 +1070,8 @@ body {
 
 #turn-input {
   flex: 1;
-  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
-  color: #24292f;
+  background: linear-gradient(135deg, #f5f8fc, #dce7f6);
+  color: #1c2430;
   border: none;
   border-radius: 8px;
   padding: 10px 14px;
@@ -1075,6 +1129,11 @@ body {
   border-radius: 10px;
   background: var(--code-bg);
   color: var(--code-text);
+  /* 之前是纯色平铺，一点投影都没有，看起来完全贴在页面上——加一圈浅色的
+     内描边（模拟细边框，但用box-shadow叠加而不是border，不会影响.code-
+     editor-wrap里跟#code-editor像素级对齐的内边距计算）加一层柔和外阴影，
+     让代码框看起来是"悬浮"在页面上的一块独立卡片。 */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 26px -14px var(--shadow-soft);
 }
 
 #code-editor {

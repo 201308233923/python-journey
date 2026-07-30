@@ -184,7 +184,10 @@ function renderSidebar() {
   });
 
   const summary = document.getElementById("progress-summary");
-  if (summary) summary.textContent = `已完成 ${passedCount} / ${LEVELS.length} 关`;
+  if (summary) {
+    const pct = Math.round((passedCount / LEVELS.length) * 100);
+    summary.innerHTML = `<span class="progress-summary-text">已完成 ${passedCount} / ${LEVELS.length} 关</span><span class="progress-track"><span class="progress-fill" style="width:${pct}%"></span></span>`;
+  }
 }
 
 function selectLevel(id) {
