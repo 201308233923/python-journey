@@ -143,11 +143,51 @@ function verifyLevels(label, LEVELS) {
 }
 
 console.log("\n== 关卡 参考答案<->check() 配对校验 ==");
-verifyLevels("levels/ (初级)", loadLevelsDirInSandbox("levels", "LEVELS"));
+const courseLevels = loadLevelsDirInSandbox("levels", "LEVELS");
+verifyLevels("levels/ (初级)", courseLevels);
 const assessmentLevels = loadInSandbox("assessment-levels.js", "LEVELS");
 verifyLevels("assessment-levels.js", assessmentLevels);
-verifyLevels("advanced-levels.js", loadInSandbox("advanced-levels.js", "LEVELS"));
-verifyLevels("debug-levels.js", loadInSandbox("debug-levels.js", "LEVELS"));
+const advancedLevels = loadInSandbox("advanced-levels.js", "LEVELS");
+verifyLevels("advanced-levels.js", advancedLevels);
+const debugLevels = loadInSandbox("debug-levels.js", "LEVELS");
+verifyLevels("debug-levels.js", debugLevels);
+
+// ---------- 反作弊回归校验：check()不能直接用r.code（含注释的原始代码）----------
+// 这几个赛道的check()曾经全部直接对r.code原始字符串做includes()/正则匹配，
+// 把要求的关键词藏进#注释里、配合把正确答案写死打印，就能骗过所有关卡的
+// check()（详见commit历史）。修复方式是统一先算出codeWithoutComments =
+// r.code.replace(/#.*$/gm, "")，技术检测都改成对这份去注释后的代码判断。
+// 这里不是重新跑一遍具体的绕过样例（那样只能覆盖手动想到的几个关卡），
+// 而是静态检查每一个check()函数的源码本身：只要函数体里除了声明
+// codeWithoutComments那一行之外，还在别的地方直接写了r.code，就说明
+// 这里又绕开了去注释的步骤，本身就是这个漏洞重新出现的信号——不管是
+// 以后新增关卡忘了照着这个模式写，还是谁改check()的时候不小心改回去，
+// 这个检查都能挡住，不用一个个关卡手动构造绕过样例来验证。
+function verifyNoRawCodeCheck(label, LEVELS) {
+  const before = failures;
+  if (!Array.isArray(LEVELS)) return;
+  LEVELS.forEach((level) => {
+    const hasVariants = Array.isArray(level.variants) && level.variants.length > 0;
+    const variants = hasVariants ? level.variants : [level];
+    variants.forEach((variant, vi) => {
+      if (typeof variant.check !== "function") return;
+      checks += 1;
+      const where = `${label} 第${level.id}关${hasVariants ? ` 变体${vi}` : ""}`;
+      const src = variant.check.toString();
+      const withoutDeclaration = src.replace(/codeWithoutComments\s*=\s*r\.code\.replace\([^)]*\)/, "");
+      if (/\br\.code\b/.test(withoutDeclaration)) {
+        fail(`${where}: check()函数里有地方直接用了r.code（原始代码，含注释），没有先用codeWithoutComments去注释——关键词可能被藏进注释绕过检测`);
+      }
+    });
+  });
+  console.log(`  ${label}: ${failures - before === 0 ? "全部通过" : `${failures - before} 处失败`}`);
+}
+
+console.log("\n== 反作弊回归校验（check()不能直接用含注释的原始代码）==");
+verifyNoRawCodeCheck("levels/ (初级)", courseLevels);
+verifyNoRawCodeCheck("assessment-levels.js", assessmentLevels);
+verifyNoRawCodeCheck("advanced-levels.js", advancedLevels);
+verifyNoRawCodeCheck("debug-levels.js", debugLevels);
 
 // ---------- reviewLevel 越界校验 ----------
 // assessment-levels.js 答错时会给一个"去初级复习这个知识点"的链接
