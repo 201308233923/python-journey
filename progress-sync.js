@@ -123,6 +123,31 @@ function clearLocalProgressData() {
 // "真的换了个人"和"还是自己，只是session不知道为什么过期了、重新登录一次"，
 // 这两种情况该不该清本地是不一样的（见下面 pullProgressFromCloud 的注释）。
 const SYNCED_USER_ID_KEY = "codecourse_synced_user_id";
+// 之前"已同步到云端"只在account-message那行提示文字里一闪而过，账号面板
+// 本身（account-status那一行）从来没显示过"到底同步没同步、上次是什么时候"，
+// 面板收起来之后这个信息就彻底没了，容易让人怀疑"到底存上没有"。这次把
+// 上次同步时间记下来，跟"已登录：xxx"一起常驻显示，不再只靠一条会消失的提示。
+const LAST_SYNCED_AT_KEY = "codecourse_last_synced_at";
+
+function formatSyncedTime(ts) {
+  if (!ts) return null;
+  const d = new Date(Number(ts));
+  if (Number.isNaN(d.getTime())) return null;
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+// username不用重新查——account-avatar-label这个头像标签已经是登录状态下的
+// 用户名了（showLoggedInUI设置的），复用它，不用为了刷新一下同步时间
+// 就多打一次Supabase的API请求。
+function updateAccountStatusText() {
+  const el = document.getElementById("account-status");
+  const label = document.getElementById("account-avatar-label");
+  if (!el || !label || !label.textContent) return;
+  const synced = formatSyncedTime(localStorage.getItem(LAST_SYNCED_AT_KEY));
+  el.textContent = synced ? `已登录：${label.textContent} · 上次同步 ${synced}` : `已登录：${label.textContent} · 还没同步过`;
+}
 
 async function pushProgressToCloud(userId) {
   const local = gatherLocalData();
@@ -144,6 +169,8 @@ async function pushProgressToCloud(userId) {
   // 直接冲掉——所以这里必须让错误真的抛出去，调用方才能知道不能贸然覆盖本地。
   if (upsertError) throw upsertError;
   localStorage.setItem(SYNCED_USER_ID_KEY, userId);
+  localStorage.setItem(LAST_SYNCED_AT_KEY, Date.now().toString());
+  updateAccountStatusText();
   // 顺带把排行榜分数也更新一下——不额外新增同步时机，复用这个已有的"进度推上云端"
   // 节点（每过一关自动同步、退出登录前兜底同步、手动点立即同步、注册时同步，
   // 都会走到这里）。排行榜表是独立的、只读公开的一张表，跟这里的 progress
@@ -292,7 +319,6 @@ function showLoggedInUI(email) {
   out.classList.add("hidden");
   inn.classList.remove("hidden");
   const username = email.replace("@" + FAKE_EMAIL_DOMAIN, "");
-  document.getElementById("account-status").textContent = "已登录：" + username;
 
   const avatar = document.getElementById("account-avatar");
   const label = document.getElementById("account-avatar-label");
@@ -301,6 +327,8 @@ function showLoggedInUI(email) {
     avatar.classList.add("logged-in");
   }
   if (label) label.textContent = username;
+  // 头像标签(label)必须先设置好，updateAccountStatusText()是从这里读用户名的。
+  updateAccountStatusText();
 }
 
 function showLoggedOutUI() {
@@ -322,7 +350,15 @@ function showLoggedOutUI() {
 }
 
 async function refreshAccountUI() {
-  if (!supabaseClient || !document.getElementById("account-logged-out")) return;
+  if (!document.getElementById("account-logged-out")) return;
+  // 头像标签默认是空的（避免一进页面先闪一下"登录/注册"，等真的确认没登录
+  // 才显示，见showLoggedOutUI()）——所以这里即使supabaseClient不可用
+  // （比如Supabase的CDN没加载成功），也必须兜底调一次showLoggedOutUI()，
+  // 不然标签会一直空着，用户搞不清这个按钮是干什么的。
+  if (!supabaseClient) {
+    showLoggedOutUI();
+    return;
+  }
   // 复用 cloudProgressReady 已经查过的登录状态，不用自己再调一次 auth.getUser()。
   const user = window.cloudProgressReady ? await window.cloudProgressReady : null;
   if (user) {
