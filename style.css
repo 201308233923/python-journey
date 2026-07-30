@@ -1,30 +1,30 @@
 :root {
-  --bg: #f5f7f1;
+  --bg: #fff6ec;
   --panel: #ffffff;
-  --text: #1c231c;
-  --muted: #5e6b5c;
-  --border: #dee3d8;
-  /* 主色还是"发芽绿"（跟🌱码芽的品牌和logo里的芽对上），但把原来偏荧光的
-     绿调深调"熟"一点——之前那支绿配深色背景太像终端/黑客工具，跟"发芽/
-     成长"这个品牌意象有点错位，调深之后更像真实植物的绿，也更适合新手/
-     小朋友用的学习产品。 */
-  --accent: #257a4a;
-  --accent-shadow: #1a5c37;
+  --text: #2b1d14;
+  --muted: #8a7768;
+  --border: #f0ddc8;
+  /* 主色换成暖橘——试过深绿（更"熟"但方向还是绿）之后确认要换成完全不同
+     的暖色系，活泼一点，更贴合新手/小朋友用的学习产品。 */
+  --accent: #f0642f;
+  --accent-light: #ff8f5c;
+  --accent-shadow: #c94a1c;
   --accent-text: #ffffff;
-  --accent-glow: rgba(37, 122, 74, 0.28);
-  /* 比--accent-glow淡很多的绿色调，专门给卡片背景渐变用——--accent-glow
+  --accent-glow: rgba(240, 100, 47, 0.24);
+  /* 比--accent-glow淡很多的橘色调，专门给卡片背景渐变用——--accent-glow
      本来是给投影/柔光设计的，透明度对一整块背景来说太重，会糊成一片。 */
-  --accent-tint: rgba(37, 122, 74, 0.07);
-  /* 新增的第二支强调色：琥珀色，专门用在"坚持下来的回报"这类跟时间积累
-     有关的地方（连续打卡、完课证书、排行榜里"这是你"那一行）——跟代表
-     "课程本身进度/答对了"的绿色分开，逛到这几个地方能感觉到"这是不一样
-     的一类反馈"，不是所有东西都用同一支绿糊在一起。 */
-  --accent-warm: #b8721a;
-  --accent-warm-shadow: #8a5313;
-  --accent-warm-bg: #f7ecd9;
-  --accent-warm-text: #8a5313;
-  --accent-warm-glow: rgba(184, 114, 26, 0.22);
-  --accent-warm-tint: rgba(184, 114, 26, 0.07);
+  --accent-tint: rgba(240, 100, 47, 0.07);
+  /* 第二支强调色：暖金黄，专门用在"坚持下来的回报"这类跟时间积累有关的
+     地方（连续打卡、完课证书、排行榜里"这是你"那一行）——跟代表"课程
+     本身进度/答对了"的橘色分开，逛到这几个地方能感觉到"这是不一样的一类
+     反馈"；金黄和橘同属暖色系不会互相打架，但一冷一暖两种黄橘调，靠近
+     看依然分得清是两回事。 */
+  --accent-warm: #e8a93d;
+  --accent-warm-shadow: #b87a1a;
+  --accent-warm-bg: #fcf0d9;
+  --accent-warm-text: #8a5d14;
+  --accent-warm-glow: rgba(232, 169, 61, 0.26);
+  --accent-warm-tint: rgba(232, 169, 61, 0.08);
   --success-bg: #e6f5ea;
   --success-text: #1f6b41;
   --fail-bg: #fdecec;
@@ -32,27 +32,28 @@
   --code-bg: #1e2230;
   --code-text: #e8eaf2;
   --lock: #c7cad1;
-  --shadow-soft: rgba(28, 35, 28, 0.1);
+  --shadow-soft: rgba(43, 29, 20, 0.12);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #10150f;
-    --panel: #171d17;
-    --text: #e9efe6;
-    --muted: #9baa97;
-    --border: #262e25;
-    --accent: #4fbe82;
-    --accent-shadow: #2f9a5e;
-    --accent-text: #0b2412;
-    --accent-glow: rgba(79, 190, 130, 0.28);
-    --accent-tint: rgba(79, 190, 130, 0.09);
-    --accent-warm: #e3a34c;
-    --accent-warm-shadow: #c4841f;
+    --bg: #1a120c;
+    --panel: #241a12;
+    --text: #f6ece0;
+    --muted: #b3a08c;
+    --border: #382719;
+    --accent: #ff8b57;
+    --accent-light: #ffab7d;
+    --accent-shadow: #e56a35;
+    --accent-text: #2b1204;
+    --accent-glow: rgba(255, 139, 87, 0.3);
+    --accent-tint: rgba(255, 139, 87, 0.1);
+    --accent-warm: #f4c468;
+    --accent-warm-shadow: #d69a2e;
     --accent-warm-bg: #3a2a10;
     --accent-warm-text: #f0c47c;
-    --accent-warm-glow: rgba(227, 163, 76, 0.25);
-    --accent-warm-tint: rgba(227, 163, 76, 0.1);
+    --accent-warm-glow: rgba(244, 196, 104, 0.25);
+    --accent-warm-tint: rgba(244, 196, 104, 0.1);
     --success-bg: #113626;
     --success-text: #6fdf9d;
     --fail-bg: #3a1c1c;
@@ -764,9 +765,10 @@ body {
 }
 
 .level-item.active {
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-shadow));
   color: var(--accent-text);
   font-weight: 600;
+  box-shadow: 0 6px 14px -6px var(--accent-glow);
 }
 
 .level-item.locked {
@@ -1175,9 +1177,12 @@ button {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  background: var(--accent);
+  /* 斜向渐变+带主色调的柔光投影，而不是纯色平铺——纯色块配灰色投影是
+     最容易显得"没设计过"的组合，渐变和彩色阴影能让按钮看起来更有质感。 */
+  background: linear-gradient(150deg, var(--accent-light), var(--accent) 60%, var(--accent-shadow));
   color: var(--accent-text);
-  transition: transform 0.1s ease;
+  box-shadow: 0 8px 18px -8px var(--accent-glow);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
   /* 去掉手机浏览器点击后~300ms的延迟判断（等你是不是要双击缩放），
      顺便禁掉在按钮上双击触发的缩放——按钮不需要能缩放，双击应该被
      当成两次单击处理，不是意外放大页面。 */
@@ -1198,6 +1203,7 @@ button.secondary {
   background: var(--panel);
   color: var(--text);
   border: 2px solid var(--border);
+  box-shadow: none;
 }
 
 button:disabled {
