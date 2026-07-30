@@ -79,7 +79,12 @@ function renderStuckPoints(rows) {
   if (!rows || rows.length === 0) {
     return `<p class="admin-chart-empty">还没有人反馈卡住——点关卡页里"🤔 这道题我还是不懂"会记一条到这里。</p>`;
   }
-  const items = rows
+  // admin_stuck_points()这个RPC函数定义在Supabase后台（不在这个代码库里），
+  // 没法从这边确认它有没有按次数排序——这里不依赖后端顺序，前端自己稳妥地
+  // 按report_count从高到低排一遍，保证不管后端返回的是什么顺序，"哪一关
+  // 卡住的人最多"都能一眼看出来，不用自己再数一遍。
+  const sorted = [...rows].sort((a, b) => (b.report_count || 0) - (a.report_count || 0));
+  const items = sorted
     .map((r) => {
       const trackLabel = STUCK_TRACK_LABEL[r.track] || escapeHtml(r.track);
       const variantLabel = r.variant_index !== null && r.variant_index !== undefined ? `（变体${r.variant_index}）` : "";
