@@ -1,66 +1,67 @@
 :root {
-  --bg: #fff6ec;
+  --bg: #f5f7fa;
   --panel: #ffffff;
-  --text: #2b1d14;
-  --muted: #8a7768;
-  --border: #f0ddc8;
-  /* 主色换成暖橘——试过深绿（更"熟"但方向还是绿）之后确认要换成完全不同
-     的暖色系，活泼一点，更贴合新手/小朋友用的学习产品。 */
-  --accent: #f0642f;
-  --accent-light: #ff8f5c;
-  --accent-shadow: #c94a1c;
+  --text: #1c2430;
+  --muted: #64748b;
+  --border: #dde3ea;
+  /* 主色改成蓝色——之前试过深绿、暖橘都被反馈方向不对（橘色的浅色背景
+     渲染出来偏粉调，被反馈"太女性化"），蓝色是最中性、最不容易被读出
+     性别倾向的选择，也是大部分编程工具/SaaS产品的常规选择。 */
+  --accent: #2f6fed;
+  --accent-light: #6d9bff;
+  --accent-shadow: #1f4fc4;
   --accent-text: #ffffff;
-  --accent-glow: rgba(240, 100, 47, 0.24);
-  /* 比--accent-glow淡很多的橘色调，专门给卡片背景渐变用——--accent-glow
+  --accent-glow: rgba(47, 111, 237, 0.24);
+  /* 比--accent-glow淡很多的蓝色调，专门给卡片背景渐变用——--accent-glow
      本来是给投影/柔光设计的，透明度对一整块背景来说太重，会糊成一片。 */
-  --accent-tint: rgba(240, 100, 47, 0.07);
-  /* 第二支强调色：暖金黄，专门用在"坚持下来的回报"这类跟时间积累有关的
-     地方（连续打卡、完课证书、排行榜里"这是你"那一行）——跟代表"课程
-     本身进度/答对了"的橘色分开，逛到这几个地方能感觉到"这是不一样的一类
-     反馈"；金黄和橘同属暖色系不会互相打架，但一冷一暖两种黄橘调，靠近
-     看依然分得清是两回事。 */
-  --accent-warm: #e8a93d;
-  --accent-warm-shadow: #b87a1a;
-  --accent-warm-bg: #fcf0d9;
-  --accent-warm-text: #8a5d14;
-  --accent-warm-glow: rgba(232, 169, 61, 0.26);
-  --accent-warm-tint: rgba(232, 169, 61, 0.08);
+  --accent-tint: rgba(47, 111, 237, 0.07);
+  /* 第二支强调色：中性的金棕色，专门用在"坚持下来的回报"这类跟时间积累
+     有关的地方（连续打卡、完课证书、排行榜里"这是你"那一行）——跟代表
+     "课程本身进度/答对了"的蓝色分开，逛到这几个地方能感觉到"这是不一样
+     的一类反馈"。选金棕色而不是别的暖色，是因为它本身也是中性的（常见
+     于奖牌、证书这类场景），不会带来跟主色类似的联想问题。 */
+  --accent-warm: #c2861f;
+  --accent-warm-shadow: #93630f;
+  --accent-warm-bg: #faf1de;
+  --accent-warm-text: #7a5511;
+  --accent-warm-glow: rgba(194, 134, 31, 0.24);
+  --accent-warm-tint: rgba(194, 134, 31, 0.07);
   --success-bg: #e6f5ea;
   --success-text: #1f6b41;
   --fail-bg: #fdecec;
   --fail-text: #b3261e;
   --code-bg: #1e2230;
   --code-text: #e8eaf2;
-  --lock: #c7cad1;
-  --shadow-soft: rgba(43, 29, 20, 0.12);
+  --lock: #c3cad3;
+  --shadow-soft: rgba(28, 36, 48, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1a120c;
-    --panel: #241a12;
-    --text: #f6ece0;
-    --muted: #b3a08c;
-    --border: #382719;
-    --accent: #ff8b57;
-    --accent-light: #ffab7d;
-    --accent-shadow: #e56a35;
-    --accent-text: #2b1204;
-    --accent-glow: rgba(255, 139, 87, 0.3);
-    --accent-tint: rgba(255, 139, 87, 0.1);
-    --accent-warm: #f4c468;
-    --accent-warm-shadow: #d69a2e;
-    --accent-warm-bg: #3a2a10;
-    --accent-warm-text: #f0c47c;
-    --accent-warm-glow: rgba(244, 196, 104, 0.25);
-    --accent-warm-tint: rgba(244, 196, 104, 0.1);
+    --bg: #10141c;
+    --panel: #181e29;
+    --text: #e7ecf3;
+    --muted: #92a0b3;
+    --border: #262f3d;
+    --accent: #5b8dff;
+    --accent-light: #8fb3ff;
+    --accent-shadow: #3568d6;
+    --accent-text: #06152f;
+    --accent-glow: rgba(91, 141, 255, 0.3);
+    --accent-tint: rgba(91, 141, 255, 0.1);
+    --accent-warm: #e0a542;
+    --accent-warm-shadow: #b9822a;
+    --accent-warm-bg: #362a12;
+    --accent-warm-text: #f0c675;
+    --accent-warm-glow: rgba(224, 165, 66, 0.25);
+    --accent-warm-tint: rgba(224, 165, 66, 0.1);
     --success-bg: #113626;
     --success-text: #6fdf9d;
     --fail-bg: #3a1c1c;
     --fail-text: #ff8f87;
     --code-bg: #0f1117;
     --code-text: #e8eaf2;
-    --lock: #444a58;
+    --lock: #47536a;
     --shadow-soft: rgba(0, 0, 0, 0.35);
   }
 }
