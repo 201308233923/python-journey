@@ -80,16 +80,20 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
   background: var(--bg);
   color: var(--text);
-  /* 两个柔和的绿色光斑，固定不动、纯装饰。放在body上用fixed定位（不是
+  /* 两个柔和的光斑，固定不动、纯装饰。放在body上用fixed定位（不是
      .landing上），是因为如果内容比一屏高（比如水平测试题+底部"关于/
      隐私政策"链接加起来超过一屏），光斑之前只画在.landing这个区块的
      范围内，页面往下滚到footer的时候就露出下面纯色背景，看起来像是
      背景没铺满。fixed让光斑始终贴着视口（可视区域）本身，不管页面多高、
-     滚到哪，背景观感都是一致的。 */
+     滚到哪，背景观感都是一致的。第三层是很淡的点阵纹理——跟首页
+     index.html已经在用的视觉语言呼应，之前应用页面这边是纯色平铺，
+     加了这层之后底色有一点质感，配合下面侧栏的毛玻璃效果能透出来。 */
   background-image: radial-gradient(circle at 12% -10%, var(--accent-glow), transparent 45%),
-    radial-gradient(circle at 90% 110%, var(--accent-glow), transparent 40%);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+    radial-gradient(circle at 90% 110%, var(--accent-glow), transparent 40%),
+    radial-gradient(circle, var(--accent-tint) 1px, transparent 1px);
+  background-repeat: no-repeat, no-repeat, repeat;
+  background-size: auto, auto, 26px 26px;
+  background-attachment: fixed, fixed, fixed;
 }
 
 .app {
@@ -445,7 +449,13 @@ body {
 .sidebar {
   width: 260px;
   flex-shrink: 0;
+  /* 半透明+背景模糊（毛玻璃），能透出body上那层点阵纹理，侧栏不再是
+     死板的纯色块——跟首页导航栏滚动后的处理手法（backdrop-filter: blur）
+     是同一个技巧。color-mix在不支持的老浏览器里会整条规则被忽略，
+     自动退回下一条同名的纯色background（下面那行），不会显示错误颜色。 */
   background: var(--panel);
+  background: color-mix(in srgb, var(--panel) 85%, transparent);
+  backdrop-filter: blur(14px);
   border-right: 1px solid var(--border);
   padding: 20px 14px;
 }
@@ -804,8 +814,19 @@ body {
 }
 
 .level-item .badge {
-  font-size: 12px;
+  font-size: 11px;
   flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+}
+
+.level-item.active .badge {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .content {
@@ -1110,6 +1131,31 @@ body {
    改成JS在输入时自动把高度撑开到刚好容纳所有内容（app.js里的
    autoGrowCodeEditor），这样就不需要再单独处理"两层各自滚动、还要互相
    同步scrollTop"这类更容易出错的情况。 */
+/* 代码框外面包一层"窗口"：顶部一条红黄绿圆点的chrome条，让它看起来像一个
+   真的IDE/终端窗口，不是随便一块深色圆角矩形。圆角和外阴影这次交给
+   .code-window（配合overflow:hidden裁出圆角），.code-highlight/#code-editor
+   两个内层元素的圆角/投影相应去掉，不然会跟外层双重叠加。 */
+.code-window {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 26px -14px var(--shadow-soft);
+}
+
+.code-chrome {
+  background: var(--code-bg);
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.code-chrome .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .code-editor-wrap {
   position: relative;
 }
@@ -1126,14 +1172,8 @@ body {
   word-break: break-word;
   overflow: hidden;
   pointer-events: none;
-  border-radius: 10px;
   background: var(--code-bg);
   color: var(--code-text);
-  /* 之前是纯色平铺，一点投影都没有，看起来完全贴在页面上——加一圈浅色的
-     内描边（模拟细边框，但用box-shadow叠加而不是border，不会影响.code-
-     editor-wrap里跟#code-editor像素级对齐的内边距计算）加一层柔和外阴影，
-     让代码框看起来是"悬浮"在页面上的一块独立卡片。 */
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06), 0 10px 26px -14px var(--shadow-soft);
 }
 
 #code-editor {
@@ -1145,7 +1185,6 @@ body {
   color: transparent;
   caret-color: var(--code-text);
   border: none;
-  border-radius: 10px;
   padding: 14px;
   font-family: "SF Mono", Menlo, monospace;
   /* 16px是iOS Safari不自动放大页面的底线，见.account-gate input的注释。
@@ -1195,8 +1234,11 @@ body {
 #code-editor.code-editor-box {
   height: auto;
   min-height: 220px;
-  background: linear-gradient(135deg, #f4fbf6, #dcf2e3);
-  color: #24292f;
+  /* 跟.terminal-box/#turn-input同一个道理：这里故意写死颜色，不跟着深色
+     模式变——但色相要跟着当前主色调走，之前是最早绿色主题遗留的浅绿
+     渐变，这次一并同步成跟蓝色主色呼应的浅蓝渐变。 */
+  background: linear-gradient(135deg, #f5f8fc, #dce7f6);
+  color: #1c2430;
   box-shadow: 0 2px 10px var(--shadow-soft);
   line-height: 1.7;
   white-space: pre-wrap;

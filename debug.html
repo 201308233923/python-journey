@@ -88,9 +88,16 @@
         <div class="editor-row">
           <div class="editor-col">
             <div class="editor-label">这段代码有bug，找到并修好它</div>
-            <div class="code-editor-wrap">
-              <pre id="code-highlight" class="code-highlight" aria-hidden="true"></pre>
-              <textarea id="code-editor" spellcheck="false"></textarea>
+            <div class="code-window">
+              <div class="code-chrome">
+                <span class="dot" style="background:#ff5f57"></span>
+                <span class="dot" style="background:#febc2e"></span>
+                <span class="dot" style="background:#28c840"></span>
+              </div>
+              <div class="code-editor-wrap">
+                <pre id="code-highlight" class="code-highlight" aria-hidden="true"></pre>
+                <textarea id="code-editor" spellcheck="false"></textarea>
+              </div>
             </div>
             <div id="input-row" class="input-row hidden">
               <label class="editor-label">模拟输入（每行一个，对应一次 input()）</label>
