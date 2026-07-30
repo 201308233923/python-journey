@@ -1,40 +1,58 @@
 :root {
-  --bg: #f7f8fb;
+  --bg: #f5f7f1;
   --panel: #ffffff;
-  --text: #22262e;
-  --muted: #6b7280;
-  --border: #e3e6ec;
-  /* 主色换成"发芽绿"，跟🌱码芽的品牌和logo里的芽实际对上（之前logo用的
-     var(--accent)其实是蓝色，芽却是绿色，颜色和品牌形象是对不上的）。 */
-  --accent: #2fb350;
-  --accent-shadow: #1f8a3c;
+  --text: #1c231c;
+  --muted: #5e6b5c;
+  --border: #dee3d8;
+  /* 主色还是"发芽绿"（跟🌱码芽的品牌和logo里的芽对上），但把原来偏荧光的
+     绿调深调"熟"一点——之前那支绿配深色背景太像终端/黑客工具，跟"发芽/
+     成长"这个品牌意象有点错位，调深之后更像真实植物的绿，也更适合新手/
+     小朋友用的学习产品。 */
+  --accent: #257a4a;
+  --accent-shadow: #1a5c37;
   --accent-text: #ffffff;
-  --accent-glow: rgba(47, 179, 80, 0.32);
+  --accent-glow: rgba(37, 122, 74, 0.28);
   /* 比--accent-glow淡很多的绿色调，专门给卡片背景渐变用——--accent-glow
      本来是给投影/柔光设计的，透明度对一整块背景来说太重，会糊成一片。 */
-  --accent-tint: rgba(47, 179, 80, 0.07);
-  --success-bg: #e6f8ec;
-  --success-text: #1a7f4b;
+  --accent-tint: rgba(37, 122, 74, 0.07);
+  /* 新增的第二支强调色：琥珀色，专门用在"坚持下来的回报"这类跟时间积累
+     有关的地方（连续打卡、完课证书、排行榜里"这是你"那一行）——跟代表
+     "课程本身进度/答对了"的绿色分开，逛到这几个地方能感觉到"这是不一样
+     的一类反馈"，不是所有东西都用同一支绿糊在一起。 */
+  --accent-warm: #b8721a;
+  --accent-warm-shadow: #8a5313;
+  --accent-warm-bg: #f7ecd9;
+  --accent-warm-text: #8a5313;
+  --accent-warm-glow: rgba(184, 114, 26, 0.22);
+  --accent-warm-tint: rgba(184, 114, 26, 0.07);
+  --success-bg: #e6f5ea;
+  --success-text: #1f6b41;
   --fail-bg: #fdecec;
   --fail-text: #b3261e;
   --code-bg: #1e2230;
   --code-text: #e8eaf2;
   --lock: #c7cad1;
-  --shadow-soft: rgba(34, 38, 46, 0.1);
+  --shadow-soft: rgba(28, 35, 28, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #14161c;
-    --panel: #1c1f27;
-    --text: #eef0f5;
-    --muted: #9aa0ac;
-    --border: #2a2e38;
-    --accent: #46d16c;
-    --accent-shadow: #22a34a;
+    --bg: #10150f;
+    --panel: #171d17;
+    --text: #e9efe6;
+    --muted: #9baa97;
+    --border: #262e25;
+    --accent: #4fbe82;
+    --accent-shadow: #2f9a5e;
     --accent-text: #0b2412;
-    --accent-glow: rgba(70, 209, 108, 0.28);
-    --accent-tint: rgba(70, 209, 108, 0.09);
+    --accent-glow: rgba(79, 190, 130, 0.28);
+    --accent-tint: rgba(79, 190, 130, 0.09);
+    --accent-warm: #e3a34c;
+    --accent-warm-shadow: #c4841f;
+    --accent-warm-bg: #3a2a10;
+    --accent-warm-text: #f0c47c;
+    --accent-warm-glow: rgba(227, 163, 76, 0.25);
+    --accent-warm-tint: rgba(227, 163, 76, 0.1);
     --success-bg: #113626;
     --success-text: #6fdf9d;
     --fail-bg: #3a1c1c;
@@ -1546,12 +1564,14 @@ a.back-link {
   position: relative;
   overflow: hidden;
   padding: 44px 36px;
-  border: 3px solid var(--accent);
-  outline: 1px solid var(--accent);
+  /* 证书用琥珀色而不是课程绿——证书是"坚持下来的回报"，跟连续打卡、
+     排行榜里"这是你"是同一个语义家族，金色调也更像真实证书的观感。 */
+  border: 3px solid var(--accent-warm);
+  outline: 1px solid var(--accent-warm);
   outline-offset: 6px;
   border-radius: 24px;
-  background: radial-gradient(circle at 25% 15%, var(--accent-glow), transparent 55%),
-    linear-gradient(135deg, var(--panel), var(--accent-tint));
+  background: radial-gradient(circle at 25% 15%, var(--accent-warm-glow), transparent 55%),
+    linear-gradient(135deg, var(--panel), var(--accent-warm-tint));
   text-align: center;
   box-shadow: 0 24px 60px var(--shadow-soft);
 }
@@ -1577,7 +1597,7 @@ a.back-link {
 .cert-brand {
   font-size: 15px;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-warm);
   letter-spacing: 0.08em;
 }
 
@@ -1585,7 +1605,7 @@ a.back-link {
   font-size: 30px;
   font-weight: 800;
   margin: 10px 0 20px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-shadow));
+  background: linear-gradient(135deg, var(--accent-warm), var(--accent-warm-shadow));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1742,8 +1762,10 @@ a.back-link {
 }
 
 .leaderboard-row-me {
-  border-color: var(--accent) !important;
-  background: var(--success-bg) !important;
+  /* 用琥珀色而不是绿色——排行榜本身就是"坚持/成就"这条线索，跟琥珀色的
+     连续打卡、证书是同一个语义家族，不用课程进度的绿色。 */
+  border-color: var(--accent-warm) !important;
+  background: var(--accent-warm-bg) !important;
 }
 
 /* 前三名（渲染顺序就是排名顺序，用nth-child直接选，不用改JS/HTML）配一点
@@ -1923,8 +1945,10 @@ a.back-link {
   margin: 6px 0 12px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--success-bg);
-  color: var(--success-text);
+  /* 用琥珀色而不是绿色的success-bg/success-text——连续打卡是"坚持下来的
+     回报"，跟"这一关答对了"是两种不同的反馈，颜色分开会更清楚。 */
+  background: var(--accent-warm-bg);
+  color: var(--accent-warm-text);
   font-size: 12.5px;
   font-weight: 700;
 }
